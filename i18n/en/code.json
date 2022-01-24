@@ -245,7 +245,13 @@
   "landing.getStarted": {
     "message": "GET STARTED"
   },
-  "landing.description": {
-    "message": "made distributed training"
+  "landing.title": {
+    "message": "Distributed training made"
+  },
+  "landing.description.part1": {
+    "message": "with"
+  },
+  "landing.description.part2": {
+    "message": ""
   }
 }
