@@ -109,3 +109,4 @@ dist
 /build/
 
 .DS_Store
+.docusaurus

@@ -1,0 +1,43 @@
+name: Deploy Website
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - '*'
+
+jobs:
+  publish:
+    name: Build and deploy website
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.base_ref == 'main' && github.event.pull_request.base.repo.full_name == 'hpcaitech/ColossalAI-Documentation' && github.event.pull_request.merged == true
+    steps:
+
+      # Checkout Project
+      - name: 📚 Checkout
+        uses: actions/checkout@v2
+
+      # Setup Node.js
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'yarn'
+
+      # Install Dependencies
+      - name: ⏳ Install
+        run: yarn install
+
+      # Build
+      - name: 🔨 Build
+        run: yarn run build
+
+      # Deploy
+      - name: 🚀 Deploy
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: build
+          remote: ${{ secrets.REMOTE_DIR }}
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWD }}
+          dotfiles: true
