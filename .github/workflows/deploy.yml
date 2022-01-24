@@ -1,0 +1,38 @@
+name: Deploy Website
+on:
+  pull_request:
+    branches: [ "*" ]
+    types: [ "closed" ]
+
+jobs:
+  publish:
+    name: Build and deploy website
+    runs-on: self-hosted
+    container:
+      image: node:17
+      volumes: 
+        - /home/gitact/.ssh:/root/ssh
+      options: bash
+    timeout-minutes: 1200
+    if: github.base_ref == 'test/deploy' && github.event.pull_request.base.repo.full_name == 'hpcaitech/ColossalAI-Documentation' && github.event.pull_request.merged == true
+    steps:
+
+      # Checkout Project
+      - name: 📚 Checkout
+        uses: actions/checkout@v2
+
+      # Install Dependencies
+      - name: ⏳ Install
+        run: |
+          yarn config set registry https://registry.npm.taobao.org/
+          yarn install
+
+      # Build
+      - name: 🔨 Build
+        run: yarn run build
+
+      # Deploy
+      - name: 🚀 Deploy
+        run: |
+          cp -r /root/ssh /root/.ssh
+          scp -r build server:~
