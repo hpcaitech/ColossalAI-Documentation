@@ -65,7 +65,7 @@ const customFields = {
     Event,
     toast,
   },
-  tagline: 'An integrated large-scale model training system with efficient parallelization techniques'
+  tagline: 'An integrated large-scale model training system with efficient parallelization techniques.'
 };
 
 const config = {
