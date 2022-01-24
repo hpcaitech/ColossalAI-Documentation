@@ -1,0 +1,22 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.docs.category.Get started": {
+    "message": "Get started",
+    "description": "The label for category Get started in sidebar docs"
+  },
+  "sidebar.docs.category.Concepts": {
+    "message": "Concepts",
+    "description": "The label for category Concepts in sidebar docs"
+  },
+  "sidebar.docs.category.Basic Tutorials": {
+    "message": "Basic Tutorials",
+    "description": "The label for category Basic Tutorials in sidebar docs"
+  },
+  "sidebar.docs.category.Advanced Tutorials": {
+    "message": "Advanced Tutorials",
+    "description": "The label for category Advanced Tutorials in sidebar docs"
+  }
+}

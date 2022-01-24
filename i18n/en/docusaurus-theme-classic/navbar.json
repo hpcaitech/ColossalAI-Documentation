@@ -1,0 +1,22 @@
+{
+  "title": {
+    "message": " ",
+    "description": "The title in the navbar"
+  },
+  "item.label.Tutorials": {
+    "message": "Tutorials",
+    "description": "Navbar item with label Tutorials"
+  },
+  "item.label.Examples": {
+    "message": "Examples",
+    "description": "Navbar item with label Examples"
+  },
+  "item.label.Docs": {
+    "message": "Docs",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Blog": {
+    "message": "Blog",
+    "description": "Navbar item with label Blog"
+  }
+}

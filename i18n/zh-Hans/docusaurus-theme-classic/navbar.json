@@ -1,0 +1,22 @@
+{
+  "title": {
+    "message": " ",
+    "description": "The title in the navbar"
+  },
+  "item.label.Tutorials": {
+    "message": "教程",
+    "description": "Navbar item with label Tutorials"
+  },
+  "item.label.Examples": {
+    "message": "例子",
+    "description": "Navbar item with label Examples"
+  },
+  "item.label.Docs": {
+    "message": "文档",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Blog": {
+    "message": "博客",
+    "description": "Navbar item with label Blog"
+  }
+}

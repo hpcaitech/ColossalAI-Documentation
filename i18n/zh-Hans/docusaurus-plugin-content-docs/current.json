@@ -1,0 +1,22 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.docs.category.Get started": {
+    "message": "快速开始",
+    "description": "The label for category Get started in sidebar docs"
+  },
+  "sidebar.docs.category.Concepts": {
+    "message": "概念",
+    "description": "The label for category Concepts in sidebar docs"
+  },
+  "sidebar.docs.category.Basic Tutorials": {
+    "message": "基础教程",
+    "description": "The label for category Basic Tutorials in sidebar docs"
+  },
+  "sidebar.docs.category.Advanced Tutorials": {
+    "message": "高级教程",
+    "description": "The label for category Advanced Tutorials in sidebar docs"
+  }
+}
