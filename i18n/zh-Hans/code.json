@@ -245,7 +245,13 @@
   "landing.getStarted": {
     "message": "快速开始"
   },
-  "landing.description": {
+  "landing.title": {
     "message": "使分布式训练"
+  },
+  "landing.description.part1": {
+    "message": "从"
+  },
+  "landing.description.part2": {
+    "message": "开始"
   }
 }

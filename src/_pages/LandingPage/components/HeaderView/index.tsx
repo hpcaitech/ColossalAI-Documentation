@@ -26,7 +26,7 @@ const HeaderView: React.FC = () => {
       style={{ height: windowHeight > 800 ? windowHeight : undefined }}>
       <div>
         <h1 className={styles.HeaderTitle}>
-          <span className={styles.SeparatorText}>Colossal-AI</span> {translate({ message: 'made distributed training', id: 'landing.description' })}
+          {translate({ message: 'Distributed training made', id: 'landing.title' })}
         </h1>
         <Spacer height={20} />
         <HeaderTyper
@@ -35,6 +35,12 @@ const HeaderView: React.FC = () => {
           delay={5000}
           defaultText={toTypeWords[0] || 'simple'}
         />
+        <Spacer height={50} />
+        <p className={styles.HeaderTitle}>
+          {translate({ message: 'with', id: 'landing.description.part1' })}
+          <span className={styles.SeparatorText}> Colossal-AI </span>
+          {translate({ message: '', id: 'landing.description.part2' })}
+        </p>
         <Spacer height={50} />
         <div className={styles.ButtonContainer}>
           <PrimaryButton
