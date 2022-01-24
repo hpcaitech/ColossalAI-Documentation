@@ -1,7 +1,7 @@
 name: Deploy Website
 on:
   pull_request:
-    branches: [ "*" ]
+    branches: [ "test/deploy" ]
     types: [ "closed" ]
 
 jobs:
@@ -14,7 +14,7 @@ jobs:
         - /home/gitact/.ssh:/root/ssh
       options: bash
     timeout-minutes: 1200
-    if: github.base_ref == 'test/deploy' && github.event.pull_request.base.repo.full_name == 'hpcaitech/ColossalAI-Documentation' && github.event.pull_request.merged == true
+    if: github.base_ref == 'main' && github.event.pull_request.base.repo.full_name == 'hpcaitech/ColossalAI-Documentation' && github.event.pull_request.merged == true
     steps:
 
       # Checkout Project
