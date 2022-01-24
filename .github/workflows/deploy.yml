@@ -1,8 +1,9 @@
 name: Deploy Website
 on:
   pull_request:
-    branches: [ "*" ]
-    types: [ "closed" ]
+    types: [closed]
+    branches:
+      - '*'
 
 jobs:
   publish:
