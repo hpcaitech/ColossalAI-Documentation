@@ -5,7 +5,7 @@ Author: Shenggui Li
 With the development of deep learning, there is an increasing demand for parallel training. This is because that model 
 and datasets are getting larger and larger and training time becomes a nightmare if we stick to single-GPU training. In
 this section, we will provide a brief overview of existing methods to parallelize training. If you wish to add on to this
-post, you may create a discussion in the [GitHub forum](https://github.com/hpcaitech/ColossalAI/discussionshttps://github.com/hpcaitech/ColossalAI/discussions).
+post, you may create a discussion in the [GitHub forum](https://github.com/hpcaitech/ColossalAI/discussions).
 
 ## Data Parallel
 
@@ -15,6 +15,8 @@ batch dimension. Each device will hold a full copy of the model replica and trai
 back-propagation, the gradients of the model will be all-reduced so that the model parameters on different devices can stay
 synchronized.
 
+![Data Parallel](../img/concepts/data_parallel.png)
+*Data parallel illustration*
 
 ## Model Parallel
 
@@ -38,6 +40,9 @@ To make sure the result is correct, we need to all-gather the partial result and
 dimension. In this way, we are able to distribute the tensor over devices while making sure the computation flow remains 
 correct.
 
+![Data Parallel](../img/concepts/tensor_parallel.png)
+*Tensor parallel illustration*
+
 In Colossal-AI, we provide an array of tensor parallelism methods, namely 1D, 2D, 2.5D and 3D tensor parallelism. We will
 talk about them in detail in `advanced tutorials`.
 
@@ -52,13 +57,18 @@ Related paper:
 ### Pipeline Parallel
 
 Pipeline parallelism is generally easy to understand. If you recall your computer architecture course, this indeed exists
-in the CPU design. The core idea of pipeline parallelism is that the model is split by layer into several chunks, each chunk is
+in the CPU design. 
+
+![GPipe](../img/concepts/pipeline_parallelism.png)
+*Pipeline parallel illustration*
+
+The core idea of pipeline parallelism is that the model is split by layer into several chunks, each chunk is
 given to a device. During the forward pass, each device passes the intermediate activation to the next stage. During the backward pass,
 each device passes the gradient of the input tensor back to the previous pipeline stage. This allows devices to compute simultaneously,
 and increases the training throughput. One drawback of pipeline parallel training is that there will be some bubble time where
 some devices are engaged in computation, leading to waste of computational resources.
 
-![GPipe](../img/gpipe.png)
+![GPipe](../img/concepts/gpipe.png)
 
 *source: [GPipe](https://arxiv.org/abs/1811.06965)*
 
@@ -93,6 +103,9 @@ typically only has 16 or 32 GB RAM. This prompts the community to think why CPU 
 Recent advances rely on CPU and even NVMe disk to train large models. The main idea is to offload tensors back to CPU memory
 or NVMe disk when they are not used. By using the heterogeneous system architecture, it is possible to accommodate a huge 
 model on a single machine.
+
+![Heterogenous System](../img/concepts/heterogenous_system.png)
+*Heterogenous system illustration*
 
 Related paper:
 - [ZeRO-Infinity: Breaking the GPU Memory Wall for Extreme Scale Deep Learning](https://arxiv.org/abs/2104.07857)
