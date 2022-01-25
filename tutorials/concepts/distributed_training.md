@@ -1,8 +1,11 @@
 # Distributed Training
 
-Authro: Shenggui Li
+Author: Shenggui Li
 
 ## What is a distributed system?
+
+![Distribute system](../img/concepts/distributed_system.png)
+*image source: [Towards Data Science](https://towardsdatascience.com/distributed-training-in-the-cloud-cloud-machine-learning-engine-9e264ddde27f)*
 
 A distributed system consists of multiple software components which run on multiple machines. For example, the traditional 
 database runs on a single machine. As the amount of data gets incredibly large, a single machine can no longer deliver desirable
@@ -23,17 +26,24 @@ Back in 2012, [AlexNet](https://arxiv.org/abs/1404.5997) won the champion of the
 on a single GPU.
 Today, most models that appear in the top AI conferences are trained on multiple GPUs. Distributed training is definitely 
 a common practice when researchers and engineers develop AI models. There are several reasons behind this trend.
+
 1. Model size increases rapidly. [ResNet50](https://arxiv.org/abs/1512.03385) has 20 million parameters in 2015, 
 [BERT-Large](https://arxiv.org/abs/1810.04805) has 345 million parameters in 2018, 
 [GPT-2](https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) 
 has 1.5 billion parameters in 2018, and [GPT-3](https://arxiv.org/abs/2005.14165) has 175 billion parameters in 2020. 
 It is obvious that the model size grows exponentially with time. The current largest model has exceeded more than 1000 
 billion parameters. Super large models generally deliver more superior performance compared to their smaller counterparts. 
+![Model size growth](../img/concepts/model_size_growth.jpeg)
+*image source: [HuggingFace](https://huggingface.co/blog/large-language-models)*
+
+
 2. Dataset size increases rapidly. For most machine learning developers, MNIST and CIFAR10 datasets are often the first few
 datasets on which they train their models. However, these datasets are very small compared to well-known ImageNet datasets.
 Google even has its own (unpublished) JFT-300M dataset which has around 300 million images, and this is close to 300 times 
 larger than the ImageNet-1k dataset.
-3. Computing power gets stronger. With the advancement in the semiconductor industry, graphics cards become more and more 
+
+
+4. Computing power gets stronger. With the advancement in the semiconductor industry, graphics cards become more and more 
 powerful. Due to its larger number of cores, GPU is the most common compute platform for deep learning. 
 From K10 GPU in 2012 to A100 GPU in 2020, the computing power has increased several hundred times. This allows us to performance
 compute-intensive tasks faster and deep learning is exactly such a task.
@@ -57,15 +67,17 @@ distributed environment.
 process group which contains all the devices. A subset devices can form a process group so that they only communicate among
 the devices within the group.
 
-![distributed environment](../img/distributed_example.png)
+![distributed environment](../img/concepts/distributed_example.png)
+*An distributed system example*
 
 To illustrate these concepts, let's assume we have 2 machines (also called nodes), and each machine has 4 GPUs. When we 
 initialize distributed environment over these two machines, we essentially launch 8 processes (4 processes on each machine)
 and each process is bound to a GPU.
 
 Before initializing the distributed environment, we need to specify the host (master address) and port (master port). In 
-this example, we can let host be node 0 and port be a number such as 29500. Node 1 will then connect to the port of the host,
-and the default process group will be created. The default process group has a world size of 8 and details are as follows:
+this example, we can let host be node 0 and port be a number such as 29500. All the 8 processes will then look for the 
+address and port and connect to one another. 
+The default process group will then be created. The default process group has a world size of 8 and details are as follows:
 
 | process ID | rank | Node index | GPU index | 
 | ---------- | ---- | ---------- | --------- |
@@ -79,7 +91,8 @@ and the default process group will be created. The default process group has a w
 | 7          | 7    | 1          | 3         |
 
 
-We can also create a new process group containing even-number process, and the details of this new group will be:
+We can also create a new process group. This new process group can contain any subset of the processes.
+For example, we can create one containing only even-number processes, and the details of this new group will be:
 
 | process ID | rank | Node index | GPU index | 
 | ---------- | ---- | ---------- | --------- |
@@ -88,9 +101,12 @@ We can also create a new process group containing even-number process, and the d
 | 4          | 2    | 1          | 0         |
 | 6          | 3    | 1          | 2         |
 
-**Please note that rank can change depending on which process group the process is in, and the max rank is alawys world 
-size - 1.**
+**Please note that rank is relative to the process group and one process can have a different rank in different process
+groups. The max rank is always `world size of the process group - 1`.**
 
 In the process group, the processes can communicate in two ways:
 1. peer-to-peer: one process send data to another process
 2. collective: a group of process perform operations such as scatter, gather, all-reduce, broadcast together.
+
+![Collective Communication](../img/concepts/collective_communication.png)
+*Collective communication, source: [PyTorch distributed tutorial](https://pytorch.org/tutorials/intermediate/dist_tuto.html)*
