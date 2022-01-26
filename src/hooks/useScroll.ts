@@ -8,7 +8,7 @@ export function useScroll(scrollbarId: string): void {
       const height =
         document.documentElement.scrollHeight -
         document.documentElement.clientHeight;
-      const scrolled = (winScroll / height) * 100;
+      const scrolled = Math.min((winScroll / height) * 100, 100);
       document.getElementById(scrollbarId).style.width = scrolled + '%';
     };
   }
