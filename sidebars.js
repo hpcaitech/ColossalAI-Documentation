@@ -17,7 +17,7 @@ module.exports = {
             items: [
                 'concepts/distributed_training',
                 'concepts/paradigms_of_parallelism',
-                'concepts/colossalai_design'
+                'concepts/colossalai_overview'
             ],
         },
         {
