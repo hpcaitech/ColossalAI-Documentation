@@ -1,3 +1,3 @@
 # Tensor Parallel
 
-Author: Shenggui Li
+Author: Zhengda Bian
