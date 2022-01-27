@@ -1,6 +1,6 @@
-# Use Auto Mixed Precision in Training
+# Auto Mixed Precision Training
 
-Author: Chuanrui Wang
+Author: Chuanrui Wang, Shenggui Li
 
 ## quick introduction
 In Colossal-AI, we have incorporated different implementations of mixed precision training:
