@@ -15,7 +15,7 @@ Author: Zhujie, Shenggui Li
 - [ZeRO-Infinity: Breaking the GPU Memory Wall for Extreme Scale Deep Learning](https://arxiv.org/abs/2104.07857)
 
 
-# Introduction
+## Introduction
 
 The Zero Redundancy Optimizer (ZeRO) removes the memory redundancies across data-parallel processes by partitioning three 
 model states (optimizer states, gradients, and parameters) instead of replicating them. 
@@ -40,7 +40,7 @@ ZeRO can be easily enabled by adding certain lines in your configuration. Curren
 
 If you want to use NVMe for ZeRO offloading, you are supposed to install [`libaio`](https://pagure.io/libaio) first.
 
-## Configuration
+### Configuration
 
 ```python
 zero = dict(
@@ -99,7 +99,7 @@ zero = dict(
 
 > ⚠️ fp16 is automatically enabled when using ZeRO. This relies on AMP_TYPE.NAIVE in Colossal-AI AMP module.
 
-### Examples
+## Examples
 
 Use ZeRO level 2
 
