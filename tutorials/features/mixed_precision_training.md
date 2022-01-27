@@ -190,7 +190,7 @@ They are optional properties override once opt_level is determined
 - loss_scale: If loss_scale is a float value, use this value as the static (fixed) loss scale. If loss_scale is the string "dynamic", adaptively adjust the loss scale over time. Dynamic loss scale adjustments are performed by Amp automatically.
 
 
-### Naive AMP
+### Naive AMP Configuration
 
 In Naive AMP mode, we achieved mixed precision training while maintaining compatibility with complex tensor and pipeline parallelism. 
 This AMP mode will cast all operations into fp16.
@@ -356,7 +356,7 @@ for epoch in range(gpc.config.NUM_EPOCHS):
         lr_scheduler.step()
 ```
 
-### Step 7. Invoke `train_with_engine.py`
+### Step 7. Invoke Training Scripts
 
 Use the following command to start the training scripts. You can change `--nproc_per_node` to use a different number of GPUs.
 
