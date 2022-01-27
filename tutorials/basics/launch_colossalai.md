@@ -7,7 +7,7 @@ Author: Chuanrui Wang, Shenggui Li
 - [Colossal-AI Overview](../concepts/colossalai_overview.md)
 
 
-## Quick Introduction
+## Introduction
 
 As mentioned in the previous tutorials stated in the prerequisite, you need to initialize the distributed environment
 for Colossal-AI after your config file is prepared.

@@ -1,22 +1,41 @@
-# How to Use Engine and Trainer
+# Use Engine and Trainer in Training
 
 Author: Shenggui Li
 
+**Prerequisite:**
+- [Initialize Features](./initialize_features.md)
+
 ## Introduction
 
-In this tutorial, you will learn how to use the engine and trainer provided in Colossal-AI to train your model. Before we delve into the code snippets, we would like to first explain the concept of engine and trainer.
+In this tutorial, you will learn how to use the engine and trainer provided in Colossal-AI to train your model. 
+Before we delve into the details, we would like to first explain the concept of engine and trainer.
 
-Engine is essentially a wrapper class for model, optimizer and loss function. When we call `colossalai.initialize`, an engine object will be returned and it has already been equipped with functionalities such as gradient clipping, gradient accumulation and zero optimizer as specified in your configuration. An engine object will use similar APIs to those of PyTorch training components such that the user has minimum change to their code. Below is a table which shows the commonly used APIs for the engine object.
+### Engine
+
+Engine is essentially a wrapper class for model, optimizer and loss function. 
+When we call `colossalai.initialize`, an engine object will be returned, and it has already been equipped with 
+functionalities such as gradient clipping, gradient accumulation and zero optimizer as specified in your configuration file. 
+An engine object will use similar APIs to those of PyTorch training components such that the user has minimum change 
+to their code. 
+
+Below is a table which shows the commonly used APIs for the engine object.
 
 | Component                             | Function                                      | PyTorch                         | Colossal-AI                            |
 | ------------------------------------- | --------------------------------------------- | ------------------------------- | -------------------------------------- |
 | optimizer                             | Set all gradients to zero before an iteration | optimizer.zero_grad()           | engine.zero_grad()                     |
-| Update the parameters                 | optimizer.step()                              | engine.step()                   |                                        |
+| optimizer                             | Update the parameters                         | optimizer.step()                | engine.step()                          |
 | model                                 | Run a forward pass                            | outputs = model(inputs)         | outputs = engine(inputs)               |
 | criterion                             | Calculate the loss value                      | loss = criterion(output, label) | loss = engine.criterion(output, label) |
-| Execute back-propagation on the model | loss.backward()                               | engine.backward(loss)           |                                        |
+| criterion                             | Execute back-propagation on the model         | loss.backward()                 | engine.backward(loss)                  |
 
-The reason why we need such an engine class is that we can add more functionalities while hiding the implementations in the `colossalai.initialize` function. Imaging we are gonna add a new feature, we can manipulate the model, optimizer, dataloader and loss function in the `colossalai.initialize` function and only expose an engine object to the user. The user only needs to modify their code to the minimum extent by adapting the normal PyTorch APIs to the Colossal-AI engine APIs. In this way, they can enjoy more features for efficient training. A normal training iteration can be:
+The reason why we need such an engine class is that we can add more functionalities while hiding the implementations in 
+the `colossalai.initialize` function. 
+Imaging we are gonna add a new feature, we can manipulate the model, optimizer, dataloader and loss function in the 
+`colossalai.initialize` function and only expose an engine object to the user. 
+The user only needs to modify their code to the minimum extent by adapting the normal PyTorch APIs to the Colossal-AI 
+engine APIs. In this way, they can enjoy more features for efficient training. 
+
+A normal training iteration using engine can be:
 
 ```python
 import colossalai
@@ -37,7 +56,7 @@ for img, label in train_dataloader:
     engine.step()
 ```
 
-
+### Trainer
 
 Trainer is a more high-level wrapper for the user to execute training with fewer lines of code. However, in pursuit of more abstraction, it loses some flexibility compared to engine. The trainer is designed to execute a forward and backward step to perform model weight update. It is easy to create a trainer object by passing the engine object. The trainer has a default value `None` for the argument `schedule`. In most cases, we leave this value to `None` unless we want to use pipeline parallelism. If you wish to explore more about this parameter, you can go to the tutorial on pipeline parallelism.
 
@@ -91,13 +110,13 @@ from colossalai.trainer import hooks
 class LogMessageHook(hooks.BaseHook):
 
     def __init__(self, priority=10):
-        self.logger = get_dist_logger()
+        self._logger = get_dist_logger()
         
     def before_train(self, trainer):
-        self.logger.info('training starts')
+        self._logger.info('training starts')
     
     def after_train(self, trainer):
-        self.logger.info('training finished')
+        self._logger.info('training finished')
 
 
 ...
@@ -112,14 +131,16 @@ In the sections below, I will guide you through the steps required to train a Re
 
 
 
-## Table of content
+## Explain with ResNet
 
-In this tutorial we will cover:
+### Overview
+
+In this section we will cover:
 
 1. Use an engine object to train a ResNet34 model on CIFAR10 dataset
 2. Use a trainer object to train a ResNet34 model on CIFAR10 dataset
 
-## Project structure
+The project structure will be like:
 
 ```bash
 -- config.py
@@ -129,9 +150,9 @@ In this tutorial we will cover:
 
 Steps 1-4 below are commonly used regardless of using engine or trainer. Thus, steps 1-4 + step 5 will be your `run_resnet_cifar10_with_engine.py` and steps 1-4 + step 6 will form `run_resnet_cifar10_with_trainer.py`.
 
-## Practice with ResNet
+### Hands-on Practice
 
-### Step 1. Create a Config File
+#### Step 1. Create a Config File
 
 In your project folder, create a `config.py`. This file is to specify some features you may want to use to train your model. A sample config file is as below:
 
@@ -148,9 +169,10 @@ fp16=dict(
 
 In this config file, we specify that we want to use batch size 128 per GPU and run for 200 epochs. These two parameters are exposed by `gpc.config`. For example, you can use `gpc.config.BATCH_SIZE` to access the value you store in your config file. The `fp16` configuration tells `colossalai.initialize` to use mixed precision training provided by PyTorch to train the model with better speed and lower memory consumption.
 
-### Step 2. Initialize Distributed Environment
+#### Step 2. Initialize Distributed Environment
 
-We need to initialize the distributed training environment. This has been introduced in the tutorial on how to launch colossalai.
+We need to initialize the distributed training environment. This has been introduced in the tutorial on how to 
+[launch Colossal-AI](./launch_colossalai.md). For this demostration, we use `launch_from_torch` and PyTorch launch utility.
 
 ```python
 import colossalai
@@ -159,7 +181,7 @@ import colossalai
 colossalai.launch_from_torch(config='./config.py')
 ```
 
-### Step 3. Create all the training components
+#### Step 3. Create all the training components
 
 In this step, we can create all the components used for training. These components include:
 
@@ -200,7 +222,7 @@ model = resnet34(num_classes=10)
 
 # build datasets
 train_dataset = CIFAR10(
-    root=Path(os.environ['DATA']),
+    root='./data',
     download=True,
     transform=transforms.Compose(
         [
@@ -214,7 +236,7 @@ train_dataset = CIFAR10(
 )
 
 test_dataset = CIFAR10(
-    root=Path(os.environ['DATA']),
+    root='./data',
     train=False,
     transform=transforms.Compose(
         [
@@ -250,7 +272,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_dec
 lr_scheduler = CosineAnnealingLR(optimizer, total_steps=gpc.config.NUM_EPOCHS)
 ```
 
-### Step 4. Initialize with Colossal-AI
+#### Step 4. Initialize with Colossal-AI
 
 Next, the essential step is to obtain the engine class by calling `colossalai.initialize`. As stated in `config.py`, we will be using mixed precision training for training ResNet34 model. `colossalai.initialize` will automatically check your config file and assign relevant features to your training components. In this way, our engine object has already been able to train with mixed precision, but you do not have to explicitly take care of it.
 
@@ -265,7 +287,7 @@ engine, train_dataloader, test_dataloader, _ = colossalai.initialize(model,
 
 
 
-### Step 5. Train with engine
+#### Step 5. Train with engine
 
 With all the training components ready, we can train ResNet34 just like how to normally deal with PyTorch training.
 
@@ -315,7 +337,7 @@ for epoch in range(gpc.config.NUM_EPOCHS):
         f"Epoch {epoch} - train loss: {train_loss:.5}, test loss: {test_loss:.5}, acc: {correct / total:.5}, lr: {lr_scheduler.get_last_lr()[0]:.5g}", ranks=[0])
 ```
 
-### Step 6. Train with trainer
+#### Step 6. Train with trainer
 
 If you wish to train with a trainer object, you can follow the code snippet below:
 
@@ -353,13 +375,13 @@ trainer.fit(
 
 
 
-### Step 7. Start Distributed Training
+#### Step 7. Start Distributed Training
 
 Lastly, we can invoke the scripts using the distributed launcher provided by PyTorch as we used `launch_from_torch` in Step 2. You need to replace `<num_gpus>` with the number of GPUs available on your machine. This number can be 1 if you only want to use 1 GPU. If you wish to use other launchers, you can refer to the tutorial on How to Launch Colossal-AI.
 
 ```bash
 # with engine
-python -m torch.distributed.launch --nproc_per_node <num_gpus> run_resnet_cifar10_with_engine.py
+python -m torch.distributed.launch --nproc_per_node <num_gpus> --master_addr localhost --master_port 29500 run_resnet_cifar10_with_engine.py
 # with trainer
-python -m torch.distributed.launch --nproc_per_node <num_gpus> run_resnet_cifar10_with_trainer.py
+python -m torch.distributed.launch --nproc_per_node <num_gpus> --master_addr localhost --master_port 29500 run_resnet_cifar10_with_trainer.py
 ```
