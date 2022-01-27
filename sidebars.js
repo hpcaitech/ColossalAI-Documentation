@@ -25,8 +25,8 @@ module.exports = {
             label: 'Basic Tutorials',
             collapsed: false,
             items: [
+                'basic_tutorials/define_your_config',
                 'basic_tutorials/launch_colossalai',
-                'basic_tutorials/use_and_modify_config',
                 'basic_tutorials/use_engine_and_trainer_for_training',
                 'basic_tutorials/use_auto_mixed_precision_in_training',
                 'basic_tutorials/configure_parallelization',
