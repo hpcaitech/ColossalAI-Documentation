@@ -36,7 +36,7 @@ In order to add your documentations into the website, you need to follow the ste
 
 1. Prepare your documentation in Markdown format.
 2. Name your markdown file clearly and the title must in header 1 format.
-3. Put your markdown file into a sub-folder (e.g. `basic_tutorials`) under the `tutorials` directory.
+3. Put your markdown file into a sub-folder (e.g. `features`) under the `tutorials` directory.
 4. Add your markdown file in the `sidebar.js` so that it will appear on the left panel. 
 You can also choose to run the following command to build the sidebar file.
 
