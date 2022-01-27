@@ -2,6 +2,8 @@
 
 Author: Shenggui Li
 
+## Introduction
+
 With the development of deep learning, there is an increasing demand for parallel training. This is because that model 
 and datasets are getting larger and larger and training time becomes a nightmare if we stick to single-GPU training. In
 this section, we will provide a brief overview of existing methods to parallelize training. If you wish to add on to this
