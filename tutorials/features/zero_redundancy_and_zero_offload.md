@@ -74,14 +74,14 @@ zero = dict(
 
 - `level`: Choose different levels of ZeRO.
 - `verbose`: Output extra information. Default value is `False`.
-- `clip_grad`: Clips gradient norm. Default valuse is `0.0`.
-- `dynamic_loss_scale`: ==warning==: may result in OVERflowing gradients. Default value is `False`.
+- `clip_grad`: Clips gradient norm. Default value is `0.0`.
+- `dynamic_loss_scale`: ⚠️ may result in Overflowing gradients. Default value is `False`.
 - `contiguous_gradients`: Copies the gradients to a contiguous buffer as they are produced. Avoids memory fragmentation during backward pass. Default value is `True`.
-- `reduce_bucket_size`: Number of elements reduced/allreduced at a time. Limits the memory required for the allgather for large model sizes. Default value is `5e8`.
-- `allgather_bucket_size`: Number of elements allgathered at a time. Limits the memory required for the allgather for large model sizes. Default value is `5e8`.
-- `reduce_scatter`: Uses reduce or reduce scatter instead of allreduce to average gradients. Default value is `True`.
+- `reduce_bucket_size`: Number of elements reduced/all-reduced at a time. Limits the memory required for the allgather for large model sizes. Default value is `5e8`.
+- `allgather_bucket_size`: Number of elements all-gathered at a time. Limits the memory required for the allgather for large model sizes. Default value is `5e8`.
+- `reduce_scatter`: Uses reduce or reduce scatter instead of all-reduce to average gradients. Default value is `True`.
 - `overlap_comm`: Attempts to overlap the reduction of the gradients with backward computation. Default value is `False`.
-- `allreduce_always_fp32`: Convert any FP16 gradients to FP32 before allreducing. This can improve stability for widely scaled-out runs. Not yet supported with ZeRO-2 with reduce scatter enabled. Default value is `False`.
+- `allreduce_always_fp32`: Convert any FP16 gradients to FP32 before all-reduce. This can improve stability for widely scaled-out runs. Not yet supported with ZeRO-2 with reduce scatter enabled. Default value is `False`.
 - `offload_optimizer_config`: Enabling and configuring ZeRO optimization of offloading optimizer computation to CPU and state to CPU/NVMe. NVMe offloading is available only with ZeRO-3.
    - `device`: Which device to offload.
    - `nvme_path`: Local filesystem Path for NVMe device.
