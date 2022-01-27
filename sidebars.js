@@ -40,7 +40,6 @@ module.exports = {
                 'features/mixed_precision_training',
                 'features/gradient_accumulation',
                 'features/gradient_clipping',
-                'features/data_parallel',
                 'features/tensor_parallel',
                 'features/pipeline_parallel',
                 'features/gradient_handler',
