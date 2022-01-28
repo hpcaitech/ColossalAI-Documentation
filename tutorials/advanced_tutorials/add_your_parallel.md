@@ -1,6 +1,12 @@
-# Add your own parallelism
+# Add Your Own Parallel Mode
 
-## Overview
+Author: Shenggui Li
+
+**Prerequisite:**
+- [Define Your Configuration](../basics/define_your_config.md)
+- [Configure Parallelization](../basics/configure_parallelization.md)
+
+## Introduction
 
 To enable researchers and engineers to extend our system to other novel large-scale distributed training algorithm
 with less effort, we have decoupled various components in the training lifecycle. You can implement your own
@@ -11,6 +17,11 @@ The main components are:
 1. `ProcessGroupInitializer`
 2. `GradientHandler`
 3. `Schedule`
+
+**This currently requires some code to the source code, thus we recommend that you install from source with the `-e` flag.
+`-e` flag makes the installation editable, thus, your code change will be reflected in your Python runtime.
+We will work on this to avoid change to source code in future releases.**
+
 
 ## Process Group Initializer
 

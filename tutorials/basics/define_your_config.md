@@ -36,15 +36,18 @@ follow the steps below.
 1. create a configuration file (e.g. `config.py`, the file name can be anything)
 2. define the mixed precision configuration in the config file. For example, in order to use mixed precision training 
 natively provided by PyTorch, you can just write these lines of code below into your config file.
-    ```python
-    from colossalai.amp import AMP_TYPE
-    
-    fp16 = dict(
-        mode=AMP_TYPE.TORCH
-    )
-    ```
+
+   ```python
+   from colossalai.amp import AMP_TYPE
+       
+   fp16 = dict(
+     mode=AMP_TYPE.TORCH
+   )
+   ```
+
 3. Tell Colossal-AI where your config file is when launch the distributed environment. For example, the config file is in 
 the current directory.
+
    ```python
    import colossalai
    
