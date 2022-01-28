@@ -38,7 +38,10 @@ The communication group is different in the sum operation.
 (PS: This situation is an old version of 2D parallelism, the implementation in the code is not the same. 
 But it is a good example about the difficulty to unify all communication in gradient clipping.)
 
-![grad clip](../img/features/gradient_clipping.png)
+<figure style={{textAlign: "center"}}>
+<img src="https://s2.loli.net/2022/01/28/KXiJPHt3Dum82cA.png"/>
+<figcaption>Layout of parameters</figcaption>
+</figure>
 
 Do not worry about it, since Colossal-AI have handled it for you.
 

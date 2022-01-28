@@ -12,7 +12,10 @@ Colossal-AI is designed to be a unfied system to provide an integrated set of tr
 
 We aim to make Colossal-AI easy to use and non-instrusive to user code. There is a simple general workflow if you want to use Colossal-AI.
 
-![Workflow](../img/concepts/workflow.png)
+<figure style={{textAlign: "center"}}>
+<img src="https://s2.loli.net/2022/01/28/ZK7ICWzbMsVuJof.png"/>
+<figcaption>Workflow</figcaption>
+</figure>
 
 1. Prepare a configiguration file where specifies the features you want to use and your parameters.
 2. Initialize distributed backend with `colossalai.launch`
