@@ -31,9 +31,9 @@ In this tutorial we will cover:
 
 First of all, we will introduce you GPipe for your better understanding.
 
-<figure>
+<figure style={{textAlign: "center"}}>
 <img src="https://s2.loli.net/2022/01/28/OAucPF6mWYynUtV.png"/>
-<figcaption align="center">Figure1: GPipe. This figure is from <a href="https://arxiv.org/pdf/2104.04473.pdf">Megatron-LM</a> paper.</figcaption>
+<figcaption>Figure1: GPipe. This figure is from <a href="https://arxiv.org/pdf/2104.04473.pdf">Megatron-LM</a> paper.</figcaption>
 </figure>
  
 
@@ -41,9 +41,9 @@ As you can see, for GPipe, only when the forward passes of all microbatches in a
 
 In general, 1F1B(one forward pass followed by one backward pass) is more efficient than GPipe(in memory or both memory and time). There are two schedules of 1F1B pipeline, the non-interleaved and the interleaved. The figures are shown below.
 
-<figure>
+<figure style={{textAlign: "center"}}>
 <img src="https://s2.loli.net/2022/01/28/iJrVkp2HLcahjsT.png"/>
-<figcaption align="center">Figure2: This figure is from <a href="https://arxiv.org/pdf/2104.04473.pdf">Megatron-LM</a> paper. The top part shows the default non-interleaved schedule. And the bottom part shows the interleaved schedule.</figcaption>
+<figcaption>Figure2: This figure is from <a href="https://arxiv.org/pdf/2104.04473.pdf">Megatron-LM</a> paper. The top part shows the default non-interleaved schedule. And the bottom part shows the interleaved schedule.</figcaption>
 </figure>
 
 ### Non-interleaved Schedule

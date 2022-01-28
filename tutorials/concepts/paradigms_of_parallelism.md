@@ -17,8 +17,10 @@ batch dimension. Each device will hold a full copy of the model replica and trai
 back-propagation, the gradients of the model will be all-reduced so that the model parameters on different devices can stay
 synchronized.
 
-![Data Parallel](../img/concepts/data_parallel.png)
-*Data parallel illustration*
+<figure style={{textAlign: "center"}}>
+<img src="https://s2.loli.net/2022/01/28/WSAensMqjwHdOlR.png"/>
+<figcaption>Data parallel illustration</figcaption>
+</figure>
 
 ## Model Parallel
 
@@ -42,8 +44,10 @@ To make sure the result is correct, we need to all-gather the partial result and
 dimension. In this way, we are able to distribute the tensor over devices while making sure the computation flow remains 
 correct.
 
-![Data Parallel](../img/concepts/tensor_parallel.png)
-*Tensor parallel illustration*
+<figure style={{textAlign: "center"}}>
+<img src="https://s2.loli.net/2022/01/28/2ZwyPDvXANW4tMG.png"/>
+<figcaption>Tensor parallel illustration</figcaption>
+</figure>
 
 In Colossal-AI, we provide an array of tensor parallelism methods, namely 1D, 2D, 2.5D and 3D tensor parallelism. We will
 talk about them in detail in `advanced tutorials`.
@@ -61,8 +65,10 @@ Related paper:
 Pipeline parallelism is generally easy to understand. If you recall your computer architecture course, this indeed exists
 in the CPU design. 
 
-![GPipe](../img/concepts/pipeline_parallelism.png)
-*Pipeline parallel illustration*
+<figure style={{textAlign: "center"}}>
+<img src="https://s2.loli.net/2022/01/28/at3eDv7kKBusxbd.png"/>
+<figcaption>Pipeline parallel illustration</figcaption>
+</figure>
 
 The core idea of pipeline parallelism is that the model is split by layer into several chunks, each chunk is
 given to a device. During the forward pass, each device passes the intermediate activation to the next stage. During the backward pass,
@@ -70,9 +76,10 @@ each device passes the gradient of the input tensor back to the previous pipelin
 and increases the training throughput. One drawback of pipeline parallel training is that there will be some bubble time where
 some devices are engaged in computation, leading to waste of computational resources.
 
-![GPipe](../img/concepts/gpipe.png)
-
-*source: [GPipe](https://arxiv.org/abs/1811.06965)*
+<figure style={{textAlign: "center"}}>
+<img src="https://s2.loli.net/2022/01/28/sDNq51PS3Gxbw7F.png"/>
+<figcaption>Source: <a href="https://arxiv.org/abs/1811.06965">GPipe</a></figcaption>
+</figure>
 
 Related paper:
 - [PipeDream: Fast and Efficient Pipeline Parallel DNN Training](https://arxiv.org/abs/1806.03377)
@@ -106,8 +113,10 @@ Recent advances rely on CPU and even NVMe disk to train large models. The main i
 or NVMe disk when they are not used. By using the heterogeneous system architecture, it is possible to accommodate a huge 
 model on a single machine.
 
-![Heterogenous System](../img/concepts/heterogenous_system.png)
-*Heterogenous system illustration*
+<figure style={{textAlign: "center"}}>
+<img src="https://s2.loli.net/2022/01/28/qLHD5lk97hXQdbv.png"/>
+<figcaption>Heterogenous system illustration</figcaption>
+</figure>
 
 Related paper:
 - [ZeRO-Infinity: Breaking the GPU Memory Wall for Extreme Scale Deep Learning](https://arxiv.org/abs/2104.07857)

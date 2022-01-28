@@ -4,8 +4,10 @@ Author: Shenggui Li
 
 ## What is a distributed system?
 
-![Distribute system](../img/concepts/distributed_system.png)
-*image source: [Towards Data Science](https://towardsdatascience.com/distributed-training-in-the-cloud-cloud-machine-learning-engine-9e264ddde27f)*
+<figure style={{textAlign: "center"}}>
+<img src="https://s2.loli.net/2022/01/28/sE5daHf2ohIy9wX.png"/>
+<figcaption>Image source: <a href="https://towardsdatascience.com/distributed-training-in-the-cloud-cloud-machine-learning-engine-9e264ddde27f">Towards Data Science</a></figcaption>
+</figure>
 
 A distributed system consists of multiple software components which run on multiple machines. For example, the traditional 
 database runs on a single machine. As the amount of data gets incredibly large, a single machine can no longer deliver desirable
@@ -32,9 +34,11 @@ a common practice when researchers and engineers develop AI models. There are se
 [GPT-2](https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) 
 has 1.5 billion parameters in 2018, and [GPT-3](https://arxiv.org/abs/2005.14165) has 175 billion parameters in 2020. 
 It is obvious that the model size grows exponentially with time. The current largest model has exceeded more than 1000 
-billion parameters. Super large models generally deliver more superior performance compared to their smaller counterparts. 
-![Model size growth](../img/concepts/model_size_growth.jpeg)
-*image source: [HuggingFace](https://huggingface.co/blog/large-language-models)*
+billion parameters. Super large models generally deliver more superior performance compared to their smaller counterparts.
+<figure style={{textAlign: "center"}}>
+<img src="https://s2.loli.net/2022/01/28/sCyreJ9PF1EdZYf.jpg"/>
+<figcaption>Image source: <a href="https://huggingface.co/blog/large-language-models">HuggingFace</a></figcaption>
+</figure>
 
 
 2. Dataset size increases rapidly. For most machine learning developers, MNIST and CIFAR10 datasets are often the first few
@@ -43,7 +47,7 @@ Google even has its own (unpublished) JFT-300M dataset which has around 300 mill
 larger than the ImageNet-1k dataset.
 
 
-4. Computing power gets stronger. With the advancement in the semiconductor industry, graphics cards become more and more 
+3. Computing power gets stronger. With the advancement in the semiconductor industry, graphics cards become more and more 
 powerful. Due to its larger number of cores, GPU is the most common compute platform for deep learning. 
 From K10 GPU in 2012 to A100 GPU in 2020, the computing power has increased several hundred times. This allows us to performance
 compute-intensive tasks faster and deep learning is exactly such a task.
@@ -67,8 +71,10 @@ distributed environment.
 process group which contains all the devices. A subset devices can form a process group so that they only communicate among
 the devices within the group.
 
-![distributed environment](../img/concepts/distributed_example.png)
-*An distributed system example*
+<figure style={{textAlign: "center"}}>
+<img src="https://s2.loli.net/2022/01/28/qnNBKh8AjzgM5sY.png"/>
+<figcaption>A distributed system example</figcaption>
+</figure>
 
 To illustrate these concepts, let's assume we have 2 machines (also called nodes), and each machine has 4 GPUs. When we 
 initialize distributed environment over these two machines, we essentially launch 8 processes (4 processes on each machine)
@@ -108,5 +114,7 @@ In the process group, the processes can communicate in two ways:
 1. peer-to-peer: one process send data to another process
 2. collective: a group of process perform operations such as scatter, gather, all-reduce, broadcast together.
 
-![Collective Communication](../img/concepts/collective_communication.png)
-*Collective communication, source: [PyTorch distributed tutorial](https://pytorch.org/tutorials/intermediate/dist_tuto.html)*
+<figure style={{textAlign: "center"}}>
+<img src="https://s2.loli.net/2022/01/28/zTmlxgc3oeAdn97.png"/>
+<figcaption>Collective communication, source: <a href="https://pytorch.org/tutorials/intermediate/dist_tuto.html">PyTorch distributed tutorial</a></figcaption>
+</figure>

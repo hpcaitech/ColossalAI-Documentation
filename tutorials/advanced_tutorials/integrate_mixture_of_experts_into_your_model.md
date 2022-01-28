@@ -56,8 +56,10 @@ parallel = dict(
 
 If `MOE_MODEL_PARALLEL_SIZE = E` and set the number of experts as `E` where `E` is a constant number, the process flow of forward pass of a transformer encoder in a model parallel group is shown below. 
 
-![MoE Transformer](../img/advanced/moe_transformer.png)
-*image source: [GShard](https://arxiv.org/abs/2006.16668)* 
+<figure style={{textAlign: "center"}}>
+<img src="https://s2.loli.net/2022/01/28/oI59QcxdteKUTks.png"/>
+<figcaption>MoE Transformer, image source: <a href="https://arxiv.org/abs/2006.16668">GShard</a></figcaption>
+</figure>
 
 Since all experts are allocated to all GPUs in a model parallel group and a GPU only owns a portion of experts, 
 original data parallel groups are no longer correct for the parameters of experts during gradient handling in backward pass anymore. 
@@ -65,7 +67,10 @@ So we create a new kind of parallel group called moe data parallel group.
 The difference among different kinds of parallel group, when the configuration is set as `WORLD_SIZE=4`, 
 `MOE_MODEL_PARALLEL_SIZE=2`, is shown here.
 
-![MoE process group](../img/advanced/moe_group.png)
+<figure style={{textAlign: "center"}}>
+<img src="https://s2.loli.net/2022/01/28/Sn8FpmQPKIiBEq2.png"/>
+<figcaption>MoE process group</figcaption>
+</figure>
 
 
 As for gradient handling, we provide MoeGradientHandler to all-reduce every parameter of the model. 
