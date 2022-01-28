@@ -1,6 +1,8 @@
 # Define your own parallel model
 
-> We are working on this documentation to make it more detailed. We will introduce the mechanism of different parallelism 
+Author: Zhengda Bian
+
+> ⚠️ We are working on this documentation to make it more detailed. We will introduce the mechanism of different parallelism 
 > and how to use them to write a model.
 
 Let's say that you have a huge MLP model with billions of parameters and its extremely large hidden layer size makes it

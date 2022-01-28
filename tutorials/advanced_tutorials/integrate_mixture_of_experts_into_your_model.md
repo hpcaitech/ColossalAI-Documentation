@@ -2,9 +2,17 @@
 
 Author: Haichen Huang
 
-## Quick Introduction
+**Example Code**
+- [ColossalAI-Examples WideNet](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/image/widenet)
+
+**Related Paper**
+- [Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity](https://arxiv.org/abs/2101.03961)
+- [Go Wider Instead of Deeper](https://arxiv.org/abs/2107.11817)
+
+
+## Introduction
+
 Since the advent of Switch Transformer, the AI community has found Mixture of Experts (MoE) a useful technique to enlarge the capacity of deep learning models. 
-More information about Google's Switch Transformer can be found [here](https://arxiv.org/abs/2101.03961).
 
 Colossal-AI provides an early access version of parallelism specifically designed for MoE models. 
 The most prominent advantage of MoE in Colossal-AI is convenience. 
@@ -48,7 +56,7 @@ parallel = dict(
 
 If `MOE_MODEL_PARALLEL_SIZE = E` and set the number of experts as `E` where `E` is a constant number, the process flow of forward pass of a transformer encoder in a model parallel group is shown below. 
 
-![MoE Transformer](../img/moe_transformer.png)
+![MoE Transformer](../img/advanced/moe_transformer.png)
 *image source: [GShard](https://arxiv.org/abs/2006.16668)* 
 
 Since all experts are allocated to all GPUs in a model parallel group and a GPU only owns a portion of experts, 
@@ -57,7 +65,7 @@ So we create a new kind of parallel group called moe data parallel group.
 The difference among different kinds of parallel group, when the configuration is set as `WORLD_SIZE=4`, 
 `MOE_MODEL_PARALLEL_SIZE=2`, is shown here.
 
-![MoE process group](../img/moe_group.png)
+![MoE process group](../img/advanced/moe_group.png)
 
 
 As for gradient handling, we provide MoeGradientHandler to all-reduce every parameter of the model. 

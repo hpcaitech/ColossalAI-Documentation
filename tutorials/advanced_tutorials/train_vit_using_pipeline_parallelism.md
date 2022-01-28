@@ -1,12 +1,16 @@
-# Train ViT using pipeline
+# Train ViT Using Pipeline Parallelism
 
 Author: Hongxin Liu
 
+**Related Paper**
+- [Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM](https://arxiv.org/abs/2104.04473)
 
+## Introduction
 
-## Quick introduction
-
-In this tutorial, you will learn how to train Vision Transformer for image classification from scratch, using pipeline. Pipeline parallelism is a kind of model parallelism, which is useful when your GPU memory cannot fit your model. By using it, we split the original model into multi stages, and each stage maintains a part of the original model. We assume that your GPU memory cannot fit ViT/L-16, and your memory can fit this model.
+In this tutorial, you will learn how to train Vision Transformer for image classification from scratch, using pipeline. 
+Pipeline parallelism is a kind of model parallelism, which is useful when your GPU memory cannot fit your model. 
+By using it, we split the original model into multi stages, and each stage maintains a part of the original model. 
+We assume that your GPU memory cannot fit ViT/L-16, and your memory can fit this model.
 
 ##  Table of contents
 
@@ -44,8 +48,8 @@ from torchvision.datasets import CIFAR10
 
 Generally, we provide 3 ways to build a pipelined model:
 
-1. colossalai.builder.build_pipeline_model_from_cfg()
-2. colossalai.builder.build_pipeline_model()
+1. `colossalai.builder.build_pipeline_model_from_cfg`
+2. `colossalai.builder.build_pipeline_model`
 3. Split the model by stages by yourself
 
 When your memory can fit the model, you can use the first two methods to build your model, otherwise you must split the model by yourself. The first two methods first build the whole model on CPU, then split the model, and finally you can just move the corresponding part of model to GPU.
@@ -243,7 +247,3 @@ def train():
                 hooks=hook_list,
                 display_progress=True)
 ```
-
-## Further Reading
-
-If you would like to learn more about pipeline parallel, you can read [Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM](https://arxiv.org/abs/2104.04473).
