@@ -11,12 +11,16 @@
     "message": "概念",
     "description": "The label for category Concepts in sidebar docs"
   },
-  "sidebar.docs.category.Basic Tutorials": {
-    "message": "基础教程",
-    "description": "The label for category Basic Tutorials in sidebar docs"
-  },
   "sidebar.docs.category.Advanced Tutorials": {
     "message": "高级教程",
     "description": "The label for category Advanced Tutorials in sidebar docs"
+  },
+  "sidebar.docs.category.Basics": {
+    "message": "基础",
+    "description": "The label for category Basics in sidebar docs"
+  },
+  "sidebar.docs.category.Features": {
+    "message": "功能",
+    "description": "The label for category Features in sidebar docs"
   }
 }
