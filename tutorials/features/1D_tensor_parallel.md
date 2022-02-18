@@ -27,8 +27,9 @@ Thus, we apply an all-reduce across the processors to get $\dot{X}=\dot{Y}A^T=\d
 
 ## Efficiency
 Given $P$ processors, we present the theoretical computation, memory cost and the communication cost with the ring algorithm in both the forward and backward pass of 1D parallelism.
+
 | Computation | Memory (weights) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
-| :-:         | :-:              | :-:                  | :-:                       | :-:                     |
+| ----------- | ---------------- | -------------------- | ------------------------- | ----------------------- |
 | $O(1/P)$    | $O(1/P)$         | $O(1)$               | $O(2(P-1)/P)$             | $O(2(P-1))$             |
 
 ## Usage
