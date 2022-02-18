@@ -21,29 +21,41 @@ To evenly distribute the computation and memory load, [an efficient 2D tensor pa
 Let's still take a linear layer $Y = XA$ as an example.
 Given $P=q\times q$ processors, e.g. $q=2$, we split both the input $X$ and weight $A$ into
 
-$$\left[\begin{matrix} X_{10} & X_{11} \\ X_{00} & X_{01} \end{matrix} \right] \text{~and~}\left[\begin{matrix} A_{10} & A_{11} \\ A_{00} & A_{01} \end{matrix} \right].$$
+$$
+\left[\begin{matrix} X_{10} & X_{11} \\ X_{00} & X_{01} \end{matrix} \right] 
+\text{~and~}
+\left[\begin{matrix} A_{10} & A_{11} \\ A_{00} & A_{01} \end{matrix} \right].
+$$
 
 The calculation includes $q$ steps. When $t=1$, $X_{i0}$ is broadcasted in its row, and $A_{0j}$ is broadcasted in its column. So, we have
 
-$$\left[\begin{matrix} X_{10},A_{00} & X_{10},A_{01} \\ X_{00},A_{00} & X_{00},A_{01} \end{matrix} \right].$$
+$$
+\left[\begin{matrix} X_{10},A_{00} & X_{10},A_{01} \\ X_{00},A_{00} & X_{00},A_{01} \end{matrix} \right].
+$$
 
 Then we multiply $X_{i0}$ and $A_{0j}$ on each processor $(i, j)$ as
 
-$$\left[\begin{matrix} X_{10}A_{00} & X_{10}A_{01} \\ X_{00}A_{00} & X_{00}A_{01} \end{matrix} \right] (1).$$
+$$
+\left[\begin{matrix} X_{10}A_{00} & X_{10}A_{01} \\ X_{00}A_{00} & X_{00}A_{01} \end{matrix} \right] (1).
+$$
 
 Similarly, when $t=2$, $X_{i1}$ is broadcasted in its row, $A_{1j}$ is broadcasted in its column, and we multiply them as
 
-$$\left[\begin{matrix} X_{11}A_{10} & X_{11}A_{11} \\ X_{01}A_{10} & X_{01}A_{11} \end{matrix} \right] (2).$$
+$$
+\left[\begin{matrix} X_{11}A_{10} & X_{11}A_{11} \\ X_{01}A_{10} & X_{01}A_{11} \end{matrix} \right] (2).
+$$
 
 By adding $(1)$ and $(2)$ up, we have
 
-$$Y = XA = \left[\begin{matrix} X_{10}A_{00}+X_{11}A_{10} & X_{10}A_{01}+X_{11}A_{11} \\ X_{00}A_{00}+X_{01}A_{10} & X_{00}A_{01}+X_{01}A_{11} \end{matrix} \right].$$
+$$
+Y = XA = \left[\begin{matrix} X_{10}A_{00}+X_{11}A_{10} & X_{10}A_{01}+X_{11}A_{11} \\ X_{00}A_{00}+X_{01}A_{10} & X_{00}A_{01}+X_{01}A_{11} \end{matrix} \right].
+$$
 
 ## Efficiency
-Given $P=q\times q$ processors, we present the theoretical computation, memory cost and the communication cost with the ring algorithm in both the forward and backward pass of 2D parallelism.
+Given $P=q\times q$ processors, we present the theoretical computation and memory cost, as well as the communication cost based on the ring algorithm in both the forward and backward pass of 2D tensor parallelism.
 
 | Computation | Memory (weights) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
-| :---------: | :--------------: | :------------------: | :-----------------------: | :---------------------: |
+| :-:         | :-:              | :-:                  | :-:                       | :-:                     |
 | $O(1/q^2)$  | $O(1/q^2)$       | $O(1/q^2)$           | $O(6(q-1)/q)$             | $O(6(q-1))$             |
 
 ## Usage
@@ -66,7 +78,6 @@ import torch
 from colossalai.utils import print_rank_0
 
 class MLP(torch.nn.Module):
-
     def __init__(self, dim: int = 256):
         super().__init__()
         intermediate_dim = dim * 4
@@ -85,7 +96,6 @@ class MLP(torch.nn.Module):
         print_rank_0(f'Output of the second linear layer: {x.shape}')
         x = self.dropout(x)
         return x
-
 ```
 Launch Colossal-AI on 4 GPUs and build the model
 ```python
@@ -105,7 +115,7 @@ Weight of the first linear layer: torch.Size([128, 512])
 Weight of the second linear layer: torch.Size([512, 128])
 ```
 The complete weight of the first linear layer is supposed to have the shape `[256, 1024]`. After the partitioning of 2D parallelism, it becomes `[128, 512]` on each GPU.
-Similarly, the complete weight of the second linear layer is supposed to have the shape `[1024, 256]`. After partitioning, it becomes `[512, 128]` on each GPU.
+Similarly, the second layer partitions the weight `[1024, 256]` into `[512, 128]`.
 
 We can run the model with some random inputs.
 ```python
