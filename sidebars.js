@@ -40,7 +40,17 @@ module.exports = {
                 'features/mixed_precision_training',
                 'features/gradient_accumulation',
                 'features/gradient_clipping',
-                'features/tensor_parallel',
+                {
+                    type: 'category',
+                    label: 'Tensor Parallel',
+                    collapsed: true,
+                    items: [
+                        'features/1D_tensor_parallel',
+                        'features/2D_tensor_parallel',
+                        'features/2p5D_tensor_parallel',
+                        'features/3D_tensor_parallel',
+                    ],
+                },
                 'features/pipeline_parallel',
                 'features/gradient_handler',
                 'features/zero_redundancy_and_zero_offload',
