@@ -60,8 +60,9 @@ We also need to note that in the backward pass, we need to all-gather the gradie
 
 ## Efficiency
 Given $P=q \times q \times q$ processors, we present the theoretical computation, memory cost and the communication cost with the ring algorithm in both the forward and backward pass of 3D parallelism.
+
 | Computation | Memory (weights) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
-| :-:         | :-:              | :-:                  | :-:                       | :-:                     |
+| :---------: | :--------------: | :------------------: | :-----------------------: | :---------------------: |
 | $O(1/q^3)$  | $O(1/q^3)$       | $O(1/q^3)$           | $O(6(q-1)/q^3)$           | $O(6(q-1))$             |
 
 ## Usage

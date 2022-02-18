@@ -41,8 +41,9 @@ $$Y = XA = \left[\begin{matrix} X_{10}A_{00}+X_{11}A_{10} & X_{10}A_{01}+X_{11}A
 
 ## Efficiency
 Given $P=q\times q$ processors, we present the theoretical computation, memory cost and the communication cost with the ring algorithm in both the forward and backward pass of 2D parallelism.
+
 | Computation | Memory (weights) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
-| :-:         | :-:              | :-:                  | :-:                       | :-:                     |
+| :---------: | :--------------: | :------------------: | :-----------------------: | :---------------------: |
 | $O(1/q^2)$  | $O(1/q^2)$       | $O(1/q^2)$           | $O(6(q-1)/q)$             | $O(6(q-1))$             |
 
 ## Usage
