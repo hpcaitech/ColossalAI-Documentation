@@ -41,8 +41,9 @@ $$
 
 ## Efficiency
 Given $P=q \times q \times d$ processors, we present the theoretical computation, memory cost and the communication cost with the ring algorithm in both the forward and backward pass of 2.5D parallelism.
+
 | Computation | Memory (weights) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
-| :-:         | :-:              | :-:                  | :-:                       | :-:                     |
+| :---------: | :--------------: | :------------------: | :-----------------------: | :---------------------: |
 | $O(1/dq^2)$ | $O(1/q^2)$       | $O(1/dq^2)$          | $O(3(q-1)(d+1)/dq)$       | $O(6(q-1))$             |
 
 ## Usage
