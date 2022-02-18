@@ -21,14 +21,20 @@ Compared with 1D tensor parallelism, 2D parallelism reduces the memory cost, but
 Let's still take a linear layer $Y = XA$ as an example.
 Given $P=q \times q \times d$ processors, e.g. $q=d=2$, we split the input $X$ into $d\times q$ rows and $q$ columns as
 
-$$\left[\begin{matrix} X_{30} & X_{31} \\ X_{20} & X_{21} \\ X_{10} & X_{11} \\ X_{00} & X_{01}\end{matrix} \right],$$
+$$
+\left[\begin{matrix} X_{30} & X_{31} \\ X_{20} & X_{21} \\ X_{10} & X_{11} \\ X_{00} & X_{01}\end{matrix} \right],
+$$
 which can be reshaped into $d$ layers as
 
-$$\left[\begin{matrix} X_{10} & X_{11} \\ X_{00} & X_{01} \end{matrix} \right] \text{~and~}\left[\begin{matrix} X_{30} & X_{31} \\ X_{20} & X_{21} \end{matrix} \right].$$
+$$
+\left[\begin{matrix} X_{10} & X_{11} \\ X_{00} & X_{01} \end{matrix} \right] \text{~and~}\left[\begin{matrix} X_{30} & X_{31} \\ X_{20} & X_{21} \end{matrix} \right].
+$$
 
 Also, the weight $A$ is split into
 
-$$\left[\begin{matrix} A_{10} & A_{11} \\ A_{00} & A_{01} \end{matrix} \right].$$
+$$
+\left[\begin{matrix} A_{10} & A_{11} \\ A_{00} & A_{01} \end{matrix} \right].
+$$
 
 On each layer of $X$, we use the SUMMA algorithm to multiply $X$ and $A$.
 Then, we have the output
@@ -36,15 +42,17 @@ Then, we have the output
 $$
 \left[\begin{matrix} Y_{10}=X_{10}A_{00}+X_{11}A_{10} & Y_{11}=X_{10}A_{01}+X_{11}A_{11} \\ Y_{00}=X_{00}A_{00}+X_{01}A_{10} & Y_{01}=X_{00}A_{01}+X_{01}A_{11} \end{matrix} \right]
 \text{~and~}
+$$
+$$
 \left[\begin{matrix} Y_{30}=X_{30}A_{00}+X_{31}A_{10} & Y_{31}=X_{30}A_{01}+X_{31}A_{11} \\ Y_{20}=X_{20}A_{00}+X_{21}A_{10} & Y_{21}=X_{20}A_{01}+X_{21}A_{11} \end{matrix} \right].
 $$
 
 ## Efficiency
-Given $P=q \times q \times d$ processors, we present the theoretical computation, memory cost and the communication cost with the ring algorithm in both the forward and backward pass of 2.5D parallelism.
+Given $P=q \times q \times d$ processors, we present the theoretical computation and memory cost, as well as the communication cost based on the ring algorithm in both the forward and backward pass of 2.5D tensor parallelism.
 
 | Computation | Memory (weights) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
-| :---------: | :--------------: | :------------------: | :-----------------------: | :---------------------: |
-| $O(1/dq^2)$ | $O(1/q^2)$       | $O(1/dq^2)$          | $O(3(q-1)(d+1)/dq)$       | $O(6(q-1))$             |
+| :-:         | :-:              | :-:                  | :-:                       | :-:                     |
+| $O(1/dq^2)$ | $O(1/q^2)$       | $O(1/dq^2)$          | $\small O(3(q-1)(d+1)/dq)$       | $O(6(q-1))$             |
 
 ## Usage
 
@@ -67,7 +75,6 @@ import torch
 from colossalai.utils import print_rank_0
 
 class MLP(torch.nn.Module):
-
     def __init__(self, dim: int = 256):
         super().__init__()
         intermediate_dim = dim * 4
@@ -86,7 +93,6 @@ class MLP(torch.nn.Module):
         print_rank_0(f'Output of the second linear layer: {x.shape}')
         x = self.dropout(x)
         return x
-
 ```
 Launch Colossal-AI on 8 GPUs and build the model
 ```python
@@ -105,8 +111,8 @@ We will see the shapes of partitioned weights in the MLP model.
 Weight of the first linear layer: torch.Size([128, 512])
 Weight of the second linear layer: torch.Size([512, 128])
 ```
-The complete weight of the first linear layer is supposed to have the shape `[256, 1024]`. After the partitioning of 2D parallelism, it becomes `[128, 512]` on each GPU.
-Similarly, the complete weight of the second linear layer is supposed to have the shape `[1024, 256]`. After partitioning, it becomes `[512, 128]` on each GPU.
+The complete weight of the first linear layer is supposed to have the shape `[256, 1024]`. After the partitioning of 2.5D parallelism, it becomes `[128, 512]` on each GPU.
+Similarly, the second layer partitions the weight `[1024, 256]` into `[512, 128]`.
 
 We can run the model with some random inputs.
 ```python

@@ -56,13 +56,13 @@ Y=
 \right].
 $$
 
-We also need to note that in the backward pass, we need to all-gather the gradient $\dot{Y_{ijl}}$, and then reduce-scatter the gradient $\dot{X_{il}}=\dot{Y_ij}A_{lj}^T$ and $\dot{A_{lj}}=X_{il}^T\dot{Y_{ij}}$.
+We also need to note that in the backward pass, we need to all-gather the gradient $\dot{Y_{ijl}}$, and then reduce-scatter the gradient $\dot{X_{il}}=\dot{Y_{ij}}A_{lj}^T$ and $\dot{A_{lj}}=X_{il}^T\dot{Y_{ij}}$.
 
 ## Efficiency
-Given $P=q \times q \times q$ processors, we present the theoretical computation, memory cost and the communication cost with the ring algorithm in both the forward and backward pass of 3D parallelism.
+Given $P=q \times q \times q$ processors, we present the theoretical computation and memory cost, as well as the communication cost based on the ring algorithm in both the forward and backward pass of 3D tensor parallelism.
 
 | Computation | Memory (weights) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
-| :---------: | :--------------: | :------------------: | :-----------------------: | :---------------------: |
+| :-:         | :-:              | :-:                  | :-:                       | :-:                     |
 | $O(1/q^3)$  | $O(1/q^3)$       | $O(1/q^3)$           | $O(6(q-1)/q^3)$           | $O(6(q-1))$             |
 
 ## Usage
@@ -89,10 +89,10 @@ class MLP(torch.nn.Module):
         super().__init__()
         intermediate_dim = dim * 4
         self.dense_1 = col_nn.Linear(dim, intermediate_dim)
-        print_rank_0(f'Weight of the first linear layer: {self.dense_1.weight.transpose(0, 1).shape}')
+        print_rank_0(f'Weight of the first linear layer: {self.dense_1.weight.shape}')
         self.activation = torch.nn.GELU()
         self.dense_2 = col_nn.Linear(intermediate_dim, dim)
-        print_rank_0(f'Weight of the second linear layer: {self.dense_2.weight.transpose(0, 1).shape}')
+        print_rank_0(f'Weight of the second linear layer: {self.dense_2.weight.shape}')
         self.dropout = col_nn.Dropout(0.1)
 
     def forward(self, x):
@@ -121,8 +121,8 @@ We will see the shapes of partitioned weights in the MLP model.
 Weight of the first linear layer: torch.Size([128, 256])
 Weight of the second linear layer: torch.Size([512, 64])
 ```
-The complete weight of the first linear layer is supposed to have the shape `[256, 1024]`. After the partitioning of 2D parallelism, it becomes `[128, 256]` on each GPU.
-Similarly, the complete weight of the second linear layer is supposed to have the shape `[1024, 256]`. After partitioning, it becomes `[512, 64]` on each GPU.
+The complete weight of the first linear layer is supposed to have the shape `[256, 1024]`. After the partitioning of 3D parallelism, it becomes `[128, 256]` on each GPU.
+Similarly, the second layer partitions the weight `[1024, 256]` into `[512, 64]`.
 
 We can run the model with some random inputs.
 ```python
