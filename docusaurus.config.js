@@ -113,7 +113,7 @@ const config = {
         {
           label: 'Tutorials',
           position: 'left',
-          to: 'tutorials/get_started/installation'
+          to: 'docs/get_started/installation'
         },
         {
           label: 'Examples',
@@ -145,7 +145,7 @@ const config = {
           items: [
             {
               label: 'Tutorials',
-              to: 'tutorials/get_started/installation',
+              to: 'docs/get_started/installation',
             },
             {
               label: 'Docs',
@@ -190,8 +190,8 @@ const config = {
       '@docusaurus/preset-classic',
       {
         docs: {
-          path: 'tutorials',
-          routeBasePath: 'tutorials',
+          path: 'docs',
+          routeBasePath: 'docs',
           admonitions: {
             icons: 'emoji',
           },
