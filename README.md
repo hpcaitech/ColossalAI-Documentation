@@ -29,6 +29,33 @@ yarn build
 ```
 This command generates static content into the `build` directory and can be served using any static contents hosting service.
 
+## Versioning
+
+```text
+├── docs    # this is for development
+├── versioned_docs  # this is for users to see
+```
+
+During development stage, you should push your documentation to the `docs` folder. 
+When the documentation is ready for release, you should use the command below to create a new version. 
+When you want to edit the documentation in the `versioned_docs`, it will only have effect on the specific version.
+
+```command
+yarn run docusaurus docs:version <version>
+
+# example
+yarn run docusaurus docs:version v0.0.2
+```
+
+> **Do start the version with a 'v' for consistency**.
+
+Best Versioning Practice:
+1. Only run the command when the documentation is fully ready to avoid future changes
+2. When you want to add a new documentation to `versioned_docs`, do remember to add this document in the `docs` folder as well so 
+that it won't be missing in the next release.
+
+If you want to know more about versioning configuration, please go to [Docusaurus documentation](https://docusaurus.io/docs/versioning) for more details.
+
 ## Contributing
 
 Your contribution is always welcomed to make the documentation better. 

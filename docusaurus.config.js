@@ -131,9 +131,15 @@ const config = {
           to: customFields.mediumUrl,
         },
         {
+          type: 'docsVersionDropdown',
+          position: 'right',
+          dropdownActiveClassDisabled: true
+        },
+        {
           type: 'localeDropdown',
           position: 'right',
-        },
+          dropdownActiveClassDisabled: true
+        }
       ],
     },
     footer: {
@@ -203,6 +209,15 @@ const config = {
             math
           ],
           rehypePlugins: [katex],
+          // for versioning
+          disableVersioning: false,
+          includeCurrentVersion: false, // turn on this if you wish to see the current version
+          // versions: {
+          //   current: {
+          //     banner: 'unreleased',
+          //     badge: true
+          //   },
+          // },
         },
         blog: {
           showReadingTime: true,
