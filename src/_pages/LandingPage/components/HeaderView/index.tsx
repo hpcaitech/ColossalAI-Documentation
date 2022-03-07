@@ -19,7 +19,7 @@ const HeaderView: React.FC = () => {
     shuffle(trans('landing.typer', i18n))
   );
 
-  const getStartedUrl = useBaseUrl('/tutorials/get_started/installation')
+  const getStartedUrl = useBaseUrl('/docs/get_started/installation')
   return (
     <div
       className={styles.Container}
