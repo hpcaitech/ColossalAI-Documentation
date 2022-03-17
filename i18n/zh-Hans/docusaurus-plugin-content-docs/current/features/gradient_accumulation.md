@@ -1,41 +1,36 @@
-# Gradient Accumulation
+# 梯度累积
 
-Author: Shenggui Li
+作者: Shenggui Li, Yongbin Li
 
-**Prerequisite:**
-- [Define Your Configuration](../basics/define_your_config.md)
-- [Use Engine and Trainer in Training](../basics/engine_trainer.md)
+**前置教程:**
+- [定义配置](../basics/define_your_config.md)
+- [在训练中使用Engine和Trainer](../basics/engine_trainer.md)
 
-**Example Code**
+**示例代码**
 - [ColossalAI-Examples Gradient Accumulation](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/gradient_accumulation)
 
-## Introduction
+## 引言
 
-Gradient accumulation is a common way to enlarge your batch size for training. 
-When training large-scale models, memory can easily become the bottleneck and the batch size can be very small, (e.g. 2), 
-leading to unsatisfactory convergence. Gradient accumulation works by adding up the gradients calculated in multiple iterations,
-and only update the parameters in the last iteration.
+梯度累积是一种常见的增大训练batch size的方式。 在训练大模型时，内存经常会成为瓶颈，并且batch size通常会很小（如2），这导致收敛性无法保证。梯度累积将多次迭代的梯度累加，并仅在达到预设迭代次数时更新参数。
 
-## Usage
+## 使用
 
-It is simple to use gradient accumulation in Colossal-AI. Just add this following configuration into your config file.
-The integer represents the number of iterations to accumulate gradients.
+在Colossal-AI中使用梯度累积非常简单，仅需将下列配置添加进config文件。其中，整数值代表期望梯度累积的次数。
 
 ```python
 gradient_accumulation = <int>
 ```
 
-## Hands-on Practice
+## 实例
 
-We provide a [runnable example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/gradient_accumulation)
-to demonstrate gradient accumulation. In this example, we set the gradinet accumulation size to be 4. You can run the script using this command:
+我们提供了一个 [运行实例](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/gradient_accumulation)
+来展现梯度累积。在这个例子中，梯度累积次数被设置为4，你可以通过一下命令启动脚本
 
 ```shell
 python -m torch.distributed.launch --nproc_per_node 1 --master_addr localhost --master_port 29500  run_resnet_cifar10_with_engine.py
 ```
 
-You will see output similar to the text below. This shows gradient is indeed accumulated as the parameter is not updated 
-in the first 3 steps, but only updated in the last step.
+你将会看到类似下方的文本输出。这展现了梯度虽然在前3个迭代中被计算，但直到最后一次迭代，参数才被更新。
 
 ```text
 iteration 0, first 10 elements of param: tensor([-0.0208,  0.0189,  0.0234,  0.0047,  0.0116, -0.0283,  0.0071, -0.0359, -0.0267, -0.0006], device='cuda:0', grad_fn=<SliceBackward0>)

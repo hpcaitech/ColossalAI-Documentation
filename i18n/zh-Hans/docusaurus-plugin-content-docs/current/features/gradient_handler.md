@@ -1,6 +1,6 @@
-# Gradient Handler
+# 梯度Handler
 
-Author: Shenggui Li
+Author: Shenggui Li, Yongbin Li
 
 **Prerequisite:**
 - [Define Your Configuration](../basics/define_your_config.md)
@@ -9,7 +9,7 @@ Author: Shenggui Li
 **Example Code**
 - [ColossalAI-Examples Gradient Handler](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/gradient_handler)
 
-## Introduction
+## 引言
 
 In distributed training, gradient synchronization is required at the end of each iteration. This is important because we 
 need to make sure the parameters are updated with the same gradients in different machines so that the resulting parameters
