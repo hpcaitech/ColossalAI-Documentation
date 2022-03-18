@@ -77,9 +77,60 @@ with ZeroInitContext(convert_fp16=True,
 
 You can see the exact usage of `ZeroInitContext` in [API Referent](https://TODO)
 
-First, we will give you an example of using low-level API. Then, we will give you a configuration template to help you configure ZeRO when using high-level API.
+First, we will give you a configuration template to help you configure ZeRO when using high-level API. Then, we will give you an example of using low-level API. 
 
-> We now provide `from colossalai.nn.optimizer.CPUAdam`, which is faster than `torch.optim.Adam` when using CPU offload.
+> We now provide `from colossalai.nn.optimizer.CPUAdam`, which is faster than `torch.optim.Adam` when using CPU offload. For more details, see [API Referent](https://TODO).
+
+## Configure ZeRO with high-level API
+
+You can use `Engine` and configure ZeRO in configuration file.
+
+Here is a configuration template:
+
+```python
+from colossalai.zero.shard_utils import TensorShardStrategy
+
+zero = dict(
+    model_config=dict(
+        reduce_scatter_bucket_size_mb=25,
+        fp32_reduce_scatter=False,
+        offload_config=dict(device="cpu"),
+        gradient_predivide_factor=1.0,
+        use_memory_tracer=False,
+        shard_strategy=TensorShardStrategy()
+    ),
+    optimizer_config=dict(
+        cpu_offload=False,
+        initial_scale=2**5,
+        min_scale=1,
+        growth_factor=2,
+        backoff_factor=0.5,
+        growth_interval=1000,
+        hysteresis=2,
+        max_scale=2**32
+    )
+)
+```
+
+`model_config` and `optimizer_config` are keyword arguments of `ShardedModelV2` and `ShardedOptimizerV2` respectively. For more details of these arguments, see [API Referent](https://TODO).
+
+You can initialize your model in this way:
+
+```python
+import torch
+import colossalai
+from colossalai.zero.init_ctx import ZeroInitContext
+
+with ZeroInitContext(convert_fp16=True,
+                    target_device=torch.cuda.current_device(),
+                    shard_strategy=gpc.config.zero.model_config.shard_strategy,
+                    shard_param=True):
+    model = torch.nn.Linear(2, 2)
+```
+
+Then you can use `Engine` as usual.
+
+Here is an example of training GPT with high-level API: [GPT example](https://TODO).
 
 ## Train GPT with low-level API
 
@@ -173,14 +224,15 @@ def main():
     criterion = GPTLMLoss()
 
     # optimizer
+    optimizer = CPUAdam(model.parameters(), lr=1e-3)
     # Enable CPU offload for optimizer states
-    optimizer = ShardedOptimizerV2(model, CPUAdam, cpu_offload=True, lr=1e-3)
+    optimizer = ShardedOptimizerV2(model, optimizer, cpu_offload=True, initial_scale=2**5)
     logger.info(f'GPU memory usage after init optim: {torch.cuda.memory_allocated() / 1024**2:.2f} MB', ranks=[0])
 
+    model.train()
     for n in range(NUM_STEPS):
         # we just use randomly generated data here
         input_ids, attn_mask = get_data(BATCH_SIZE, SEQ_LEN, VOCAB_SIZE)
-        model.train()
         optimizer.zero_grad()
         outputs = model(input_ids, attn_mask)
         loss = criterion(outputs, input_ids)
@@ -188,37 +240,4 @@ def main():
         optimizer.step()
         logger.info(
             f'Step [{n+1}/{NUM_STEPS}] GPU memory usage: {torch.cuda.memory_allocated() / 1024**2:.2f} MB', ranks=[0])
-```
-
-## Configure ZeRO with high-level API
-
-You can use `Engine` and configure ZeRO in configuration file.
-
-Here is a configuration template:
-
-```python
-_ZERO_MODEL_CONFIG = dict(reduce_scatter_bucket_size_mb=25,
-                          fp32_reduce_scatter=False,
-                          offload_config=None,
-                          gradient_predivide_factor=1.0,
-                          shard_param=True,
-                          use_memory_tracer=False)
-
-_ZERO_OPTIMIZER_CONFIG = dict(
-    optimizer_class=torch.optim.Adam,
-    cpu_offload=False,
-    initial_scale=2**5,
-    min_scale=1,
-    growth_factor=2,
-    backoff_factor=0.5,
-    growth_interval=1000,
-    hysteresis=2,
-    max_scale=2**32,
-)
-
-ZERO_PARALLEL_CONFIG = dict(fp16=dict(mode=None,),
-                            zero=dict(
-                                model_config=_ZERO_MODEL_CONFIG,
-                                optimizer_config=_ZERO_OPTIMIZER_CONFIG,
-                            ))
 ```
