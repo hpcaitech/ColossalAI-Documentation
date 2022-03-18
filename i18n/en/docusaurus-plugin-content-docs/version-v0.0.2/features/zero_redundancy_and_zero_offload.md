@@ -62,7 +62,7 @@ We provide some *shard strategies* to manage the process of sharding your model:
 colossalai.zero.shard_utils import BucketTensorShardStrategy, TensorShardStrategy
 ```
 
-`TensorShardStrategy` is a naive implementation that shard each tensor evenly overall ranks. `BucketTensorShardStrategy` fattens the tensors belonging to an operator, e.g. nn.Linear, and then shards them evenly overall ranks. It is especially useful when an operator contains `bias` since we cannot utilize network bandwidth well if we only gather a `bias` tensor (`bias` is usually small).
+`TensorShardStrategy` is a naive implementation that shard each tensor evenly over all ranks. `BucketTensorShardStrategy` fattens the tensors belonging to an operator, e.g. nn.Linear, and then shards them evenly over all ranks. It is especially useful when an operator contains `bias` since we cannot utilize network bandwidth well if we only gather a `bias` tensor (`bias` is usually small).
 
 > ⚠️ You have to initialize your model with `colossalai.zero.init_ctx.ZeroInitContext`.
 
