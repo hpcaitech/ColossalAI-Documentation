@@ -95,7 +95,7 @@ fp16=dict(
 ### AMP Modularity
 
 AMP module is designed to be completely modular and can be used independently. 
-If you wish to only use amp in your code base without `colossalai.initialize`, 
+If you wish to only use AMP in your code base without `colossalai.initialize`, 
 you can use `colossalai.amp.convert_to_amp`.
 
 ```python

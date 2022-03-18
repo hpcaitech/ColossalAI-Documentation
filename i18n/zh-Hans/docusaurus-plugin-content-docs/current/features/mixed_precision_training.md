@@ -1,114 +1,104 @@
-# Auto Mixed Precision Training
+# 自动混合精度训练
 
-Author: Chuanrui Wang, Shenggui Li
+作者: Chuanrui Wang, Shenggui Li, Yongbin Li
 
-**Prerequisite:**
-- [Define Your Configuration](../basics/define_your_config.md)
-- [Use Engine and Trainer in Training](../basics/engine_trainer.md)
+**前置教程:**
+- [定义配置](../basics/define_your_config.md)
+- [在训练中使用Engine和Trainer](../basics/engine_trainer.md)
 
-**Example Code**
+**示例代码**
 - [ColossalAI-Examples AMP](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/amp)
 
-**Related Paper**
+**相关论文**
 - [Accelerating Scientific Computations with Mixed Precision Algorithms](https://arxiv.org/abs/0808.2794)
 
 
-## Introduction
+## 引言
 
-AMP stands for automatic mixed precision training. 
-In Colossal-AI, we have incorporated different implementations of mixed precision training:
+AMP代表自动混合精度训练。
+在Colossal-AI中, 我们结合了混合精度训练的不同实现:
 
 1. torch.cuda.amp
 2. apex.amp
 3. naive amp
 
 
-| Colossal-AI | support tensor parallel | support pipeline parallel | fp16 extent |
+| Colossal-AI | 支持张量并行 | 支持流水并行 | fp16范围 |
 | ----------- | ----------------------- | ------------------------- | ----------- |
-| AMP_TYPE.TORCH | ✅ | ❌ | Model parameters, activation, gradients are downcast to fp16 during forward and backward propagation |
-| AMP_TYPE.APEX | ❌ | ❌ | More fine-grained, we can choose opt_level O0, O1, O2, O3 | 
-| AMP_TYPE.NAIVE | ✅ | ✅ | Model parameters, forward and backward operations are all downcast to fp16 |
+| AMP_TYPE.TORCH | ✅ | ❌ | 在前向和反向传播期间，模型参数、激活和梯度向下转换至fp16 |
+| AMP_TYPE.APEX | ❌ | ❌ | 更细粒度，我们可以选择 opt_level O0, O1, O2, O3 | 
+| AMP_TYPE.NAIVE | ✅ | ✅ | 模型参数、前向和反向操作，全都向下转换至fp16 |
 
-The first two rely on the original implementation of PyTorch (version 1.6 and above) and Nvidia Apex. 
-The last method is similar to Apex O2 level. 
-Among these methods, apex AMP is not compatible with tensor parallelism. 
-This is because that tensors are split across devices in tensor parallelism, thus, it is required to communicate among different processes to check if inf or nan occurs in the whole model weights. 
-We modified the torch amp implementation so that it is compatible with tensor parallelism now.
+前两个依赖于 PyTorch (1.6及以上) 和 Nvidia Apex 的原始实现。最后一种方法类似 Apex O2。在这些方法中，apex-AMP与张量并行不兼容。这是因为张量是以张量并行的方式在设备之间拆分的，因此，需要在不同的进程之间进行通信，以检查整个模型权重中是否出现inf或nan。我们修改了torch amp实现，使其现在与张量并行兼容。
 
-> ❌️ fp16 and zero configuration are not compatible
+> ❌️ fp16与ZeRO配置不兼容
 > 
-> ⚠️ Pipeline only support naive AMP currently
+> ⚠️ 流水并行目前仅支持naive amp
 
-We recommend you to use torch AMP as it generally gives better accuracy than naive AMP if no pipeline is used.
+我们建议使用torch AMP，因为在不使用流水并行时，它通常比naive AMP提供更好的准确性。
 
-## Table of Contents
+## 目录
 
-In this tutorial we will cover:
+在本教程中，我们将介绍:
 
-1. Amp introduction
-2. AMP in Colossal-AI
-3. Hands-on Practice
+1. Amp介绍
+2. Colossal-AI中的AMP
+3. 练习实例
 
-## AMP Introduction
+## AMP介绍
 
-Automatic Mixed Precision training is a mixture of FP16 and FP32 training. 
+自动混合精度训练是混合FP16和FP32训练。 
 
-Half-precision float point format (FP16) has lower arithmetic complexity and higher compute efficiency. 
-Besides, fp16 requires half of the storage needed by fp32 and saves memory & network bandwidth, which makes more memory
-available for large batch size and model size. 
+半精度浮点格式（FP16）具有较低的算法复杂度和较高的计算效率。此外，FP16仅需要FP32所需的一半存储空间，并节省了内存和网络带宽，从而为大batch size和大模型提供了更多内存。
 
-However, there are other operations, like reductions, which require the dynamic range of fp32 to avoid numeric overflow/underflow. That's the reason why we introduce automatic mixed precision, attempting to match each operation to its appropriate data type, which can reduce the memory footprint and augment training efficiency.
+然而，还有其他操作，如缩减，需要FP32的动态范围，以避免数值溢出/下溢。因此，我们引入自动混合精度，尝试将每个操作与其相应的数据类型相匹配，这可以减少内存占用并提高训练效率。
 
 <figure style={{textAlign: "center"}}>
 <img src="https://s2.loli.net/2022/01/28/URzLJ3MPeDQbtck.png"/>
-<figcaption>Illustration of an ordinary AMP (figure from <a href="https://arxiv.org/abs/2108.05818">PatrickStar paper</a>)</figcaption>
+<figcaption>AMP示意图 (图片来自 <a href="https://arxiv.org/abs/2108.05818">PatrickStar 论文</a>)</figcaption>
 </figure>
 
-## AMP in Colossal-AI
+## Colossal-AI中的AMP 
 
-We supported three AMP training methods and allowed the user to train with AMP with no code. You can just simply add `fp16`
-configuration in your configuration file to use AMP.
-
+我们支持三种AMP训练方法，并允许用户在没有改变代码的情况下使用AMP进行训练。只需在配置文件中添加'fp16'配置即可使用AMP。
  
 ```python
 from colossalai.amp import AMP_TYPE
 
-# use Torch AMP
+# 使用 Torch AMP
 fp16=dict(
     mode = AMP_TYPE.TORCH  
 )
 
-# use naive AMP
+# 使用 naive AMP
 fp16=dict(
     mode = AMP_TYPE.NAIVE  
 )
 
-# use Nvidia Apex AMP
+# 使用 Nvidia Apex AMP
 fp16=dict(
     mode = AMP_TYPE.APEX  
 )
 
 ```
 
-> These are the minimum configuration, full configuration are stated in the section later
+> 这些是最低配置，完整配置将在后面的部分中说明
 
-### AMP Modularity
+### AMP 模块化
 
-AMP module is designed to be completely modular and can be used independently. 
-If you wish to only use amp in your code base without `colossalai.initialize`, 
-you can use `colossalai.amp.convert_to_amp`.
+AMP模块设计为完全模块化，可以独立使用。如果你想在你的代码库中只使用AMP而不使用`colossalai.initialize`，你可以导入`colossalai.amp.convert_to_amp`。
 
 ```python
 from colossalai.amp import AMP_TYPE
 
-# exmaple of using torch amp
+# 使用torch amp的例子
 model, optimizer, criterion = colossalai.amp.convert_to_amp(model, 
                                                             optimizer, 
                                                             criterion,
                                                             AMP_TYPE.TORCH)
 ```
 
-### Torch AMP Configuration 
+### Torch AMP 配置 
 
 ```python
 from colossalai.amp import AMP_TYPE
@@ -116,7 +106,7 @@ from colossalai.amp import AMP_TYPE
 fp16=dict(
     mode=AMP_TYPE.TORCH,
 
-    # below are default values for grad scaler
+    # 下列是grad scaler的默认值
     init_scale=2.**16,
     growth_factor=2.0,
     backoff_factor=0.5,
@@ -125,18 +115,17 @@ fp16=dict(
 )
 ```
 
-With optional arguments: 
-- init_scale(float, optional, default=2.**16): Initial scale factor
-- growth_factor(float, optional, default=2.0): Factor by which the scale is multiplied during `update` if no inf/NaN gradients occur for ``growth_interval`` consecutive iterations.
-- backoff_factor(float, optional, default=0.5): Factor by which the scale is multiplied during `update` if inf/NaN gradients occur in an iteration.
-- growth_interval(int, optional, default=2000): Number of consecutive iterations without inf/NaN gradients that must occur for the scale to be multiplied by ``growth_factor``.
-- enabled(bool, optional, default=True): If ``False``, disables gradient scaling. `step` simply invokes the underlying ``optimizer.step()``, and other methods become no-ops.
+可选参数: 
+- init_scale(float, optional, default=2.**16): 初始缩放因子；
+- growth_factor(float, optional, default=2.0): 如果在``growth_interval``连续迭代过程中没有出现inf/NaN梯度，则在`update`中乘以比例系数；
+- backoff_factor(float, optional, default=0.5): 如果在迭代中出现inf/NaN梯度，则在`update`中乘以比例系数；
+- growth_interval(int, optional, default=2000): 在指定次数的连续迭代中，若没有出现inf/NaN梯度，则乘以``growth_factor``.
+- enabled(bool, optional, default=True):  ``False``则使梯度缩放无效，`step` 仅调用底层的 ``optimizer.step()``, 其他方法成为空操作。
 
-### Apex AMP Configuration
+### Apex AMP 配置
 
-For this mode, we rely on the Apex implementation for mixed precision training. 
-We support this plugin because it allows for finer control on the granularity of mixed precision. 
-For example, O2 level (optimization level 2) will keep batch normalization in fp32. 
+对于这种模式，我们依靠Apex实现混合精度训练。我们支持这个插件，因为它允许对混合精度的粒度进行更精细的控制。
+例如, O2 水平 (优化器水平2) 将保持 batch normalization 为 FP32. 
 
 If you look for more details, please refer to [Apex Documentation](https://nvidia.github.io/apex/).
 
@@ -146,7 +135,7 @@ from colossalai.amp import AMP_TYPE
 fp16 = dict(
     mode=AMP_TYPE.APEX,
     
-    # below are the default values
+    # 下列是默认值
     enabled=True, 
     opt_level='O1', 
     cast_model_type=None, 
@@ -162,41 +151,35 @@ fp16 = dict(
 )
 ```
 
-Parameters: 
-- enabled(bool, optional, default=True): If False, renders all Amp calls no-ops, so your script should run as if Amp were not present.
+参数: 
+- enabled(bool, optional, default=True): False会使所有AMP调用成为空操作, 程序将会像没有使用AMP一样运行。
 
-- opt_level(str, optional, default="O1" ): Pure or mixed precision optimization level. 
-Accepted values are “O0”, “O1”, “O2”, and “O3”, explained in detail above.
+- opt_level(str, optional, default="O1" ): 纯精度或混合精度优化水平。可选值 “O0”, “O1”, “O2”, and “O3”, 详细解释见上方Apex AMP文档。
 
-- num_losses(int, optional, default=1): Option to tell Amp in advance how many losses/backward passes you plan to use. 
-When used in conjunction with the loss_id argument to `amp.scale_loss`, enables Amp to use a different loss scale per 
-loss/backward pass, which can improve stability. If num_losses is left to 1, Amp will still support multiple 
-losses/backward passes, but use a single global loss scale for all of them.
+- num_losses(int, optional, default=1): 选择提前告知AMP您计划使用多少次损失/反向传递。 
+当`amp.scale_loss`与loss_id参数一起使用时，使AMP在每次损失/反向传递时使用不同的损失比例，这可以提高稳定性。如果num_losses被设置为1，AMP仍支持多次损失/反向传递，但对他们都使用同一个全局损失比例。
 
-- verbosity(int, default=1): Set to 0 to suppress Amp-related output.
+- verbosity(int, default=1): 设置为0抑制AMP相关输出。
 
-- min_loss_scale(float, default=None): Sets a floor for the loss scale values that can be chosen by dynamic loss scaling. 
-The default value of None means that no floor is imposed. If dynamic loss scaling is not used, min_loss_scale is ignored.
+- min_loss_scale(float, default=None): 为可通过动态损耗比例选择的损耗比例值设置下限。
+默认值“None”意味着不设置任何下限。如果不使用动态损耗比例，则忽略min_loss_scale 。
 
-- max_loss_scale(float, default=2.**24 ): Sets a ceiling for the loss scale values that can be chosen by dynamic loss 
-scaling. If dynamic loss scaling is not used, max_loss_scale is ignored.
+- max_loss_scale(float, default=2.**24 ): 为可通过动态损耗比例选择的损耗比例值设置上限。如果不使用动态损耗比例，则max_loss_scale被忽略.
 
-Currently, the under-the-hood properties that govern pure or mixed precision training are the following: 
+目前，管理纯精度或混合精度训练的幕后属性有以下几种: 
 cast_model_type, patch_torch_functions, keep_batchnorm_fp32, master_weights, loss_scale. 
-They are optional properties override once opt_level is determined
+一旦opt_level被确定，它们是可选的可覆盖属性
 
-- cast_model_type: Casts your model’s parameters and buffers to the desired type.
-- patch_torch_functions: Patch all Torch functions and Tensor methods to perform Tensor Core-friendly ops like GEMMs and convolutions in FP16, and any ops that benefit from FP32 precision in FP32.
-- keep_batchnorm_fp32: To enhance precision and enable cudnn batchnorm (which improves performance), it’s often beneficial to keep batchnorm weights in FP32 even if the rest of the model is FP16.
-- master_weights: Maintain FP32 master weights to accompany any FP16 model weights. FP32 master weights are stepped by the optimizer to enhance precision and capture small gradients.
-- loss_scale: If loss_scale is a float value, use this value as the static (fixed) loss scale. If loss_scale is the string "dynamic", adaptively adjust the loss scale over time. Dynamic loss scale adjustments are performed by Amp automatically.
+- cast_model_type: 将模型的参数和缓冲区强制转换为所需的类型。
+- patch_torch_functions: 补全所有的Torch函数和张量方法，以便在FP16中执行张量核心友好的操作，如GEMMs和卷积，以及在FP32中执行任何受益于FP32精度的操作。
+- keep_batchnorm_fp32: 为了提高精度并启用 cudnn batchnorm (这会提高性能),在FP32中保留batchnorm权重通常是有益的，即使模型的其余部分是FP16。
+- master_weights: 保持FP32主权重以配合任何FP16模型权重. FP32主权重由优化器分级，以提高精度和捕捉小梯度。
+- loss_scale: 如果loss_scale是一个浮点数，则使用这个值作为静态（固定）的损失比例。如果loss_scale是字符串 "dynamic"，则随着时间的推移自适应地调整损失比例。动态损失比例调整由AMP自动执行。
 
 
-### Naive AMP Configuration
+### Naive AMP 配置
 
-In Naive AMP mode, we achieved mixed precision training while maintaining compatibility with complex tensor and pipeline parallelism. 
-This AMP mode will cast all operations into fp16.
-The following code block shows the `config.py` file for this mode.
+在Naive AMP模式中, 我们实现了混合精度训练，同时保持了与复杂张量和流水并行的兼容性。该AMP模式将所有操作转为FP16。下列代码块展示了该模式的`config.py`。
 
 ```python
 from colossalai.amp import AMP_TYPE
@@ -215,29 +198,25 @@ fp16 = dict(
 )
 ```
 
-The default parameters of naive amp:
-- log_num_zeros_in_grad(bool): return number of zeros in the gradients.
-- initial_scale(int): initial scale of gradient scaler
-- growth_factor(int): the growth rate of loss scale
-- backoff_factor(float): the decrease rate of loss scale
-- hysterisis(int): delay shift in dynamic loss scaling
-- max_scale(int): maximum loss scale allowed
-- verbose(bool): if set to `True`, will print debug info
+Naive AMP的默认参数:
+- log_num_zeros_in_grad(bool): 返回0值梯度的个数.
+- initial_scale(int): gradient scaler的初始值
+- growth_factor(int): loss scale的增长率
+- backoff_factor(float): loss scale的下降率
+- hysterisis(int): 动态loss scaling的延迟偏移
+- max_scale(int): loss scale的最大允许值
+- verbose(bool): 如果被设为`True`,将打印调试信息
 
-When using `colossalai.initialize`, you are required to first instantiate a model, an optimizer and a criterion. 
-The output model is converted to AMP model of smaller memory consumption.
-If your input model is already too large to fit in a GPU, please instantiate your model weights in `dtype=torch.float16`. 
-Otherwise, try smaller models or checkout more parallelization training techniques!
+当使用`colossalai.initialize`时, 首先需要实例化一个模型、一个优化器和一个标准。将输出模型转换为内存消耗较小的AMP模型。如果您的输入模型已经太大，无法放置在GPU中，请使用`dtype=torch.float16`实例化你的模型。或者请尝试更小的模型，或尝试更多的并行化训练技术！
 
+## 实例
 
-## Hands-on Practice
+我们提供了一个 [运行实例](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/amp)
+展现如何在Colossal-AI使用AMP。在该例程中，我们使用Torch AMP, 但提供的配置文件也适用于所有AMP模式.
 
-We provide a [runnable example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/amp) which demonstrates
-the use of AMP with Colossal-AI. In this practice, we will use Torch AMP as an example, but do note that config files are provided for all AMP modes.
+### 步骤 1. 创建配置文件
 
-### Step 1. Create a config file
-
-Create a `config.py` and add the `fp16` configuration.
+创建一个`config.py`文件并添加`fp16`配置.
 
 ```python
 # in config.py
@@ -254,10 +233,9 @@ fp16 = dict(
 clip_grad_norm = 1.0
 ```
 
-### Step 2. Import libraries in train_with_engine.py
+### 步骤 2. 在train_with_engine.py导入相关库
 
-Create a `train_with_engine.py` and import the necessary dependencies. Remember to install `scipy` and `timm` by running 
-`pip install timm scipy`.
+创建`train_with_engine.py`并导入必要依赖. 请记得通过命令`pip install timm scipy`安装`scipy`和`timm`。
 
 ```python
 import os
@@ -274,13 +252,13 @@ from torchvision import datasets, transforms
 
 ```
 
-### Step 3. Initialize Distributed Environment
+### 步骤 3. 初始化分布式环境
 
-We then need to initialize distributed environment. For demo purpose, we uses `launch_from_torch`. You can refer to [Launch Colossal-AI](../basics/launch_colossalai.md)
-for other initialization methods.
+我们需要初始化分布式环境。为了快速演示，我们使用`launch_from_torch`。你可以参考 [Launch Colossal-AI](../basics/launch_colossalai.md)
+使用其他初始化方法。
 
 ```python
-# initialize distributed setting
+# 初始化分布式设置
 parser = colossalai.get_default_parser()
 args = parser.parse_args()
 
@@ -289,11 +267,10 @@ colossalai.launch_from_torch(config=args.config)
 
 ```
 
-### Step 4. Create training components
+### 步骤 4. 创建训练组件
 
-Build your model, optimizer, loss function, lr scheduler and dataloaders. Note that the root path of the dataset is 
-obtained from the environment varialbe `DATA`. You may `export DATA=/path/to/data` or change `Path(os.environ['DATA'])` 
-to a path on your machine. Data will be automatically downloaded to the root path.
+构建你的模型、优化器、损失函数、学习率调整器和数据加载器。注意数据集的路径从环境变量`DATA`获得。你可以通过 `export DATA=/path/to/data` 或 `Path(os.environ['DATA'])` 
+在你的机器上设置路径。数据将会被自动下载到该路径。
 
 ```python
 # build model
@@ -330,9 +307,9 @@ to a path on your machine. Data will be automatically downloaded to the root pat
     lr_scheduler = LinearWarmupLR(optimizer, warmup_steps=50, total_steps=gpc.config.NUM_EPOCHS)
 ```
 
-### Step 5. Inject AMP Feature
+### 步骤 5. 插入 AMP 
 
-Call `colossalai.initialize` to convert the training components to be running with FP16.
+调用 `colossalai.initialize` 将所有训练组件转为为FP16模式.
 
 ```python
 engine, train_dataloader, _, _ = colossalai.initialize(
@@ -340,9 +317,9 @@ engine, train_dataloader, _, _ = colossalai.initialize(
     )
 ```
 
-### Step 6. Train with Engine
+### 步骤 6. 使用Engine训练
 
-Use engine in a normal training loops.
+使用Engine构建一个普通的训练循环
 
 ```python
 engine.train()
@@ -358,9 +335,9 @@ for epoch in range(gpc.config.NUM_EPOCHS):
         lr_scheduler.step()
 ```
 
-### Step 7. Invoke Training Scripts
+### 步骤 7. 启动训练脚本
 
-Use the following command to start the training scripts. You can change `--nproc_per_node` to use a different number of GPUs.
+使用下列命令启动训练脚本，你可以改变 `--nproc_per_node` 以使用不同数量的GPU.
 
 ```python
 python -m torch.distributed.launch --nproc_per_node 4 --master_addr localhost --master_port 29500 train_with_engine.py --config config/config_AMP_torch.py

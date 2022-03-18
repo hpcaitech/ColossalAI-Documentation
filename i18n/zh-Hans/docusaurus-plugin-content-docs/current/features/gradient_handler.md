@@ -1,31 +1,28 @@
 # 梯度Handler
 
-Author: Shenggui Li, Yongbin Li
+作者: Shenggui Li, Yongbin Li
 
-**Prerequisite:**
-- [Define Your Configuration](../basics/define_your_config.md)
-- [Use Engine and Trainer in Training](../basics/engine_trainer.md)
+**前置教程:**
+- [定义配置](../basics/define_your_config.md)
+- [在训练中使用Engine和Trainer](../basics/engine_trainer.md)
 
-**Example Code**
+**示例代码**
 - [ColossalAI-Examples Gradient Handler](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/gradient_handler)
 
 ## 引言
 
-In distributed training, gradient synchronization is required at the end of each iteration. This is important because we 
-need to make sure the parameters are updated with the same gradients in different machines so that the resulting parameters
-are the same. This is often seen in data parallel as the model is replicated across data parallel ranks.
+在分布式训练中，每次迭代结束时都需要梯度同步。这很重要，因为我们需要确保在不同的机器中使用相同的梯度更新参数，以便生成的参数都一样。这通常在数据并行中看到，因为在数据并行中的模型是直接复制的。
 
-In Colossal-AI, we provide an interface for users to customize how they want to handle the synchronization. This brings 
-flexibility in cases such as implementing a new parallelism method.
+在Colossal-AI中，我们为用户提供了一个接口来定制他们想要如何处理同步。这为实现新的并行方法等情况带来了灵活性。
 
-When gradient handlers are used, PyTorch `DistributedDataParallel` will not be used as it will synchronize automatically.
+当梯度Handler被使用时, PyTorch的 `DistributedDataParallel` 将不再被使用，因为它会自动同步梯度.
 
-## Customize Your Gradient Handlers
+## 定制你的梯度Handler
 
-To implement a customized gradient handler, you need to follow these steps.
-1. inherit `BaseGradientHandler` in Colossal-AI.
-2. register the gradient handler into the `GRADIENT_HANDLER` registry
-3. implement `handle_gradient` method.
+要实现定制的梯度Handler，需要遵循以下步骤。
+1. 继承Colossal-AI中的 `BaseGradientHandler`
+2. 将梯度Handler注册进 `GRADIENT_HANDLER` 
+3. 实现 `handle_gradient` 
 
 ```python
 from colossalai.registry import GRADIENT_HANDLER
@@ -42,21 +39,20 @@ class MyGradientHandler(BaseGradientHandler):
 ```
 
 
-## Usage
+## 使用
 
-To use a gradient handler, you need to specify your gradient handler in the config file. The gradient handler
-will be automatically built and attached to the engine.
+要使用梯度Handler，需要在配置文件中指定梯度Handler。梯度Handler将自动构建并连接到Engine。
 
 ```python
 gradient_handler = [dict(type='MyGradientHandler')]
 ```
 
 
-### Hands-On Practice
+### 实例
 
-We provide a [runnable example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/gradient_handler)
-to demonstrate the use of gradient handler. In this example, we used `DataParallelGradientHandler` instead of PyTorch
-`DistributedDataParallel` for data parallel training.
+我们提供了一个 [运行实例](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/gradient_handler)
+展现梯度Handler的使用. 在这个例子中，我们使用 `DataParallelGradientHandler` 而不是PyTorch的
+`DistributedDataParallel` 实现数据并行.
 
 ```shell
 python -m torch.distributed.launch --nproc_per_node 4 --master_addr localhost --master_port 29500  train_with_engine.py
