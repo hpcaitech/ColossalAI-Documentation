@@ -241,3 +241,5 @@ def main():
         logger.info(
             f'Step [{n+1}/{NUM_STEPS}] GPU memory usage: {torch.cuda.memory_allocated() / 1024**2:.2f} MB', ranks=[0])
 ```
+
+The complete example can be found on [ZeRO example](https://TODO).
