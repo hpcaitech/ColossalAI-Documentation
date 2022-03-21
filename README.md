@@ -62,19 +62,18 @@ If you want to know more about versioning configuration, please go to [Docusauru
 
 ## Internationalization
 
-If you want to enable internationalization, you must copy your docs to i18n folder:
 ```text
 ├── docs    # this is for development
 ├── versioned_docs  # this is for users to see
 ├──── version-v0.0.2
 ├── i18n
-├──── en
+├──── zh-Hans
 ├────── docusaurus-plugin-content-docs
-├──────── current # copy en docs to this folder
-├──────── version-v0.0.2 # copy en-v0.0.2 docs to this folder
+├──────── current # latest zh-Hans docs, same dir structure as docs
+├──────── version-v0.0.2 # v0.0.2 zh-Hans docs, same dir structure as versioned_docs/version-v0.0.2
 ```
 
-After that, you should update sidebars:
+After releasing, you should update sidebars:
 ```shell
 yarn run docusaurus write-translations --locale <locale>
 ```
