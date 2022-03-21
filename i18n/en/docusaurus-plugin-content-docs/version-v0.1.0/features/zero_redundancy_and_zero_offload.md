@@ -77,11 +77,11 @@ with ZeroInitContext(convert_fp16=True,
     model = torch.nn.Linear(2, 2)
 ```
 
-You can see the exact usage of `ZeroInitContext` in [API Referent](https://TODO)
+You can see the exact usage of `ZeroInitContext` in [API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.init_ctx.init_context.html)
 
 First, we will give you a configuration template to help you configure ZeRO when using high-level API. Then, we will give you an example of using a low-level API. 
 
-> We now provide `from colossalai.nn.optimizer.CPUAdam`, which is faster than `torch.optim.Adam` when using CPU offload. For more details, see [API Referent](https://TODO).
+> We now provide `from colossalai.nn.optimizer.CPUAdam`, which is faster than `torch.optim.Adam` when using CPU offload. For more details, see [API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.nn.optimizer.cpu_adam.html).
 
 ## Configure ZeRO with high-level API
 
@@ -114,7 +114,7 @@ zero = dict(
 )
 ```
 
-`model_config` and `optimizer_config` are keyword arguments of `ShardedModelV2` and `ShardedOptimizerV2` respectively. For more details of these arguments, see [API Referent](https://TODO).
+`model_config` and `optimizer_config` are keyword arguments of `ShardedModelV2` and `ShardedOptimizerV2` respectively. For more details of these arguments, see [ShardedModelV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_model.sharded_model_v2.html) and [ShardedOptimizerV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_optim.sharded_optim_v2.html).
 
 You can initialize your model in this way:
 
@@ -132,7 +132,7 @@ with ZeroInitContext(convert_fp16=True,
 
 Then you can use `Engine` as usual.
 
-Here is an example of training GPT with high-level API: [GPT example](https://TODO).
+Here is an example of training GPT with high-level API: [GPT example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt).
 
 ## Train GPT with low-level API
 
@@ -165,7 +165,7 @@ class GPTLMModel(nn.Module):
         self.model = GPT2LMHeadModel(GPT2Config(n_embd=hidden_size, n_layer=num_layers,
                                      n_head=num_attention_heads, n_positions=max_seq_len, n_ctx=max_seq_len, vocab_size=vocab_size))
         if checkpoint:
-            self.model.transformer.gradient_checkpointing = True
+            self.model.gradient_checkpointing_enable()
 
     def forward(self, input_ids, attention_mask):
         # Only return lm_logits
@@ -244,5 +244,5 @@ def main():
             f'Step [{n+1}/{NUM_STEPS}] GPU memory usage: {torch.cuda.memory_allocated() / 1024**2:.2f} MB', ranks=[0])
 ```
 
-The complete example can be found on [ZeRO example](https://TODO).
+The complete example can be found on [ZeRO example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/zero).
 
