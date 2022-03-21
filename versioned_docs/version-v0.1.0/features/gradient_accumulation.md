@@ -14,7 +14,7 @@ Author: Shenggui Li
 Gradient accumulation is a common way to enlarge your batch size for training. 
 When training large-scale models, memory can easily become the bottleneck and the batch size can be very small, (e.g. 2), 
 leading to unsatisfactory convergence. Gradient accumulation works by adding up the gradients calculated in multiple iterations,
-and only update the parameters in the last iteration.
+and only update the parameters in the preset iteration.
 
 ## Usage
 

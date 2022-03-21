@@ -95,7 +95,7 @@ fp16=dict(
 ### AMP Modularity
 
 AMP module is designed to be completely modular and can be used independently. 
-If you wish to only use amp in your code base without `colossalai.initialize`, 
+If you wish to only use AMP in your code base without `colossalai.initialize`, 
 you can use `colossalai.amp.convert_to_amp`.
 
 ```python
@@ -166,7 +166,7 @@ Parameters:
 - enabled(bool, optional, default=True): If False, renders all Amp calls no-ops, so your script should run as if Amp were not present.
 
 - opt_level(str, optional, default="O1" ): Pure or mixed precision optimization level. 
-Accepted values are “O0”, “O1”, “O2”, and “O3”, explained in detail above.
+Accepted values are “O0”, “O1”, “O2”, and “O3”, explained in detail above Apex AMP Documentation.
 
 - num_losses(int, optional, default=1): Option to tell Amp in advance how many losses/backward passes you plan to use. 
 When used in conjunction with the loss_id argument to `amp.scale_loss`, enables Amp to use a different loss scale per 
@@ -215,7 +215,7 @@ fp16 = dict(
 )
 ```
 
-The default parameters of naive amp:
+The default parameters of Naive AMP:
 - log_num_zeros_in_grad(bool): return number of zeros in the gradients.
 - initial_scale(int): initial scale of gradient scaler
 - growth_factor(int): the growth rate of loss scale
