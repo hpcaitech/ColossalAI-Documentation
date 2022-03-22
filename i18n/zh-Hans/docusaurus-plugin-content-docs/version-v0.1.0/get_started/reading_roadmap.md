@@ -1,19 +1,10 @@
-# Reading Roadmap
+# 阅读指引
 
-Colossal-AI provides a collection of parallel training components for you. We aim to support you with your development
-of distributed deep learning models just like how you write single-GPU deep learning models. ColossalAI provides easy-to-use
-APIs to help you kickstart your training process. To better how ColossalAI works, we recommend you to read this documentation 
-in the following order.
+Colossal-AI为您提供了一系列的并行训练组件。我们的目标是支持您开发分布式深度学习模型，就像您编写单GPU深度学习模型一样简单。ColossalAI提供了易于使用的API来帮助您启动您的训练过程。为了更好地了解ColossalAI的工作原理，我们建议您按照以下顺序阅读本文档。
 
-- If you are not familiar with distributed system or have never used Colossal-AI, you should first jump into the `Concepts`
-section to get a sense of what we are trying to achieve. This section can provide you with some background knowledge on
-distributed training as well.
-- Next, you can follow the `basics` tutorials. This section will cover the details about how to use Colossal-AI. 
-- Afterwards, you can try out the features provided in Colossal-AI by reading `features` section. We will provide a codebase for each tutorial. These tutorials will cover the 
-basic usage of Colossal-AI to realize simple functions such as data parallel and mixed precision training.
-- Lastly, if you wish to apply more complicated techniques such as how to run hybrid parallel on GPT-3,  the 
-`advanced tutorials` section is the place to go!
+- 如果您不熟悉分布式系统，或者没有使用过Colossal-AI，您可以先浏览`概念`部分，了解我们要实现的目标同时掌握一些关于分布式训练的背景知识。
+- 接下来，您可以按照`基础教程`进行学习。该节将介绍关于如何使用Colossal-AI的细节。
+- 这时候，您就可以小试牛刀了！`功能` 部分将帮助您尝试如何使用Colossal-AI为您的模型训练进行加速。我们将为每个教程提供一个代码库。这些教程将涵盖Colossal-AI的基本用法，以实现简单的功能，如数据并行和混合精度训练。
+- 最后，如果您希望应用更高超的技术，比如，如何在GPT-3上运行混合并行，快来`高级教程`部分学习如何搭建您自己的模型吧！
 
-**We always welcome suggestions and discussions from the community, and we would be more than willing to help you if you
-encounter any issue. You can raise an [issue](https://github.com/hpcaitech/ColossalAI/issues) here or create a discussion 
-topic in the [forum](https://github.com/hpcaitech/ColossalAI/discussions).**
+**我们始终欢迎社区的建议和讨论，如果您遇到任何问题，我们将非常愿意帮助您。您可以在GitHub 提 [issue](https://github.com/hpcaitech/ColossalAI/issues) ，或在[论坛](https://github.com/hpcaitech/ColossalAI/discussions)上创建一个讨论主题。**

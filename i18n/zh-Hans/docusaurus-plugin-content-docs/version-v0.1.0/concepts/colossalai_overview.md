@@ -1,36 +1,36 @@
-# Colossal-AI Overview
+# Colossal-AI 总览
 
-Author: Shenggui Li
+作者: Shenggui Li
 
-## About Colossal-AI
+## 关于 Colossal-AI
 
-With the development of deep learning model size, it is important to shift to a new training paradigm. The traditional training method with no parallelism and optimization became a thing of the past and new training methods are the key to make training large-scale models efficient and cost-effective.
+随着深度学习模型规模的发展，向新的训练模式转变是非常重要的。没有并行和优化的传统训练方法将成为过去，新的训练方法是使训练大规模模型高效和节省成本的关键。
 
-Colossal-AI is designed to be a unfied system to provide an integrated set of training skills and utilities to the user. You can find the common training utilities such as mixed precision training and gradient accumulation. Besides, we provide an array of parallelism including data, tensor and pipeline parallelism. We optimize tensor parallelism with different multi-dimensional distributed matrix-matrix multiplication algorithm. We also provided different pipeline parallelism methods to allow the user to scale their model across nodes efficiently. More advanced features such as offloading can be found in this tutorial documentation in detail as well.
+Colossal-AI 是一个集成的系统，为用户提供一套综合的训练方法。您可以找到常见的训练方法，如混合精度训练和梯度累积。此外，我们提供了一系列的并行技术，包括数据并行、张量并行和流水线并行。我们通过不同的多维分布式矩阵乘法算法来优化张量并行。我们还提供了不同的流水线并行方法，使用户能够有效地跨节点扩展他们的模型。更多的高级功能，如卸载，也可以在这个教程文档中找到详细的内容。
 
-## General Usage
+## Colossal-AI 的使用
 
-We aim to make Colossal-AI easy to use and non-instrusive to user code. There is a simple general workflow if you want to use Colossal-AI.
+我们的目标是使 Colossal-AI 易于使用，并且对用户的代码不产生干扰。如果您想使用Colossal-AI，这里有一个简单的一般工作流程。
 
 <figure style={{textAlign: "center"}}>
 <img src="https://s2.loli.net/2022/01/28/ZK7ICWzbMsVuJof.png"/>
 <figcaption>Workflow</figcaption>
 </figure>
 
-1. Prepare a configiguration file where specifies the features you want to use and your parameters.
-2. Initialize distributed backend with `colossalai.launch`
-3. Inject the training features into your training components (e.g. model, optimizer) with `colossalai.initialize`.
-4. Run training and testing 
+1. 准备一个配置文件，指定您要使用的功能和参数。
+2. 用 `colossalai.launch` 初始化分布式后端。
+3. 用 `colossalai.initialize` 将训练特征注入您的训练组件（如模型、优化器）中。
+4. 进行训练和测试. 
 
-We will cover the whole workflow in the `basic tutorials` section.
+我们将在`基本教程`部分介绍整个工作流程。
 
-## Future Development
+## 未来计划
 
-The Colossal-AI system will be expanded to include more training skills, these new developments may include but are not limited to:
+Colossal-AI 系统将会进一步拓展和优化，包括但不限于:
 
-1. optimization of distributed operations
-2. optimization of training on heterogenous system
-3. implementation of training utilities to reduce model size and speed up training while preserving model performance
-4. expansion of existing parallelism methods
+1. 分布式操作的优化
+2. 异构系统训练的优化
+3. 从模型大小的维度切入，提升训练速度并维持精度
+4. 拓展现有的并行方法
 
-We welcome ideas and contribution from the community and you can post your idea for future development in our forum.
+**我们始终欢迎社区的建议和讨论，如果您遇到任何问题，我们将非常愿意帮助您。您可以在GitHub 提 [issue](https://github.com/hpcaitech/ColossalAI/issues) ，或在[论坛](https://github.com/hpcaitech/ColossalAI/discussions)上创建一个讨论主题。**

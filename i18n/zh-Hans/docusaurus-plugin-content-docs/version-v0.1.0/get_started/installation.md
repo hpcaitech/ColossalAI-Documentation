@@ -1,25 +1,25 @@
-# Setup
+# 安装
 
-## PyPI
+## 使用PyPI
 
 ```bash
 pip install colossalai
 ```
-This command will install CUDA extension if your have installed CUDA, NVCC and torch.
+如果您已经安装了 CUDA、NVCC 和 Torch，该命令将安装 CUDA 扩展。
 
-If you don't want to install CUDA extension, you should add `--global-option="--no_cuda_ext"`, like:
+如果您不想安装 CUDA 扩展，您可以添加 `--global-option="--no_cuda_ext"`
 ```bash
 pip install colossalai --global-option="--no_cuda_ext"
 ```
 
-If you want to use `ZeRO`, you can run:
+如果您想使用 `ZeRO`，您可以运行:
 ```bash
 pip install colossalai[zero]
 ```
 
-## Install From Source
+## 从源安装
 
-> The documentation will be in line with the main branch of the repository. Feel free to raise an issue if you encounter any problem. :)
+> 此文档将与版本库的主分支保持一致。如果您遇到任何问题，欢迎给我们提 issue :)
 
 ```shell
 git clone https://github.com/hpcaitech/ColossalAI.git
@@ -31,7 +31,7 @@ pip install -r requirements/requirements.txt
 pip install .
 ```
 
-If you don't want to install and enable CUDA kernel fusion (compulsory installation when using fused optimizer):
+如果您不想安装和启用 CUDA 内核融合（使用融合优化器时强制安装）：
 
 ```shell
 pip install --global-option="--no_cuda_ext" .
