@@ -1,44 +1,28 @@
-# Quick Demo
+# 快速演示
 
-Colossal-AI is an integrated large-scale deep learning system with efficient parallelization techniques. The system can
-accelerate model training on distributed systems with multiple GPUs by applying parallelization techniques. The system
-can also run on systems with only one GPU. Quick demos showing how to use Colossal-AI are given below.
+Colossal-AI 是一个集成的大规模深度学习系统，具有高效的并行化技术。该系统可以通过应用并行化技术在具有多个 GPU 的分布式系统上加速模型训练。该系统也可以在只有一个 GPU 的系统上运行。以下是展示如何使用 Colossal-AI 的 Quick demos。
 
-## Single GPU
+## 单 GPU
 
-Colossal-AI can be used to train deep learning models on systems with only one GPU and achieve baseline
-performances. We provided an example to [train ResNet on CIFAR10 dataset](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/image/resnet) 
-with only one GPU. You can find the example in [ColossalAI-Examples](https://github.com/hpcaitech/ColossalAI-Examples). 
-Detailed instructions can be found in its `README.md`.
+Colossal-AI 可以用在只有一个 GPU 的系统上训练深度学习模型，并达到 baseline 的性能。 我们提供了一个 [在CIFAR10数据集上训练ResNet](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/image/resnet) 的例子，该例子只需要一个 GPU。
+您可以在 [ColossalAI-Examples](https://github.com/hpcaitech/ColossalAI-Examples) 中获取该例子。详细说明可以在其 `README.md` 中获取。
 
-## Multiple GPUs
+## 多 GPU
 
-Colossal-AI can be used to train deep learning models on distributed systems with multiple GPUs and accelerate the
-training process drastically by applying efficient parallelization techniques. When we have several parallelism for you
-to try out.
+Colossal-AI 可用于在具有多个 GPU 的分布式系统上训练深度学习模型，并通过应用高效的并行化技术大幅加速训练过程。我们提供了多种并行化技术供您尝试。
 
-#### 1. data parallel
+#### 1. 数据并行
 
-You can use the same [ResNet example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/image/resnet) as the 
-single-GPU demo above. By setting `--nproc_per_node` to be the number of GPUs you have on your machine, the example
-is turned into a data parallel example.
+您可以使用与上述单 GPU 演示相同的 [ResNet例子](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/image/resnet)。 通过设置 `--nproc_per_node` 为您机器上的 GPU 数量，您就能把数据并行应用在您的例子上了。
 
-#### 2. hybrid parallel
+#### 2. 混合并行
 
-Hybrid parallel includes data, tensor, and pipeline parallelism. In Colossal-AI, we support different types of tensor 
-parallelism (i.e. 1D, 2D, 2.5D and 3D). You can switch between different tensor parallelism by simply changing the configuration
-in the `config.py`. You can follow the `README.md` for more details.
+混合并行包括数据、张量和流水线并行。在 Colossal-AI 中，我们支持不同类型的张量并行（即 1D、2D、2.5D 和 3D）。您可以通过简单地改变 `config.py` 中的配置在不同的张量并行之间切换。您也可以从`README.md`了解更多细节。
 
-#### 3. MoE parallel
+#### 3. MoE并行
 
-We provided [an example of WideNet](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/image/widenet) to demonstrate
-MoE parallelism. WideNet uses mixture of experts (MoE) to achieve better performance. More details can be found in 
-[Tutorial: Integrate Mixture-of-Experts Into Your Model](../advanced_tutorials/integrate_mixture_of_experts_into_your_model.md)
+我们提供了一个 [WideNet例子](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/image/widenet) 来验证 MoE 的并行性。 WideNet 使用 Mixture of Experts（MoE）来实现更好的性能。更多的细节可以在我们的教程中获取：[教会您如何把Mixture of Experts整合到模型中](../advanced_tutorials/integrate_mixture_of_experts_into_your_model.md)。
 
-#### 4. sequence parallel
+#### 4. 序列并行
 
-Sequence parallel is designed to tackle memory efficiency and sequence length limit problems in NLP tasks. We provided
-[an example of BERT](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/bert/sequene_parallel) in 
-[ColossalAI-Examples](https://github.com/hpcaitech/ColossalAI-Examples). You can follow the `README.md` to execute the code.
-
-
+序列并行是为了解决NLP任务中的内存效率和序列长度限制问题。 我们在 [ColossalAI-Examples](https://github.com/hpcaitech/ColossalAI-Examples) 中提供了一个 [BERT例子](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/bert/sequene_parallel)。您可以按照 `README.md` 来执行代码。
