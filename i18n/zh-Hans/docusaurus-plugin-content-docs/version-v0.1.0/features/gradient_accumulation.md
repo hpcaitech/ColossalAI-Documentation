@@ -3,7 +3,7 @@
 作者: Shenggui Li, Yongbin Li
 
 **前置教程:**
-- [定义配置](../basics/define_your_config.md)
+- [定义配置文件](../basics/define_your_config.md)
 - [在训练中使用Engine和Trainer](../basics/engine_trainer.md)
 
 **示例代码**
@@ -11,11 +11,11 @@
 
 ## 引言
 
-梯度累积是一种常见的增大训练batch size的方式。 在训练大模型时，内存经常会成为瓶颈，并且batch size通常会很小（如2），这导致收敛性无法保证。梯度累积将多次迭代的梯度累加，并仅在达到预设迭代次数时更新参数。
+梯度累积是一种常见的增大训练 batch size 的方式。 在训练大模型时，内存经常会成为瓶颈，并且 batch size 通常会很小（如2），这导致收敛性无法保证。梯度累积将多次迭代的梯度累加，并仅在达到预设迭代次数时更新参数。
 
 ## 使用
 
-在Colossal-AI中使用梯度累积非常简单，仅需将下列配置添加进config文件。其中，整数值代表期望梯度累积的次数。
+在 Colossal-AI 中使用梯度累积非常简单，仅需将下列配置添加进 config 文件。其中，整数值代表期望梯度累积的次数。
 
 ```python
 gradient_accumulation = <int>

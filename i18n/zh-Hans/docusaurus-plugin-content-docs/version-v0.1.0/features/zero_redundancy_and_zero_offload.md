@@ -1,6 +1,6 @@
-# Zero Redundancy Optimizer and Zero Offload
+# 零冗余优化器 (ZeRO) 和 ZeRO Offload
 
-Author: Zhujie, Shenggui Li, Hongxin Liu
+Author: Zhujie, Shenggui Li, Hongxin Liu, Yongbin Li
 
 **Prerequisite:**
 - [Define Your Configuration](../basics/define_your_config.md)
@@ -15,58 +15,57 @@ Author: Zhujie, Shenggui Li, Hongxin Liu
 - [ZeRO-Infinity: Breaking the GPU Memory Wall for Extreme Scale Deep Learning](https://arxiv.org/abs/2104.07857)
 - [PatrickStar: Parallel Training of Pre-trained Models via Chunk-based Memory Management](https://arxiv.org/abs/2108.05818)
 
-## Introduction
+## 引言
 
-The Zero Redundancy Optimizer (ZeRO) removes the memory redundancies across data-parallel processes by partitioning three 
-model states (optimizer states, gradients, and parameters) instead of replicating them. 
-By doing so, memory efficiency is boosted drastically compared to classic data parallelism, while the computational granularity 
-and communication efficiency is retained.
+零冗余优化器 (ZeRO) 通过对三个模型状态（优化器状态、梯度和参数）进行划分而不是复制他们，消除了数据并行进程中的内存冗余。该方法与传统的数据并行相比，内存效率得到了极大的提高，而计算粒度和通信效率得到了保留。
 
-1. **Shard Optimizer States**: The optimizer states (e.g., for [Adam optimizer](https://arxiv.org/abs/1412.6980), 32-bit weights, 
-and the first and second momentum estimates) are partitioned across the processes, so that each process updates only its partition. 
+1. **分片优化器状态**: 优化器状态 (如 [Adam optimizer](https://arxiv.org/abs/1412.6980), 32位的权重, 
+以及一二阶动量估计) 被划分到各个进程中, 因此每个进程只更新其分区。 
 
 
-2. **Shard Gradient**: After reduction inside data parallel process group, gradient tensors are also partitioned such that each process only stores the gradients corresponding to its partition of the optimizer states. Note, Colossal converts gradient into fp32 format to participate in parameter updating.
+2. **分片梯度**: 在梯度在数据并行进程组内进行 reduction 后, 梯度张量也被划分，这样每个进程只存储与其划分的优化器状态对应的梯度。 注意, Colossal-AI 将梯度转换为 FP32 格式以参与更新参数。
 
-3. **Shard Parameter**: The 16-bit model parameters are partitioned across the processes of a data parallel group.
+3. **分片参数**: 16位的模型参数被划分到一个数据并行组的进程中。
 
-4. **CPU Offloading**: Offload the Optimizer States from GPU to CPU to save GPU memory usage.
+4. **CPU Offload**: 将优化器状态从 GPU 卸载到 CPU，以节省 GPU 的内存使用。
 
-When we shard parameter, gradient and optimizer states, and use CPU offload, we can use three figures to illustrate the training process.
+当我们在训练过程中将参数、梯度和优化器的状态进行分片，并使用CPU卸载时，可以用三张图来展示流程。
 
 <figure style={{textAlign: "center"}}>
 <img src="https://s2.loli.net/2022/03/17/fL2mXBylc4qAUOv.png"/>
-<figcaption>Forward</figcaption>
+<figcaption>前向</figcaption>
 </figure>
 
 <figure style={{textAlign: "center"}}>
 <img src="https://s2.loli.net/2022/03/17/WfsrN71HGTlcCv5.png"/>
-<figcaption>Backward</figcaption>
+<figcaption>后向</figcaption>
 </figure>
 
 <figure style={{textAlign: "center"}}>
 <img src="https://s2.loli.net/2022/03/17/6WMmQ2tFxEJ47cv.png"/>
-<figcaption>Optimizer step</figcaption>
+<figcaption>优化器 step</figcaption>
 </figure>
 
-## Usage
+## 使用
 
-We provide two levels of API to use ZeRO.
+我们提供两个级别的 API 来使用 ZeRO。
 
-1. **Low-level API**: Use `ShardedModel` and `ShardedOptimizer` directly, and write your own training loop from scratch.
-2. **High-level API**: Use `Engine` and configure ZeRO in the configuration file. You can use `Trainer` or write your own training loop.
+1. **低级别 API**: 直接使用 `ShardedModel` 和 `ShardedOptimizer`，并从头开始写你自己的训练循环。
+2. **高级别 API**: 使用 `Engine` 并在配置文件中配置ZeRO。你可以使用 `Trainer` 或编写你自己的训练循环。
 
-We provide some *shard strategies* to manage the process of sharding your model:
+我们提供了一些 *分片策略* 来管理你的模型分片过程:
 
 ```python
 colossalai.zero.shard_utils import BucketTensorShardStrategy, TensorShardStrategy
 ```
 
-`TensorShardStrategy` is a naive implementation that shard each tensor evenly over all ranks. `BucketTensorShardStrategy` fattens the tensors belonging to an operator, e.g. nn.Linear, and then shards them evenly over all ranks. It is especially useful when an operator contains `bias` since we cannot utilize network bandwidth well if we only gather a `bias` tensor (`bias` is usually small).
+`TensorShardStrategy` 是一个朴素的实现，将每个张量均匀地分片到所有 rank 上。 
+`BucketTensorShardStrategy` 对属于某个运算符的张量进行处理，例如 nn.Linear, 然后将它们均匀地分片到所有 rank。 
+当运算符包含 `bias` 时，它特别有用，因为如果我们只收集 `bias` 张量，就不能很好地利用网络带宽 (`bias` 通常很小)。
 
-> ⚠️ You have to initialize your model with `colossalai.zero.init_ctx.ZeroInitContext`.
+> ⚠️ 必须用 `colossalai.zero.init_ctx.ZeroInitContext` 初始化模型。
 
-Here is a simple example:
+这里是一个简单样例:
 
 ```python
 shard_strategy = TensorShardStrategy()
@@ -77,17 +76,17 @@ with ZeroInitContext(convert_fp16=True,
     model = torch.nn.Linear(2, 2)
 ```
 
-You can see the exact usage of `ZeroInitContext` in [API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.init_ctx.init_context.html)
+关于 `ZeroInitContext` 的确切用法，你可以参考 [API 文档](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.init_ctx.init_context.html) 。
 
-First, we will give you a configuration template to help you configure ZeRO when using high-level API. Then, we will give you an example of using a low-level API. 
+接下来，我们将首先给你一个配置模板，帮助你在使用高级别API时配置ZeRO。然后，我们将给你一个使用低级别的API的例子。
 
-> We now provide `from colossalai.nn.optimizer.CPUAdam`, which is faster than `torch.optim.Adam` when using CPU offload. For more details, see [API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.nn.optimizer.cpu_adam.html).
+> 我们现在提供 `from colossalai.nn.optimizer.CPUAdam`, 它比 `torch.optim.Adam` 更快，当使用 CPU offload 时。更多细节，请参见 [API 文档](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.nn.optimizer.cpu_adam.html) 。
 
-## Configure ZeRO with high-level API
+## 用高级别API配置ZeRO
 
-You can use `Engine` and configure ZeRO in the configuration file.
+你可以使用 `Engine` 并在配置文件中配置ZeRO。
 
-Here is a configuration template:
+这里有一个配置模板:
 
 ```python
 from colossalai.zero.shard_utils import TensorShardStrategy
@@ -114,9 +113,9 @@ zero = dict(
 )
 ```
 
-`model_config` and `optimizer_config` are keyword arguments of `ShardedModelV2` and `ShardedOptimizerV2` respectively. For more details of these arguments, see [ShardedModelV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_model.sharded_model_v2.html) and [ShardedOptimizerV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_optim.sharded_optim_v2.html).
+`model_config` 和 `optimizer_config` 分别是 `ShardedModelV2` 和 `ShardedOptimizerV2` 的关键参数。关于这些参数的更多细节，请参阅 [ShardedModelV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_model.sharded_model_v2.html) 和 [ShardedOptimizerV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_optim.sharded_optim_v2.html) 。
 
-You can initialize your model in this way:
+你可以用这种方式初始化你的模型:
 
 ```python
 import torch
@@ -129,18 +128,17 @@ with ZeroInitContext(convert_fp16=True,
                     shard_param=True):
     model = torch.nn.Linear(2, 2)
 ```
+然后你可以像往常一样使用 `Engine` 。
 
-Then you can use `Engine` as usual.
+使用高级 API 训练 GPT 的代码可在 [GPT example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt) 获得。
 
-Here is an example of training GPT with high-level API: [GPT example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt).
+## 用低级别的API训练GPT
 
-## Train GPT with low-level API
+在此例程中, 我们使用 `Hugging Face Transformers`，并以 `GPT2 Medium` 为例。你必须在允许该例程前安装 `transformers`。 
 
-In this example, we use `Hugging Face Transformers`. You have to install `transformers` before running this example. We will take `GPT2 Medium` as an example here. 
+这个例子是为了向你展示如何使用 `ZeRO`。为了简单起见，我们在这里只使用随机生成的数据。
 
-This example is intended for showing you how to use `ZeRO`. For simplicity, we just use randomly generated data here.
-
-First, we have to import essential libs:
+首先, 我们需要导入必要的依赖库:
 
 ```python
 import colossalai
@@ -155,7 +153,7 @@ from colossalai.zero.sharded_optim import ShardedOptimizerV2
 from transformers import GPT2Config, GPT2LMHeadModel
 ```
 
-Then we simply wrap `Hugging Face Transformers`:
+接下来我们简单的包装 `Hugging Face Transformers`:
 
 ```python
 class GPTLMModel(nn.Module):
@@ -175,7 +173,7 @@ def gpt2_medium(checkpoint=False):
     return GPTLMModel(hidden_size=1024, num_layers=24, num_attention_heads=16, checkpoint=checkpoint)
 ```
 
-Define our loss function:
+定义损失函数:
 
 ```python
 class GPTLMLoss(nn.Module):
@@ -190,9 +188,9 @@ class GPTLMLoss(nn.Module):
         return self.loss_fn(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
 ```
 
-As we pre-train GPT in this example, we just use a simple language model loss.
+由于我们在这个例子中对GPT进行预训练，因此只使用了一个简单的语言模型损失函数。
 
-Write a function to get random inputs:
+写一个获得随机输入的函数:
 
 ```python
 def get_data(batch_size, seq_len, vocab_size):
@@ -201,7 +199,7 @@ def get_data(batch_size, seq_len, vocab_size):
     return input_ids, attention_mask
 ```
 
-Finally, we can define our training loop:
+最后，我们可以定义我们的训练循环:
 
 ```python
 def main():
@@ -244,5 +242,5 @@ def main():
             f'Step [{n+1}/{NUM_STEPS}] GPU memory usage: {torch.cuda.memory_allocated() / 1024**2:.2f} MB', ranks=[0])
 ```
 
-The complete example can be found on [ZeRO example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/zero).
+完整的例子代码可以在 [ZeRO example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/zero) 获得。
 
