@@ -1,8 +1,8 @@
 # 2.5D Tensor Parallelism
 
-Author: Zhengda Bian
+Author: Zhengda Bian, Yongbin Li
 
-**Prerequisite:**
+**Prerequisite**
 - [Define Your Configuration](../basics/define_your_config.md)
 - [Configure Parallelization](../basics/configure_parallelization.md)
 - [1D Tensor Parallelism](./1D_tensor_parallel.md)
@@ -16,10 +16,11 @@ Author: Zhengda Bian
 
 ## Introduction
 
-Compared with 1D tensor parallelism, 2D parallelism reduces the memory cost, but introduces more communication. Therefore, a 2.5D tensor parallelism algorithm was proposed based on 2.5D SUMMA to reduce communication by using more devices.
+Compared with 1D tensor parallelism, 2D parallelism reduces the memory cost, but may introduce more communication. 
+Therefore, a  [2.5D tensor parallelism algorithm](https://arxiv.org/pdf/2105.14500.pdf) was proposed based on 2.5D SUMMA to reduce communication by using more devices.
 
 Let's still take a linear layer $Y = XA$ as an example.
-Given $P=q \times q \times d$ processors, e.g. $q=d=2$, we split the input $X$ into $d\times q$ rows and $q$ columns as
+Given $P=q \times q \times d$ processors (necessary condition), e.g. $q=d=2$, we split the input $X$ into $d\times q$ rows and $q$ columns as
 
 $$
 \left[\begin{matrix} X_{30} & X_{31} \\ X_{20} & X_{21} \\ X_{10} & X_{11} \\ X_{00} & X_{01}\end{matrix} \right],
@@ -36,7 +37,7 @@ $$
 \left[\begin{matrix} A_{10} & A_{11} \\ A_{00} & A_{01} \end{matrix} \right].
 $$
 
-On each layer of $X$, we use the SUMMA algorithm to multiply $X$ and $A$.
+For each layer of $X$, we use the SUMMA algorithm to multiply $X$ and $A$.
 Then, we have the output
 
 $$
@@ -50,7 +51,7 @@ $$
 ## Efficiency
 Given $P=q \times q \times d$ processors, we present the theoretical computation and memory cost, as well as the communication cost based on the ring algorithm in both the forward and backward pass of 2.5D tensor parallelism.
 
-| Computation | Memory (weights) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
+| Computation | Memory (parameters) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
 | :-:         | :-:              | :-:                  | :-:                       | :-:                     |
 | $O(1/dq^2)$ | $O(1/q^2)$       | $O(1/dq^2)$          | $\small O(3(q-1)(d+1)/dq)$       | $O(6(q-1))$             |
 
@@ -106,7 +107,7 @@ colossalai.launch(config=CONFIG,
 
 m = MLP()
 ```
-We will see the shapes of partitioned weights in the MLP model.
+We will see the shapes of partitioned parameters(e.g. weights) in the MLP model.
 ```shell
 Weight of the first linear layer: torch.Size([128, 512])
 Weight of the second linear layer: torch.Size([512, 128])
@@ -123,8 +124,9 @@ from colossalai.utils import get_current_device
 x = torch.randn((16, 256), device=get_current_device())
 # partition input
 torch.distributed.broadcast(x, src=0)
-x = torch.chunk(x, 2, dim=0)[gpc.get_local_rank(ParallelMode.PARALLEL_2D_COL)]
-x = torch.chunk(x, 2, dim=-1)[gpc.get_local_rank(ParallelMode.PARALLEL_2D_ROW)]
+x = torch.chunk(x, 2, dim=0)[gpc.get_local_rank(ParallelMode.PARALLEL_2P5D_DEP)]
+x = torch.chunk(x, 2, dim=0)[gpc.get_local_rank(ParallelMode.PARALLEL_2P5D_COL)]
+x = torch.chunk(x, 2, dim=-1)[gpc.get_local_rank(ParallelMode.PARALLEL_2P5D_ROW)]
 print_rank_0(f'Input: {x.shape}')
 
 x = m(x)

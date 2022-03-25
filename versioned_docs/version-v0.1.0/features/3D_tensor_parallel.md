@@ -1,8 +1,8 @@
 # 3D Tensor Parallelism
 
-Author: Zhengda Bian
+Author: Zhengda Bian, Yongbin Li
 
-**Prerequisite:**
+**Prerequisite**
 - [Define Your Configuration](../basics/define_your_config.md)
 - [Configure Parallelization](../basics/configure_parallelization.md)
 - [1D Tensor Parallelism](./1D_tensor_parallel.md)
@@ -16,10 +16,10 @@ Author: Zhengda Bian
 
 ## Introduction
 
-The [3D tensor parallelism](https://arxiv.org/pdf/2105.14450.pdf) is an approach to parallelizing the computation of neural models with the optimal communication cost.
+The [3D tensor parallelism](https://arxiv.org/pdf/2105.14450.pdf) is an approach to parallelize the computation of neural models, hoping to obtain the optimal communication cost.
 
 Let's still take a linear layer $Y = XA$ as an example.
-Given $P=q \times q \times q$ processors, e.g. $q=2$, we split the input $X$ and weight $A$ into
+Given $P=q \times q \times q$ processors (necessary condition), e.g. $q=2$, we split the input $X$ and weight $A$ into
 
 $$
 \left[\begin{matrix} 
@@ -61,7 +61,7 @@ We also need to note that in the backward pass, we need to all-gather the gradie
 ## Efficiency
 Given $P=q \times q \times q$ processors, we present the theoretical computation and memory cost, as well as the communication cost based on the ring algorithm in both the forward and backward pass of 3D tensor parallelism.
 
-| Computation | Memory (weights) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
+| Computation | Memory (parameters) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
 | :-:         | :-:              | :-:                  | :-:                       | :-:                     |
 | $O(1/q^3)$  | $O(1/q^3)$       | $O(1/q^3)$           | $O(6(q-1)/q^3)$           | $O(6(q-1))$             |
 
@@ -116,7 +116,7 @@ colossalai.launch(config=CONFIG,
 
 m = MLP()
 ```
-We will see the shapes of partitioned weights in the MLP model.
+We will see the shapes of partitioned parameters(e.g. weights) in the MLP model.
 ```shell
 Weight of the first linear layer: torch.Size([128, 256])
 Weight of the second linear layer: torch.Size([512, 64])
@@ -133,8 +133,9 @@ from colossalai.utils import get_current_device
 x = torch.randn((16, 256), device=get_current_device())
 # partition input
 torch.distributed.broadcast(x, src=0)
-x = torch.chunk(x, 2, dim=0)[gpc.get_local_rank(ParallelMode.PARALLEL_2D_COL)]
-x = torch.chunk(x, 2, dim=-1)[gpc.get_local_rank(ParallelMode.PARALLEL_2D_ROW)]
+x = torch.chunk(x, 2, dim=0)[gpc.get_local_rank(ParallelMode.PARALLEL_3D_WEIGHT)]
+x = torch.chunk(x, 2, dim=0)[gpc.get_local_rank(ParallelMode.PARALLEL_3D_INPUT)]
+x = torch.chunk(x, 2, dim=-1)[gpc.get_local_rank(ParallelMode.PARALLEL_3D_OUTPUT)]
 print_rank_0(f'Input: {x.shape}')
 
 x = m(x)

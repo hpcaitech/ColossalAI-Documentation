@@ -1,66 +1,66 @@
-# 2D Tensor Parallelism
+# 2D 张量并行
 
-Author: Zhengda Bian
+作者: Zhengda Bian, Yongbin Li
 
-**Prerequisite:**
-- [Define Your Configuration](../basics/define_your_config.md)
-- [Configure Parallelization](../basics/configure_parallelization.md)
-- [1D Tensor Parallelism](./1D_tensor_parallel.md)
+**前置教程**
+- [定义配置文件](../basics/define_your_config.md)
+- [并行配置](../basics/configure_parallelization.md)
+- [1D 张量并行](./1D_tensor_parallel.md)
 
-**Example Code**
+**示例代码**
 - [ColossalAI-Examples - 2D Tensor Parallelism](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/tensor_parallel/tensor_parallel_2d.py)
 
-**Related Paper**
+**相关论文**
 - [An Efficient 2D Method for Training Super-Large Deep Learning Models](https://arxiv.org/pdf/2104.05343.pdf)
 
-## Introduction
+## 引言
 
-1D tensor parallelism does not partition activations, which can also consume a great amount of memory in terms of large-scale models.
-To evenly distribute the computation and memory load, [an efficient 2D tensor parallelism algorithm](https://deepakn94.github.io/assets/papers/megatron-sc21.pdf) was introduced based on SUMMA (Scalable Universal Matrix Multiplication Algorithm).
+1D张量并行没有对 activations 进行划分，就大规模模型而言，这也会消耗大量的内存。
+为了平均分配计算和内存负荷，在 SUMMA（可扩展的通用矩阵乘法算法）的基础上， [2D张量并行](https://arxiv.org/pdf/2104.05343.pdf) 被引入。
 
-Let's still take a linear layer $Y = XA$ as an example.
-Given $P=q\times q$ processors, e.g. $q=2$, we split both the input $X$ and weight $A$ into
+我们还是以线性层 $Y = XA$ 为例。
+给定 $P=q\times q$ 个处理器（必要条件）, 如 $q=2$, 我们把输入 $X$ 和权重A $A$ 都划分为
 
 $$
 \left[\begin{matrix} X_{10} & X_{11} \\ X_{00} & X_{01} \end{matrix} \right] 
 \text{~and~}
-\left[\begin{matrix} A_{10} & A_{11} \\ A_{00} & A_{01} \end{matrix} \right].
+\left[\begin{matrix} A_{10} & A_{11} \\ A_{00} & A_{01} \end{matrix} \right]。
 $$
 
-The calculation includes $q$ steps. When $t=1$, $X_{i0}$ is broadcasted in its row, and $A_{0j}$ is broadcasted in its column. So, we have
+该计算包括 $q$ 步。 当 $t=1$ 时, $X_{i0}$ 在其行中被广播, 而 $A_{0j}$ 在其列中被广播。因此，我们有
 
 $$
-\left[\begin{matrix} X_{10},A_{00} & X_{10},A_{01} \\ X_{00},A_{00} & X_{00},A_{01} \end{matrix} \right].
+\left[\begin{matrix} X_{10},A_{00} & X_{10},A_{01} \\ X_{00},A_{00} & X_{00},A_{01} \end{matrix} \right]。
 $$
 
-Then we multiply $X_{i0}$ and $A_{0j}$ on each processor $(i, j)$ as
+然后我们在每个处理器 $(i, j)$ 上将 $X_{i0}$ 和 $A_{0j}$ 相乘为
 
 $$
-\left[\begin{matrix} X_{10}A_{00} & X_{10}A_{01} \\ X_{00}A_{00} & X_{00}A_{01} \end{matrix} \right] (1).
+\left[\begin{matrix} X_{10}A_{00} & X_{10}A_{01} \\ X_{00}A_{00} & X_{00}A_{01} \end{matrix} \right] (1)。
 $$
 
-Similarly, when $t=2$, $X_{i1}$ is broadcasted in its row, $A_{1j}$ is broadcasted in its column, and we multiply them as
+同样，当 $t=2$ 时, $X_{i1}$ 在其行中被广播, $A_{1j}$ 在其列中被广播, 我们将它们相乘为
 
 $$
-\left[\begin{matrix} X_{11}A_{10} & X_{11}A_{11} \\ X_{01}A_{10} & X_{01}A_{11} \end{matrix} \right] (2).
+\left[\begin{matrix} X_{11}A_{10} & X_{11}A_{11} \\ X_{01}A_{10} & X_{01}A_{11} \end{matrix} \right] (2)。
 $$
 
-By adding $(1)$ and $(2)$ up, we have
+通过将 $(1)$ 和 $(2)$ 相加，我们有
 
 $$
-Y = XA = \left[\begin{matrix} X_{10}A_{00}+X_{11}A_{10} & X_{10}A_{01}+X_{11}A_{11} \\ X_{00}A_{00}+X_{01}A_{10} & X_{00}A_{01}+X_{01}A_{11} \end{matrix} \right].
+Y = XA = \left[\begin{matrix} X_{10}A_{00}+X_{11}A_{10} & X_{10}A_{01}+X_{11}A_{11} \\ X_{00}A_{00}+X_{01}A_{10} & X_{00}A_{01}+X_{01}A_{11} \end{matrix} \right]。
 $$
 
-## Efficiency
-Given $P=q\times q$ processors, we present the theoretical computation and memory cost, as well as the communication cost based on the ring algorithm in both the forward and backward pass of 2D tensor parallelism.
+## 效率
+给定 $P=q\times q$ 个处理器, 我们展现理论上的计算和内存成本，以及基于环形算法的2D张量并行的前向和后向的通信成本。
 
-| Computation | Memory (weights) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
+| 计算 | 内存 (参数) | 内存 (activations) | 通信 (带宽) | 通信 (时延) |
 | :-:         | :-:              | :-:                  | :-:                       | :-:                     |
 | $O(1/q^2)$  | $O(1/q^2)$       | $O(1/q^2)$           | $O(6(q-1)/q)$             | $O(6(q-1))$             |
 
-## Usage
+## 使用
 
-To enable 2D tensor parallelism for our model, e.g. on 4 GPUs, we need to configure the parallism setting as below.
+为了使我们的模型能够实现二维张量并行，例如在4个 GPU 上，我们需要配置如下的并行设置。
 ```python
 CONFIG = dict(parallel=dict(
     data=1,
@@ -68,9 +68,9 @@ CONFIG = dict(parallel=dict(
     tensor=dict(size=4, mode='2d'),
 ))
 ```
-Then Colossal-AI will automatically apply 2D parallelism to all the layers from `colossalai.nn`.
+然后 Colossal-AI 会自动对所有来自 `colossalai.nn` 的层应用2D张量并行。
 
-Let's define a model that consists of a two-layer multi-layer perceptron (MLP) as below.
+让我们定义一个由两层多层感知器 (MLP) 组成的模型，如下所示。
 ```python
 import colossalai
 import colossalai.nn as col_nn
@@ -97,7 +97,7 @@ class MLP(torch.nn.Module):
         x = self.dropout(x)
         return x
 ```
-Launch Colossal-AI on 4 GPUs and build the model
+在4个 GPU 上启动 Colossal-AI 并建立模型。
 ```python
 parser = colossalai.get_default_parser()
 colossalai.launch(config=CONFIG,
@@ -109,15 +109,15 @@ colossalai.launch(config=CONFIG,
 
 m = MLP()
 ```
-We will see the shapes of partitioned weights in the MLP model.
+我们将会看到 MLP 模型中被划分的参数（如权重）的形状。
 ```shell
 Weight of the first linear layer: torch.Size([128, 512])
 Weight of the second linear layer: torch.Size([512, 128])
 ```
-The complete weight of the first linear layer is supposed to have the shape `[256, 1024]`. After the partitioning of 2D parallelism, it becomes `[128, 512]` on each GPU.
-Similarly, the second layer partitions the weight `[1024, 256]` into `[512, 128]`.
+第一个线性层的完整权重形状应该为 `[256, 1024]`. 经过2D并行划分后，它在每个 GPU 上变成了 `[128, 512]` 。
+同样地，第二层将权重 `[1024, 256]` 划分为 `[512, 128]`.
 
-We can run the model with some random inputs.
+我们可以用一些随机输入来运行这个模型。
 ```python
 from colossalai.context import ParallelMode
 from colossalai.core import global_context as gpc
@@ -132,11 +132,10 @@ print_rank_0(f'Input: {x.shape}')
 
 x = m(x)
 ```
-Then we can see the shapes of activation results.
+然后我们可以看到 activation 结果的形状。
 ```shell
 Input: torch.Size([8, 128])
 Output of the first linear layer: torch.Size([8, 512])
 Output of the second linear layer: torch.Size([8, 128])
 ```
-The activation tensors in 2D parallelism are all split in both row and column.
-E.g. the output of the first linear layer has the shape `[8, 512]`), while the second layer has the output of `[8, 128]`.
+2D并行中的 activation 张量都是同时在行和列分割的。例如，第一个线性层的输出是 `[8, 512]`, 而第二层的输出为 `[8, 128]`。

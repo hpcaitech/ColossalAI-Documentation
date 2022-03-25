@@ -2,7 +2,7 @@
 
 作者: Guangyang Lu, Hongxin Liu, Yongbin Li
 
-**前置教程:**
+**前置教程**
 - [定义配置文件](../basics/define_your_config.md)
 - [在训练中使用Engine和Trainer](../basics/engine_trainer.md)
 - [并行配置](../basics/configure_parallelization.md)
