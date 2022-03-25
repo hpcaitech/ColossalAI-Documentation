@@ -1,8 +1,8 @@
 # Pipeline Parallel
 
-Author: Guangyang Lu, Hongxin Liu
+Author: Guangyang Lu, Hongxin Liu, Yongbin Li
 
-**Prerequisite:**
+**Prerequisite**
 - [Define Your Configuration](../basics/define_your_config.md)
 - [Use Engine and Trainer in Training](../basics/engine_trainer.md)
 - [Configure Parallelization](../basics/configure_parallelization.md)

@@ -2,7 +2,7 @@
 
 作者: Chuanrui Wang, Shenggui Li, Yongbin Li
 
-**前置教程:**
+**前置教程**
 - [定义配置文件](../basics/define_your_config.md)
 - [在训练中使用Engine和Trainer](../basics/engine_trainer.md)
 

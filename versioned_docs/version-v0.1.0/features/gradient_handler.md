@@ -1,8 +1,8 @@
 # Gradient Handler
 
-Author: Shenggui Li
+Author: Shenggui Li, Yongbin Li
 
-**Prerequisite:**
+**Prerequisite**
 - [Define Your Configuration](../basics/define_your_config.md)
 - [Use Engine and Trainer in Training](../basics/engine_trainer.md)
 

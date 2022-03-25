@@ -1,15 +1,15 @@
 # 零冗余优化器 (ZeRO) 和 ZeRO Offload
 
-Author: Zhujie, Shenggui Li, Hongxin Liu, Yongbin Li
+作者: Zhujie, Shenggui Li, Hongxin Liu, Yongbin Li
 
-**Prerequisite:**
-- [Define Your Configuration](../basics/define_your_config.md)
-- [Use Engine and Trainer in Training](../basics/engine_trainer.md)
+**前置教程:**
+- [定义配置文件](../basics/define_your_config.md)
+- [在训练中使用Engine和Trainer](../basics/engine_trainer.md)
 
-**Example Code**
+**示例代码**
 - [ColossalAI-Examples Zero](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/zero)
 
-**Related Paper**
+**相关论文**
 - [ZeRO: Memory Optimizations Toward Training Trillion Parameter Models](https://arxiv.org/abs/1910.02054)
 - [ZeRO-Offload: Democratizing Billion-Scale Model Training](https://arxiv.org/abs/2101.06840)
 - [ZeRO-Infinity: Breaking the GPU Memory Wall for Extreme Scale Deep Learning](https://arxiv.org/abs/2104.07857)

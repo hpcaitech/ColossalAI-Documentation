@@ -1,8 +1,8 @@
 # 2D Tensor Parallelism
 
-Author: Zhengda Bian
+Author: Zhengda Bian, Yongbin Li
 
-**Prerequisite:**
+**Prerequisite**
 - [Define Your Configuration](../basics/define_your_config.md)
 - [Configure Parallelization](../basics/configure_parallelization.md)
 - [1D Tensor Parallelism](./1D_tensor_parallel.md)
@@ -16,10 +16,10 @@ Author: Zhengda Bian
 ## Introduction
 
 1D tensor parallelism does not partition activations, which can also consume a great amount of memory in terms of large-scale models.
-To evenly distribute the computation and memory load, [an efficient 2D tensor parallelism algorithm](https://deepakn94.github.io/assets/papers/megatron-sc21.pdf) was introduced based on SUMMA (Scalable Universal Matrix Multiplication Algorithm).
+To evenly distribute the computation and memory load, [an efficient 2D tensor parallelism algorithm](https://arxiv.org/pdf/2104.05343.pdf) was introduced based on SUMMA (Scalable Universal Matrix Multiplication Algorithm).
 
 Let's still take a linear layer $Y = XA$ as an example.
-Given $P=q\times q$ processors, e.g. $q=2$, we split both the input $X$ and weight $A$ into
+Given $P=q\times q$ processors (necessary condition), e.g. $q=2$, we split both the input $X$ and weight $A$ into
 
 $$
 \left[\begin{matrix} X_{10} & X_{11} \\ X_{00} & X_{01} \end{matrix} \right] 
@@ -54,7 +54,7 @@ $$
 ## Efficiency
 Given $P=q\times q$ processors, we present the theoretical computation and memory cost, as well as the communication cost based on the ring algorithm in both the forward and backward pass of 2D tensor parallelism.
 
-| Computation | Memory (weights) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
+| Computation | Memory (parameters) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
 | :-:         | :-:              | :-:                  | :-:                       | :-:                     |
 | $O(1/q^2)$  | $O(1/q^2)$       | $O(1/q^2)$           | $O(6(q-1)/q)$             | $O(6(q-1))$             |
 
@@ -109,7 +109,7 @@ colossalai.launch(config=CONFIG,
 
 m = MLP()
 ```
-We will see the shapes of partitioned weights in the MLP model.
+We will see the shapes of partitioned parameters(e.g. weights) in the MLP model.
 ```shell
 Weight of the first linear layer: torch.Size([128, 512])
 Weight of the second linear layer: torch.Size([512, 128])
@@ -139,4 +139,4 @@ Output of the first linear layer: torch.Size([8, 512])
 Output of the second linear layer: torch.Size([8, 128])
 ```
 The activation tensors in 2D parallelism are all split in both row and column.
-E.g. the output of the first linear layer has the shape `[8, 512]`), while the second layer has the output of `[8, 128]`.
+E.g. the output of the first linear layer has the shape `[8, 512]`, while the second layer has the output of `[8, 128]`.

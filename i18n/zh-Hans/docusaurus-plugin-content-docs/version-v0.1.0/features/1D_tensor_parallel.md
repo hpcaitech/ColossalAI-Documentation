@@ -1,41 +1,40 @@
-# 1D Tensor Parallelism
+# 1D 张量并行
 
-Author: Zhengda Bian
+作者: Zhengda Bian, Yongbin Li
 
-**Prerequisite:**
-- [Define Your Configuration](../basics/define_your_config.md)
-- [Configure Parallelization](../basics/configure_parallelization.md)
+**前置教程**
+- [定义配置文件](../basics/define_your_config.md)
+- [并行配置](../basics/configure_parallelization.md)
 
-**Example Code**
+**示例代码**
 - [ColossalAI-Examples 1D Tensor Parallelism](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/tensor_parallel/tensor_parallel_1d.py)
 
-**Related Paper**
+**相关论文**
 - [Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM](https://deepakn94.github.io/assets/papers/megatron-sc21.pdf)
 
-## Introduction
+## 引言
 
-Tensor parallelism partitions each weight parameter across multiple devices in order to reduce memory load.
-An efficient 1D tensor parallelism implementation was introduced by [Megatron-LM](https://deepakn94.github.io/assets/papers/megatron-sc21.pdf).
+张量并行将模型参数划分到多个设备上，以减少内存负荷。
+[Megatron-LM](https://deepakn94.github.io/assets/papers/megatron-sc21.pdf) 介绍了一种高效的一维张量并行化实现。
 
-Let's take a linear layer as an example, which consists of a GEMM $Y = XA$. Given 2 processors, we split the columns of $A$ into $[A_1 ~ A_2]$, and calculate $Y_i = XA_i$ on each processor, which then forms $[Y_1 ~ Y_2] = [XA_1 ~ XA_2]$. This is called a column-parallel fashion.
+让我们以一个线性层为例，它包括一个 GEMM $Y = XA$。 给定2个处理器，我们把列 $A$ 划分为 $[A_1 ~ A_2]$, 并在每个处理器上计算 $Y_i = XA_i$ , which then forms $[Y_1 ~ Y_2] = [XA_1 ~ XA_2]$. This is called a column-parallel fashion.
 
-When a second linear layer $Z=YB$ follows the column-parallel one, we split $B$ into $\left[\begin{matrix} B_1 \\ B_2 \end{matrix} \right]$,
-which is called a row-parallel fashion.
-To calculate $Z = [Y_1 ~ Y_2] \left[\begin{matrix} B_1 \\ B_2 \end{matrix} \right]$, we first calculate $Y_iB_i$ on each processor, then use an all-reduce to aggregate the results as $Z=Y_1B_1+Y_2B_2$.
+当第二个线性层 $Z=YB$ 跟随上述列并行层的时候, 我们把 $B$ 划分为 $\left[\begin{matrix} B_1 \\ B_2 \end{matrix} \right]$,
+这就是所谓的行并行方式.
+为了计算 $Z = [Y_1 ~ Y_2] \left[\begin{matrix} B_1 \\ B_2 \end{matrix} \right]$, 我们首先在每个处理器上计算 $Y_iB_i$ 然后使用一个all-reduce操作将结果汇总为 $Z=Y_1B_1+Y_2B_2$。
 
-We also need to note that in the backward pass, the column-parallel linear layer needs to aggregate the gradients of the input tensor $X$, because on each processor $i$ we only have $\dot{X_i}=\dot{Y_i}A_i^T$.
-Thus, we apply an all-reduce across the processors to get $\dot{X}=\dot{Y}A^T=\dot{Y_1}A_1^T+\dot{Y_2}A_2^T$.
+我们还需要注意，在后向传递中，列并行线性层需要聚合输入张量 $X$, 因为在每个处理器 $i$ 上，我们只有 $\dot{X_i}=\dot{Y_i}A_i^T$，因此，我们在各处理器之间进行all-reduce，得到 $\dot{X}=\dot{Y}A^T=\dot{Y_1}A_1^T+\dot{Y_2}A_2^T$。
 
-## Efficiency
-Given $P$ processors, we present the theoretical computation and memory cost, as well as the communication cost based on the ring algorithm in both the forward and backward pass of 1D tensor parallelism.
+## 效率
+给定 $P$ 个处理器, 我们展现理论上的计算和内存成本，以及基于环形算法的1D张量并行的前向和后向的通信成本。
 
-| Computation | Memory (weights) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
+| 计算 | 内存 (参数) | 内存 (activations) | 通信 (带宽) | 通信 (时延) |
 | :-:         | :-:              | :-:                  | :-:                       | :-:                     |
 | $O(1/P)$    | $O(1/P)$         | $O(1)$               | $O(2(P-1)/P)$             | $O(2(P-1))$             |
 
-## Usage
+## 使用
 
-To enable 1D tensor parallelism for our model, e.g. on 2 GPUs, we need to configure the parallism setting as below.
+为了使模型能够实现一维张量并行, 如在2个 GPU 上, 我们需要配置如下的并行设置。
 ```python
 CONFIG = dict(parallel=dict(
     data=1,
@@ -43,9 +42,10 @@ CONFIG = dict(parallel=dict(
     tensor=dict(size=2, mode='1d'),
 ))
 ```
-Then Colossal-AI will automatically apply 1D parallelism to all the layers from `colossalai.nn`.
 
-Let's define a model that consists of a two-layer multi-layer perceptron (MLP) as below.
+然后 Colossal-AI 会自动对所有来自 `colossalai.nn` 的层应用1D张量并行。
+
+让我们定义一个由两层多层感知器 (MLP) 组成的模型，如下所示。
 ```python
 import colossalai
 import colossalai.nn as col_nn
@@ -72,7 +72,9 @@ class MLP(torch.nn.Module):
         x = self.dropout(x)
         return x
 ```
-Launch Colossal-AI on 2 GPUs and build the model
+
+在2个 GPU 上启动 Colossal-AI 并建立模型。
+
 ```python
 parser = colossalai.get_default_parser()
 colossalai.launch(config=CONFIG,
@@ -84,15 +86,15 @@ colossalai.launch(config=CONFIG,
 
 m = MLP()
 ```
-We will see the shapes of partitioned weights in the MLP model.
+我们将会看到 MLP 模型中被划分的参数（如权重）的形状。
 ```shell
 Weight of the first linear layer: torch.Size([256, 512])
 Weight of the second linear layer: torch.Size([512, 256])
 ```
-The complete weight of the first linear layer is supposed to have the shape `[256, 1024]`. After the column-parallel partitioning, it becomes `[256, 512]`.
-Similarly, the second row-parallel layer partitions the weight `[1024, 256]` into `[512, 256]`.
+第一个线性层的完整权重形状应该为 `[256, 1024]`. 经过列-并行分割，它变成了 `[256, 512]`。
+同样地，第二个行并行层将权重 `[1024, 256]` 划分为 `[512, 256]`。
 
-We can run the model with some random inputs.
+我们可以用一些随机输入来运行这个模型。
 ```python
 from colossalai.utils import get_current_device
 
@@ -101,9 +103,9 @@ torch.distributed.broadcast(x, src=0)  # synchronize input
 
 x = m(x)
 ```
-Then we can see the shapes of activation results.
+然后我们可以看到 activation 结果的形状。
 ```shell
 Output of the first linear layer: torch.Size([16, 512])
 Output of the second linear layer: torch.Size([16, 256])
 ```
-The output of the first linear layer is split into 2 partitions (each has the shape `[16, 512]`), while the second layer has identical outputs across the GPUs.
+第一个线性层的输出被划分成2块 (每个形状为 `[16, 512]`), 而第二层在整个 GPU 上的输出是相同的。
