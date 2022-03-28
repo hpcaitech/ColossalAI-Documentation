@@ -1,6 +1,6 @@
 # Paradigms of Parallelism
 
-Author: Shenggui Li
+Author: Shenggui Li, Siqi Mai
 
 ## Introduction
 

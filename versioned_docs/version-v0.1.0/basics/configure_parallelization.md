@@ -1,6 +1,6 @@
 # Configure Parallelization
 
-Author: Shenggui Li
+Author: Shenggui Li, Siqi Mai
 
 **Prerequisite:**
 - [Distributed Training](../concepts/distributed_training.md)
@@ -88,17 +88,17 @@ tensor parallel method. These parallel modes need to work with the distributed l
 
 - 2D: [An Efficient 2D Method for Training Super-Large Deep Learning Models](https://arxiv.org/abs/2104.05343)  
   2D parallel relies on the SUMMA matrix multiplication algorithm and splits the input data, model weights and layer
-  outputs along two different dimensions. The tensor chunks are distributed over a 2D mesh of $P = N^2$ devices where
-  $N$ is the number of tensor chunks in a single dimension.
+  outputs along two different dimensions. The tensor chunks are distributed over a 2D mesh of `P = N^2` devices where
+  `N` is the number of tensor chunks in a single dimension.
 
 - 2.5D: [2.5-dimensional distributed model training](https://arxiv.org/abs/2105.14500)  
   Inspired by the 2.5D matrix multiplication algorithm, 2.5D parallel introduces a novel tensor parallelism which
-  further parallelizes 2D tensor parallelism. An amount of $P = N^2 ∗ d$ processors are arranged into $d$ layers, where
-  each layer performs matrix multiplication operations independently with a dimension $N$.
+  further parallelizes 2D tensor parallelism. An amount of `P = N^2 ∗ d` processors are arranged into `d` layers, where
+  each layer performs matrix multiplication operations independently with a dimension `N`.
 
 - 3D: [Maximizing Parallelism in Distributed Training for Huge Neural Networks](https://arxiv.org/abs/2105.14450)  
   We also introduce a 3D tensor parallelism that parallelizes neural networks on a 3D processor cube. This method
-  achieves the optimal, $O(P^{1/3})$ communication overhead on $P$ processors, while both computation and memory usage
+  achieves the optimal, `O(P^{1/3})` communication overhead on $P$ processors, while both computation and memory usage
   are evenly distributed through optimized load balancing of parameters as well as activations.
 
 ```python

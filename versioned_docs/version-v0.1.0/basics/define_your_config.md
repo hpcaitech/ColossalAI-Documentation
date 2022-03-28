@@ -1,6 +1,6 @@
 # Define Your Configuration
 
-Author: Guangyang Lu, Shenggui Li
+Author: Guangyang Lu, Shenggui Li, Siqi Mai
 
 **Prerequisite:**
 - [Distributed Training](../concepts/distributed_training.md)
@@ -22,7 +22,7 @@ In this tutorial, we will cover how to define your configuration file.
 
 In a configuration file, there are two types of variables. One serves as feature specification and the other serves
 as hyper-parameters. All feature-related variables are reserved keywords. For example, if you want to use mixed precision
-training, you need to use the variable name `fp16` in the confi file and follow a pre-defined format.
+training, you need to use the variable name `fp16` in the config file and follow a pre-defined format.
 
 ### Feature Specification
 

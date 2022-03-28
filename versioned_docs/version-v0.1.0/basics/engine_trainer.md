@@ -1,6 +1,6 @@
 # Use Engine and Trainer in Training
 
-Author: Shenggui Li
+Author: Shenggui Li, Siqi Mai
 
 **Prerequisite:**
 - [Initialize Features](./initialize_features.md)
