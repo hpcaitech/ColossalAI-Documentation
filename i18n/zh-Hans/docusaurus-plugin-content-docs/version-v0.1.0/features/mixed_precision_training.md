@@ -1,4 +1,4 @@
-# 自动混合精度训练(AMP)
+# 自动混合精度训练 (AMP)
 
 作者: Chuanrui Wang, Shenggui Li, Yongbin Li
 

@@ -10,14 +10,14 @@
 
 ## 引言
 
-在本教程中，你将学习如何使用流水并行从头开始训练用于图像分类的 Vision Transformer (ViT)。流水并行是一种模型并行，主要针对GPU内存不能满足模型容量的情况。
+在本教程中，你将学习如何使用流水并行从头开始训练用于图像分类的 Vision Transformer (ViT)。流水并行是一种模型并行，主要针对 GPU 内存不能满足模型容量的情况。
 通过使用流水并行，我们将原始模型分割成多个阶段，每个阶段保留原始模型的一部分。我们假设你的 GPU 内存不能容纳 ViT/L-16，而你的内存可以容纳这个模型。
 
 ##  目录
 
 在本教程中，我们将介绍:
 
-1. 基于 [TIMM](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py) 定义ViT模型
+1. 基于 [TIMM](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py) 定义 ViT 模型
 2. 处理数据集
 3. 使用流水并行训练 ViT
 
@@ -52,7 +52,7 @@ from torchvision.datasets import CIFAR10
 2. `colossalai.builder.build_pipeline_model`
 3. 自己按阶段拆分模型
 
-当你的内存能够容纳模型时，你可以使用前两种方法来建立你的模型，否则你必须自己分割模型。前两种方法首先在CPU上建立整个模型，然后分割模型，最后你可以直接把模型的相应部分移到GPU上。
+当你的内存能够容纳模型时，你可以使用前两种方法来建立你的模型，否则你必须自己分割模型。前两种方法首先在 CPU 上建立整个模型，然后分割模型，最后你可以直接把模型的相应部分移到 GPU 上。
 
 `colossalai.builder.build_pipeline_model_from_cfg()` 接收一个模型的配置文件，它可以均匀地（按层）或平衡地（按参数大小）分割模型。
 
