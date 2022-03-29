@@ -1,13 +1,13 @@
 # Gradient Clipping
 
-Author: Boxiang Wang, Haichen Huang, Yongbin Li
+Author: Boxiang Wang, Haichen Huang
 
-**Prerequisite**
+**Prerequisite:**
 - [Define Your Configuration](../basics/define_your_config.md)
 - [Use Engine and Trainer in Training](../basics/engine_trainer.md)
 
 **Example Code**
-- [ColossalAI-Examples Gradient Clipping](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/gradient_clipping)
+- [ColossalAI-Examples AMP](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/amp)
 
 **Related Paper**
 - [On the difficulty of training Recurrent Neural Networks](https://arxiv.org/abs/1211.5063)
@@ -17,9 +17,8 @@ Author: Boxiang Wang, Haichen Huang, Yongbin Li
 In order to speed up training process and seek global optimum for better performance, more and more learning
 rate schedulers have been proposed. People turn to control learning rate to adjust descent pace during training,
 which makes gradient vector better to be uniformed in every step. In that case, the descent pace can be
-controlled as expected. As a result, gradient clipping, a technique which can normalize the gradient vector
-to circumscribe it in a uniformed length, becomes indispensable for those who desire their better
-performance of their models.
+controlled as expected. As a result, gradient clipping becomes indispensable for those who desire their
+better performance of their models.
 
 You do not have to worry about implementing gradient clipping when using Colossal-AI, we support gradient
 clipping in a powerful and convenient way. All you need is just an additional command in your configuration
