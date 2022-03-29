@@ -1,6 +1,6 @@
 # Colossal-AI Overview
 
-Author: Shenggui Li
+Author: Shenggui Li, Siqi Mai
 
 ## About Colossal-AI
 

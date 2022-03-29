@@ -1,70 +1,72 @@
-# Pipeline Parallel
+# 流水并行
 
-Author: Guangyang Lu, Hongxin Liu, Yongbin Li
+作者: Guangyang Lu, Hongxin Liu, Yongbin Li
 
-**Prerequisite**
-- [Define Your Configuration](../basics/define_your_config.md)
-- [Use Engine and Trainer in Training](../basics/engine_trainer.md)
-- [Configure Parallelization](../basics/configure_parallelization.md)
+**前置教程**
+- [定义配置文件](../basics/define_your_config.md)
+- [在训练中使用Engine和Trainer](../basics/engine_trainer.md)
+- [并行配置](../basics/configure_parallelization.md)
 
-**Example Code**
+**示例代码**
 - [ColossalAI-Examples ResNet with pipeline](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/pipeline_parallel)
 
-**Related Paper**
+**相关论文**
 - [Colossal-AI: A Unified Deep Learning System For Large-Scale Parallel Training](https://arxiv.org/abs/2110.14883)
 - [Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM](https://arxiv.org/abs/2104.04473)
 - [GPipe: Efficient Training of Giant Neural Networks using Pipeline Parallelism](https://arxiv.org/abs/1811.06965)
 
-## Quick introduction
+## 快速预览
 
-In this tutorial, you will learn how to use pipeline parallel. In Colossal-AI, we use 1F1B pipeline, introduced by Nvidia. In this case, ViT and Imagenet are too large to use. Therefore, here we use ResNet and Cifar as example.
+在本教程中，你将学习如何使用流水并行。在 Colossal-AI 中, 我们使用 NVIDIA 推出的 1F1B 流水线。由于在本例中, 使用 ViT 和 ImageNet 太过庞大，因此我们使用 ResNet 和 CIFAR 为例.
 
-## Table Of Content
+## 目录
 
-In this tutorial we will cover:
+在本教程中，我们将介绍:
 
-1. Introduction of 1F1B pipeline.
-2. Usage of non-interleaved and interleaved schedule.
-3. Training ResNet with pipeline.
+1. 介绍 1F1B 流水线；
+2. 使用非交错和交错 schedule；
+3. 使用流水线训练 ResNet。
 
-## Introduction of 1F1B pipeline
+## 认识 1F1B 流水线
 
-First of all, we will introduce you GPipe for your better understanding.
+首先，我们将向您介绍 GPipe，以便您更好地了解。
 
 <figure style={{textAlign: "center"}}>
 <img src="https://s2.loli.net/2022/01/28/OAucPF6mWYynUtV.png"/>
-<figcaption>Figure1: GPipe. This figure is from <a href="https://arxiv.org/pdf/2104.04473.pdf">Megatron-LM</a> paper.</figcaption>
+<figcaption>图1: GPipe，来自论文 <a href="https://arxiv.org/pdf/2104.04473.pdf">Megatron-LM</a> 。</figcaption>
 </figure>
  
+正如你所看到的，对于 GPipe，只有当一个批次中所有 microbatches 的前向计算完成后，才会执行后向计算。
 
-As you can see, for GPipe, only when the forward passes of all microbatches in a batch finish, the backward passes would be executed. 
-
-In general, 1F1B(one forward pass followed by one backward pass) is more efficient than GPipe(in memory or both memory and time). There are two schedules of 1F1B pipeline, the non-interleaved and the interleaved. The figures are shown below.
-
+一般来说，1F1B（一个前向通道和一个后向通道）比 GPipe （在内存或内存和时间方面）更有效率。1F1B 流水线有两个 schedule ，非交错式和交错式，图示如下。
 <figure style={{textAlign: "center"}}>
 <img src="https://s2.loli.net/2022/01/28/iJrVkp2HLcahjsT.png"/>
-<figcaption>Figure2: This figure is from <a href="https://arxiv.org/pdf/2104.04473.pdf">Megatron-LM</a> paper. The top part shows the default non-interleaved schedule. And the bottom part shows the interleaved schedule.</figcaption>
+<figcaption>Figure2: 图片来自论文 <a href="https://arxiv.org/pdf/2104.04473.pdf">Megatron-LM</a> 。上面的部分显示了默认的非交错 schedule，底部显示的是交错的 schedule。</figcaption>
 </figure>
 
-### Non-interleaved Schedule
+### 非交错 Schedule
 
-The non-interleaved schedule can be divided into three stages. The first stage is the warm-up stage, where workers perform differing numbers of forward passes. At the following stage, workers perform one forward pass followed by one backward pass. Workers will finish backward passes at the last stage.
+非交错式 schedule 可分为三个阶段。第一阶段是热身阶段，处理器进行不同数量的前向计算。在接下来的阶段，处理器进行一次前向计算，然后是一次后向计算。处理器将在最后一个阶段完成后向计算。
 
-This mode is more memory-efficient than GPipe. However, it would take the same time to finish a turn of passes as GPipe.
+这种模式比 GPipe 更节省内存。然而，它需要和 GPipe 一样的时间来完成一轮计算。
 
-### Interleaved Schedule
+### 交错 Schedule
 
-This schedule requires **the number of microbatches to be an integer multiple of the stage of pipeline**.
+这个 schedule 要求**microbatches的数量是流水线阶段的整数倍**。
 
-In this schedule, each device can perform computation for multiple subsets of layers(called a model chunk) instead of a single contiguous set of layers. i.e. Before device 1 had layer 1-4; device 2 had layer 5-8; and so on. But now device 1 has layer 1,2,9,10; device 2 has layer 3,4,11,12; and so on. With this scheme, each device in the pipeline is assigned multiple pipeline stages and each pipeline stage has less computation.
+在这个 schedule 中，每个设备可以对多个层的子集（称为模型块）进行计算，而不是一个连续层的集合。具体来看，之前设备1拥有层1-4，设备2拥有层5-8，以此类推；但现在设备1有层1,2,9,10，设备2有层3,4,11,12，以此类推。 
+在该模式下，流水线上的每个设备都被分配到多个流水线阶段，每个流水线阶段的计算量较少。
 
-This mode is both memory-efficient and time-efficient.
+这种模式既节省内存又节省时间。
 
-## Usage of non-interleaved and interleaved schedule
+## 使用schedule
 
-In Colossal-AI, we provided both non-interleaved(as `PipelineSchedule`) and interleaved schedule(as  `InterleavedPipelineSchedule`).
+在 Colossal-AI 中, 我们提供非交错(`PipelineSchedule`) 和交错(`InterleavedPipelineSchedule`)schedule。
 
-You can set `NUM_MICRO_BATCHES` and the original batch will be splitted into `NUM_MICRO_BATCHES` micro batches whose size is `BATCH_SIZE // NUM_MICRO_BATCHES`. If you certainly know the shape of each pipeline stage's output tensor and the shapes are all the same, you can set `tensor_shape` to further reduce communication. Otherwise, you can just ignore `tensor_shape`, and the shape will be exchanged over pipeline stages automatically. If you are training `Transformer` models with pipeline and 1D tensor parallel, you can set `scatter_gather_tensors` to `True`, which can optimize communication and accelerate your training. Note that even though `NUM_CHUNKS == 1`, you can also use `InterleavedPipelineSchedule` as long as your model is wrapped with `torch.nn.ModuleList()`.
+你可以设置 `NUM_MICRO_BATCHES` 将原始 batch 切分成 `NUM_MICRO_BATCHES` 个大小为 `BATCH_SIZE // NUM_MICRO_BATCHES` 的micro batches。 
+如果你确定性地知道每个管道阶段的输出张量的形状，而且形状都是一样的，你可以设置 `tensor_shape` 以进一步减少通信。否则，你可以忽略 `tensor_shape` , 形状将在管道阶段之间自动交换。. 
+如果你用流水线和一维张量并行训练 `Transformer` 模型, 你可以将 `scatter_gather_tensors` 设置为 `True` , 这可以优化通信并加速训练。
+注意，即使 `NUM_CHUNKS == 1` , 你也可以使用 `InterleavedPipelineSchedule` 只要你的模型是用 `torch.nn.ModuleList()` 包装的。
 
 ```Python
 from colossalai.engine.schedule import PipelineSchedule, InterleavedPipelineSchedule
@@ -86,9 +88,9 @@ trainer = Trainer(
 )                               
 ```
 
-## Training ResNet with pipeline
+## 使用流水线训练 ResNet
 
-Let's define the `ResNet` model first:
+我们首先按如下方式定义 `ResNet` 模型:
 ```python
 import os
 from typing import Callable, List, Optional, Type, Union
@@ -221,9 +223,9 @@ def resnet50():
     return resnet(Bottleneck, [3, 4, 6, 3])
 ```
 
-As our `build_pipeline_model()` only supports `torch.nn.Sequential()` model now, we have to modify the `torchvision.models.resnet.ResNet` to get a sequential model.
+由于我们的 `build_pipeline_model()` 目前仅支持 `torch.nn.Sequential()` 模型, 我们需要修改 `torchvision.models.resnet.ResNet` 中的模型以获取序列形式的模型。
 
-Then we simply process the `CIFAR-10` dataset:
+接下来我们处理 `CIFAR-10` 数据集:
 ```python
 def build_cifar(batch_size):
     transform_train = transforms.Compose([
@@ -245,7 +247,7 @@ def build_cifar(batch_size):
     return train_dataloader, test_dataloader
 ```
 
-In this tutorial, we use `Trainer` to train `ResNet`:
+在本教程中我们使用 `Trainer` 训练 `ResNet`:
 ```python
 BATCH_SIZE = 64
 NUM_EPOCHS = 60
@@ -300,4 +302,4 @@ def train():
                 display_progress=True)
 ```
 
-We use `2` pipeline stages and the batch will be splitted into `4` micro batches. 
+我们使用 `2` 个流水段，并且 batch 将被切分为 `4` 个 micro batches。 

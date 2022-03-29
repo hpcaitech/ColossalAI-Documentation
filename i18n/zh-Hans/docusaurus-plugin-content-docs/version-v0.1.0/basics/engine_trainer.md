@@ -1,41 +1,37 @@
-# Use Engine and Trainer in Training
+# 如何在训练中使用 Engine 和 Trainer
 
-Author: Shenggui Li, Siqi Mai
+作者: Shenggui Li, Siqi Mai
 
-**Prerequisite:**
-- [Initialize Features](./initialize_features.md)
+**预备知识:**
+- [初始化功能](./initialize_features.md)
 
-## Introduction
+## 简介
 
-In this tutorial, you will learn how to use the engine and trainer provided in Colossal-AI to train your model. 
-Before we delve into the details, we would like to first explain the concept of engine and trainer.
+在本教程中，您将学习如何使用 Colossal-AI 中提供的 Engine 和 Trainer 来训练您的模型。在深入研究细节之前，我们想先解释一下 Engine 和 Trainer 的概念。
 
 ### Engine
 
-Engine is essentially a wrapper class for model, optimizer and loss function. 
-When we call `colossalai.initialize`, an engine object will be returned, and it has already been equipped with 
-functionalities such as gradient clipping, gradient accumulation and zero optimizer as specified in your configuration file. 
-An engine object will use similar APIs to those of PyTorch training components such that the user has minimum change 
-to their code. 
+Engine 本质上是一个模型、优化器和损失函数的封装类。当我们调用 `colossalai.initialize` 时，一个 Engine 对象将被返回，并且配备了在您的配置文件中指定的梯度剪裁、梯度累计和 ZeRO 优化器等功能。
 
-Below is a table which shows the commonly used APIs for the engine object.
+Engine 将使用与 PyTorch 训练组件类似的 API，因此您只需对代码进行微小的修改即可。
 
-| Component                             | Function                                      | PyTorch                         | Colossal-AI                            |
+下表展示了Engine的常用API。
+
+| 组件                             | 功能                                      | PyTorch                         | Colossal-AI                            |
 | ------------------------------------- | --------------------------------------------- | ------------------------------- | -------------------------------------- |
-| optimizer                             | Set all gradients to zero before an iteration | optimizer.zero_grad()           | engine.zero_grad()                     |
-| optimizer                             | Update the parameters                         | optimizer.step()                | engine.step()                          |
-| model                                 | Run a forward pass                            | outputs = model(inputs)         | outputs = engine(inputs)               |
-| criterion                             | Calculate the loss value                      | loss = criterion(output, label) | loss = engine.criterion(output, label) |
-| criterion                             | Execute back-propagation on the model         | loss.backward()                 | engine.backward(loss)                  |
+| optimizer                             | 迭代前将所有梯度设置为零 | optimizer.zero_grad()           | engine.zero_grad()                     |
+| optimizer                             | 更新参数                         | optimizer.step()                | engine.step()                          |
+| model                                 | 进行一次前向计算                            | outputs = model(inputs)         | outputs = engine(inputs)               |
+| criterion                             | 计算loss值                      | loss = criterion(output, label) | loss = engine.criterion(output, label) |
+| criterion                             | 反向计算         | loss.backward()                 | engine.backward(loss)                  |
 
-The reason why we need such an engine class is that we can add more functionalities while hiding the implementations in 
-the `colossalai.initialize` function. 
-Imaging we are gonna add a new feature, we can manipulate the model, optimizer, dataloader and loss function in the 
-`colossalai.initialize` function and only expose an engine object to the user. 
-The user only needs to modify their code to the minimum extent by adapting the normal PyTorch APIs to the Colossal-AI 
-engine APIs. In this way, they can enjoy more features for efficient training. 
+我们需要这样一个 Engine 类的原因是，我们可以添加更多的功能，同时将实现隐藏在  
+`colossalai.initialize` 函数中实现。
+假如我们要添加一个新的功能，我们可以在 `colossalai.initialize` 函数中完成对于模型、优化器、数据加载器和损失函数的功能诠释。不管中间的过程有多复杂，最终我们呈现的以及用户需要使用的只有一个 Engine 类，这将十分便捷。
+用户只需要在最小范围内修改他们的代码，将普通的 PyTorch APIs 调整为 Colossal-AI 
+Engine 的 API。通过这种方式，他们可以享受更多的功能来进行有效的训练。 
 
-A normal training iteration using engine can be:
+以下是一个简单的例子：
 
 ```python
 import colossalai
@@ -58,7 +54,8 @@ for img, label in train_dataloader:
 
 ### Trainer
 
-Trainer is a more high-level wrapper for the user to execute training with fewer lines of code. However, in pursuit of more abstraction, it loses some flexibility compared to engine. The trainer is designed to execute a forward and backward step to perform model weight update. It is easy to create a trainer object by passing the engine object. The trainer has a default value `None` for the argument `schedule`. In most cases, we leave this value to `None` unless we want to use pipeline parallelism. If you wish to explore more about this parameter, you can go to the tutorial on pipeline parallelism.
+Trainer 是一个更高级的封装器，用户可以用更少的代码行来执行训练。 由于 Trainer 的使用会更加简单，相较于 Engine，它会缺少一点灵活性。 Trainer 被设计为进行前向和反向计算来进行模型权重的更新。通过传递 Engine 对象，我们可以很容易地创建一个 Trainer。 
+Trainer 的参数 `schedule` 默认值是 `None` 。在大多数情况下，除非我们想使用流水线并行，否则我们把这个值设为 `None`。如果您想探索更多关于这个参数的内容，您可以前往流水线并行的相关教程。
 
 ```python
 from colossalai.logging import get_dist_logger
@@ -77,9 +74,9 @@ trainer = Trainer(
 )
 ```
 
+在 Trainer 中，用户可以定制一些 hooks，并将这些 hooks 附加到 Trainer 上。hook 将根据训练方案定期地执行生命周期函数。例如，基于用户是想在每次训练迭代后还是只在整个训练周期后更新学习率，
+`LRSchedulerHook` 将会在 `after_train_iter` 或 `after_train_epoch` 阶段执行 `lr_scheduler.step()` 去为用户更新学习率。您可以将 hook 存储在一个列表中并将其传递给 `trainer.fit` 方法。`trainer.fit` 方法将根据您的参数执行训练和测试。如果 `display_process` 为 True，将在您的控制台显示一个进度条，以显示训练的过程。
 
-
-In trainer, the user can customize some hooks and attach these hooks to the trainer object. A hook object will execute life-cycle methods periodically based on the training scheme. For example,  The `LRSchedulerHook` will execute `lr_scheduler.step()` to update the learning rate of the model during either `after_train_iter` or `after_train_epoch` stages depending on whether the user wants to update the learning rate after each training iteration or only after the entire training epoch. You can store the hook objects in a list and pass it to `trainer.fit` method. `trainer.fit` method will execute training and testing based on your parameters. If `display_process` is True, a progress bar will be displayed on your console to show the training process.
 
 ```python
 # define the hooks to attach to the trainer
@@ -101,7 +98,7 @@ trainer.fit(
 )
 ```
 
-If you want to customize your own hook class, you can inherit `hooks.BaseHook` and override the life-cycle methods of your interest. A dummy example to demonstrate how to create a simple log message hook is provided below for your reference.
+如果您想定制您的 hook 类，您可以继承 `hooks.BaseHook` 并重写您想要的生命周期方法。下面提供了一个例子来演示如何创建一个简单的关于日志信息的 hook，以供您参考。
 
 ```python
 from colossalai.logging import get_dist_logger
@@ -127,20 +124,19 @@ hook_list.append(LogMessageHook())
 
 
 
-In the sections below, I will guide you through the steps required to train a ResNet model with both engine and trainer.
+在下面的章节中，您将会详细地了解到如何用 Engine 和 Trainer 来训练 ResNet 模型。
 
 
+## ResNet
 
-## Explain with ResNet
+### 总览
 
-### Overview
+在本节中，我们将介绍：
 
-In this section we will cover:
+1. 使用一个 Engine 在 CIFAR10 数据集上训练 ResNet34 模型
+2. 使用一个 Trainer 在 CIFAR10 数据集上训练 ResNet34 模型
 
-1. Use an engine object to train a ResNet34 model on CIFAR10 dataset
-2. Use a trainer object to train a ResNet34 model on CIFAR10 dataset
-
-The project structure will be like:
+项目结构如下：
 
 ```bash
 -- config.py
@@ -148,13 +144,13 @@ The project structure will be like:
 -- run_resnet_cifar10_with_trainer.py
 ```
 
-Steps 1-4 below are commonly used regardless of using engine or trainer. Thus, steps 1-4 + step 5 will be your `run_resnet_cifar10_with_engine.py` and steps 1-4 + step 6 will form `run_resnet_cifar10_with_trainer.py`.
+对于使用 Engine 或 Trainer，步骤 1-4 是通用的。 因此，步骤 1-4 + 步骤 5 将会是对应 `run_resnet_cifar10_with_engine.py` 而 步骤 1-4 + 步骤6 则对应 `run_resnet_cifar10_with_trainer.py`。 
 
-### Hands-on Practice
+### 牛刀小试
 
-#### Step 1. Create a Config File
+#### 步骤 1. 创建配置文件
 
-In your project folder, create a `config.py`. This file is to specify some features you may want to use to train your model. A sample config file is as below:
+在你的项目文件夹中，创建一个 `config.py`。这个文件是用来指定一些您可能想用来训练您的模型的特征。下面是一个配置文件的例子。
 
 ```python
 from colossalai.amp import AMP_TYPE
@@ -167,12 +163,11 @@ fp16=dict(
 )
 ```
 
-In this config file, we specify that we want to use batch size 128 per GPU and run for 200 epochs. These two parameters are exposed by `gpc.config`. For example, you can use `gpc.config.BATCH_SIZE` to access the value you store in your config file. The `fp16` configuration tells `colossalai.initialize` to use mixed precision training provided by PyTorch to train the model with better speed and lower memory consumption.
+在这个配置文件中，我们指定要在每个 GPU 上使用批大小为128，并运行200个 epoch。这两个参数是在 `gpc.config` 中体现的。例如，您可以使用 `gpc.config.BATCH_SIZE` 来访问您存储在配置文件中的批大小值。而 `fp16` 配置则会告诉 `colossalai.initialize` 使用 PyTorch 提供的混合精度训练，以更好的速度和更低的内存消耗来训练模型。
 
-#### Step 2. Initialize Distributed Environment
+#### 步骤 2. 初始化分布式环境
 
-We need to initialize the distributed training environment. This has been introduced in the tutorial on how to 
-[launch Colossal-AI](./launch_colossalai.md). For this demostration, we use `launch_from_torch` and PyTorch launch utility.
+我们需要初始化分布式训练环境。这在 [启动 Colossal-AI](./launch_colossalai.md) 中有相应的教程。在当前的演示中，我们使用 `launch_from_torch` 和 PyTorch 启用工具。
 
 ```python
 import colossalai
@@ -181,20 +176,20 @@ import colossalai
 colossalai.launch_from_torch(config='./config.py')
 ```
 
-#### Step 3. Create all the training components
+#### 步骤 3. 创建所有的训练组件
 
-In this step, we can create all the components used for training. These components include:
+这时，我们可以创建用于训练的所有组件，包括：
 
-1. Model
-2. Optimizer
-3. Criterion/loss function
-4. Training/Testing dataloaders
-5. Learning rate Scheduler
-6. Logger
+1. 模型
+2. 优化器
+3. 损失函数
+4. 训练/测试数据加载器
+5. 学习率调度器
+6. 日志记录器
 
 
 
-To build these components, you need to import the following modules:
+为了构建这些组件，您需要导入以下模块。
 
 ```python
 from pathlib import Path
@@ -211,7 +206,7 @@ from torchvision.models import resnet34
 
 
 
-Then build your components in the same way as how to normally build them in your PyTorch scripts. In the script below, we set the root path for CIFAR10 dataset as an environment variable `DATA`. You can change it to any path you like, for example, you can change `root=Path(os.environ['DATA'])` to `root='./data'` so that there is no need to set the environment variable.
+然后按照通常在PyTorch脚本中构建组件的方式来构建组件。在下面的脚本中，我们将CIFAR10数据集的根路径设置为环境变量 `DATA`。您可以把它改为您想要的任何路径，例如，您可以把 `root=Path(os.environ['DATA'])` 改为 `root='./data'` ，这样就不需要设置环境变量。
 
 ```python
 # build logger
@@ -272,9 +267,9 @@ optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_dec
 lr_scheduler = CosineAnnealingLR(optimizer, total_steps=gpc.config.NUM_EPOCHS)
 ```
 
-#### Step 4. Initialize with Colossal-AI
+#### 步骤 4. 用 Colossal-AI 进行初始化
 
-Next, the essential step is to obtain the engine class by calling `colossalai.initialize`. As stated in `config.py`, we will be using mixed precision training for training ResNet34 model. `colossalai.initialize` will automatically check your config file and assign relevant features to your training components. In this way, our engine object has already been able to train with mixed precision, but you do not have to explicitly take care of it.
+接下来，重要的一步是通过调用 `colossalai.initialize` 获得 Engine。正如 `config.py` 中所述，我们将使用混合精度训练来训练 ResNet34 模型。`colossalai.initialize` 将自动检查您的配置文件，并将相关特征分配给您的训练组件。这样一来，我们的 Engine 已经能够进行混合精度训练，而您不需要进行额外的处理。
 
 ```python
 engine, train_dataloader, test_dataloader, _ = colossalai.initialize(model,
@@ -287,9 +282,9 @@ engine, train_dataloader, test_dataloader, _ = colossalai.initialize(model,
 
 
 
-#### Step 5. Train with engine
+#### 步骤 5. 用 Engine 进行训练
 
-With all the training components ready, we can train ResNet34 just like how to normally deal with PyTorch training.
+当所有的训练组件都准备好后，我们就可以像使用 PyTorch 一样训练 ResNet34 了。
 
 ```python
 for epoch in range(gpc.config.NUM_EPOCHS):
@@ -337,9 +332,10 @@ for epoch in range(gpc.config.NUM_EPOCHS):
         f"Epoch {epoch} - train loss: {train_loss:.5}, test loss: {test_loss:.5}, acc: {correct / total:.5}, lr: {lr_scheduler.get_last_lr()[0]:.5g}", ranks=[0])
 ```
 
-#### Step 6. Train with trainer
+#### 步骤 6. 用 Trainer 进行训练
 
-If you wish to train with a trainer object, you can follow the code snippet below:
+如果您想用 Trainer 进行训练，您可以参考下面的代码进行您的实验。
+
 
 ```python
 from colossalai.nn.metric import Accuracy
@@ -375,9 +371,10 @@ trainer.fit(
 
 
 
-#### Step 7. Start Distributed Training
+#### 步骤 7. 开始分布式训练
 
-Lastly, we can invoke the scripts using the distributed launcher provided by PyTorch as we used `launch_from_torch` in Step 2. You need to replace `<num_gpus>` with the number of GPUs available on your machine. This number can be 1 if you only want to use 1 GPU. If you wish to use other launchers, you can refer to the tutorial on How to Launch Colossal-AI.
+最后，我们可以使用 PyTorch 提供的分布式启动器来调用脚本，因为我们在步骤2中使用了 `launch_from_torch`。您需要把`<num_gpus>` 替换成您机器上可用的GPU数量。如果您只想使用一个 GPU，您可以把这个数字设为1。如果您想使用其他的启动器，请您参考如何启动 Colossal-AI 的教程。
+
 
 ```bash
 # with engine

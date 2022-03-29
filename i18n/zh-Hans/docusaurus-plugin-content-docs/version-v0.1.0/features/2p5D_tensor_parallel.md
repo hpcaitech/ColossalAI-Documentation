@@ -1,44 +1,43 @@
-# 2.5D Tensor Parallelism
+# 2.5D 张量并行
 
-Author: Zhengda Bian, Yongbin Li
+作者: Zhengda Bian, Yongbin Li
 
-**Prerequisite**
-- [Define Your Configuration](../basics/define_your_config.md)
-- [Configure Parallelization](../basics/configure_parallelization.md)
-- [1D Tensor Parallelism](./1D_tensor_parallel.md)
-- [2D Tensor Parallelism](./2D_tensor_parallel.md)
+**前置教程**
+- [定义配置文件](../basics/define_your_config.md)
+- [并行配置](../basics/configure_parallelization.md)
+- [1D 张量并行](./1D_tensor_parallel.md)
+- [2D 张量并行](./2D_tensor_parallel.md)
 
-**Example Code**
+**示例代码**
 - [ColossalAI-Examples - 2.5D Tensor Parallelism](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/tensor_parallel/tensor_parallel_2p5d.py)
 
-**Related Paper**
+**相关论文**
 - [2.5-dimensional distributed model training](https://arxiv.org/pdf/2105.14500.pdf)
 
-## Introduction
+## 引言
 
-Compared with 1D tensor parallelism, 2D parallelism reduces the memory cost, but may introduce more communication. 
-Therefore, a  [2.5D tensor parallelism algorithm](https://arxiv.org/pdf/2105.14500.pdf) was proposed based on 2.5D SUMMA to reduce communication by using more devices.
+与一维张量并行相比，二维并行降低了内存成本，但可能引入更多的通信。因此，[2.5D张量并行](https://arxiv.org/pdf/2105.14500.pdf) 在 2.5D SUMMA 的基础上被提出，它通过使用更多的设备来减少通信。
 
-Let's still take a linear layer $Y = XA$ as an example.
-Given $P=q \times q \times d$ processors (necessary condition), e.g. $q=d=2$, we split the input $X$ into $d\times q$ rows and $q$ columns as
+我们还是以线性层 $Y = XA$ 为例。
+给定 $P=q \times q \times d$ 个处理器（必要条件）, 如 $q=d=2$, 我们把输入 $X$ 划分为 $d\times q$ 行和 $q$ 列
 
 $$
 \left[\begin{matrix} X_{30} & X_{31} \\ X_{20} & X_{21} \\ X_{10} & X_{11} \\ X_{00} & X_{01}\end{matrix} \right],
 $$
-which can be reshaped into $d$ layers as
+它可以被重塑为 $d$ 层
 
 $$
 \left[\begin{matrix} X_{10} & X_{11} \\ X_{00} & X_{01} \end{matrix} \right] \text{~and~}\left[\begin{matrix} X_{30} & X_{31} \\ X_{20} & X_{21} \end{matrix} \right].
 $$
 
-Also, the weight $A$ is split into
+另外，权重 $A$ 被分割为
 
 $$
 \left[\begin{matrix} A_{10} & A_{11} \\ A_{00} & A_{01} \end{matrix} \right].
 $$
 
-For each layer of $X$, we use the SUMMA algorithm to multiply $X$ and $A$.
-Then, we have the output
+对于 $X$ 相关的每一层, 我们使用SUMMA算法将 $X$ 与 $A$ 相乘。
+然后，我们得到输出
 
 $$
 \left[\begin{matrix} Y_{10}=X_{10}A_{00}+X_{11}A_{10} & Y_{11}=X_{10}A_{01}+X_{11}A_{11} \\ Y_{00}=X_{00}A_{00}+X_{01}A_{10} & Y_{01}=X_{00}A_{01}+X_{01}A_{11} \end{matrix} \right]
@@ -48,16 +47,18 @@ $$
 \left[\begin{matrix} Y_{30}=X_{30}A_{00}+X_{31}A_{10} & Y_{31}=X_{30}A_{01}+X_{31}A_{11} \\ Y_{20}=X_{20}A_{00}+X_{21}A_{10} & Y_{21}=X_{20}A_{01}+X_{21}A_{11} \end{matrix} \right].
 $$
 
-## Efficiency
-Given $P=q \times q \times d$ processors, we present the theoretical computation and memory cost, as well as the communication cost based on the ring algorithm in both the forward and backward pass of 2.5D tensor parallelism.
+## 效率
 
-| Computation | Memory (parameters) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
+给定 $P=q \times q \times d$ 个处理器, 我们展现理论上的计算和内存成本，以及基于环形算法的2.5D张量并行的前向和后向的通信成本。
+
+| 计算 | 内存 (参数) | 内存 (activations) | 通信 (带宽) | 通信 (时延) |
 | :-:         | :-:              | :-:                  | :-:                       | :-:                     |
 | $O(1/dq^2)$ | $O(1/q^2)$       | $O(1/dq^2)$          | $\small O(3(q-1)(d+1)/dq)$       | $O(6(q-1))$             |
 
-## Usage
+## 使用
 
-To enable 2.5D tensor parallelism for our model, e.g. on 8 GPUs, we need to configure the parallism setting as below.
+为了使我们的模型能够实现2.5D张量并行，例如在8个 GPU 上，我们需要配置如下的并行设置。
+
 ```python
 CONFIG = dict(parallel=dict(
     data=1,
@@ -66,9 +67,11 @@ CONFIG = dict(parallel=dict(
 ))
 
 ```
-Then Colossal-AI will automatically apply 2.5D parallelism to all the layers from `colossalai.nn`.
 
-Let's define a model that consists of a two-layer multi-layer perceptron (MLP) as below.
+然后 Colossal-AI 会自动对所有来自 `colossalai.nn` 的层应用2.5D张量并行。
+
+让我们定义一个由两层多层感知器 (MLP) 组成的模型，如下所示。
+
 ```python
 import colossalai
 import colossalai.nn as col_nn
@@ -95,7 +98,7 @@ class MLP(torch.nn.Module):
         x = self.dropout(x)
         return x
 ```
-Launch Colossal-AI on 8 GPUs and build the model
+在8个 GPU 上启动 Colossal-AI 并建立模型。
 ```python
 parser = colossalai.get_default_parser()
 colossalai.launch(config=CONFIG,
@@ -107,15 +110,16 @@ colossalai.launch(config=CONFIG,
 
 m = MLP()
 ```
-We will see the shapes of partitioned parameters(e.g. weights) in the MLP model.
+我们将会看到 MLP 模型中被划分的参数（如权重）的形状。
 ```shell
 Weight of the first linear layer: torch.Size([128, 512])
 Weight of the second linear layer: torch.Size([512, 128])
 ```
-The complete weight of the first linear layer is supposed to have the shape `[256, 1024]`. After the partitioning of 2.5D parallelism, it becomes `[128, 512]` on each GPU.
-Similarly, the second layer partitions the weight `[1024, 256]` into `[512, 128]`.
 
-We can run the model with some random inputs.
+第一个线性层的完整权重形状应该为 `[256, 1024]`. 经过2.5D并行划分后，它在每个 GPU 上变成了 `[128, 512]` 。
+同样地，第二层将权重 `[1024, 256]` 划分为 `[512, 128]`.
+
+我们可以用一些随机输入来运行这个模型。
 ```python
 from colossalai.context import ParallelMode
 from colossalai.core import global_context as gpc
@@ -131,12 +135,11 @@ print_rank_0(f'Input: {x.shape}')
 
 x = m(x)
 ```
-Then we can see the shapes of activation results.
+然后我们可以看到 activation 结果的形状。
 ```shell
 Input: torch.Size([4, 128])
 Output of the first linear layer: torch.Size([4, 512])
 Output of the second linear layer: torch.Size([4, 128])
 ```
-The activation tensors in 2.5D parallelism are all split by $d \times q$ in the row and $q$ in the column.
-E.g. the output of the first linear layer has the shape `[4, 512]`), while the second layer has the output of `[4, 128]`.
-Note, 2.5D parallelism use the same partition method as 2D parallelism for weights, where the difference is the partition of input.
+2.5D并行中的 activation 张量都是同时在$d \times q$行和$q$列分割的。例如，第一个线性层的输出是 `[4, 512]`, 而第二层的输出为 `[4, 128]`。
+注意，2.5D并行使用与2D并行相同的划分方法来处理权重，区别在于对输入的划分。

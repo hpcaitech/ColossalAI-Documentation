@@ -1,6 +1,6 @@
 # Distributed Training
 
-Author: Shenggui Li
+Author: Shenggui Li, Siqi Mai
 
 ## What is a distributed system?
 

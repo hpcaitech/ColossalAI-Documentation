@@ -1,29 +1,27 @@
-# Train ViT Using Pipeline Parallelism
+# 使用流水并行训练 ViT
 
-Author: Hongxin Liu, Yongbin Li
+作者: Hongxin Liu, Yongbin Li
 
-**Example Code**
+**示例代码**
 - [ColossalAI-Examples Pipeline Parallel ViT](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/image/vision_transformer/pipeline_parallel)
 
-**Related Paper**
+**相关论文**
 - [Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM](https://arxiv.org/abs/2104.04473)
 
-## Introduction
+## 引言
 
-In this tutorial, you will learn how to train Vision Transformer for image classification from scratch, using pipeline. 
-Pipeline parallelism is a kind of model parallelism, which is useful when your GPU memory cannot fit your model. 
-By using it, we split the original model into multi stages, and each stage maintains a part of the original model. 
-We assume that your GPU memory cannot fit ViT/L-16, and your memory can fit this model.
+在本教程中，你将学习如何使用流水并行从头开始训练用于图像分类的 Vision Transformer (ViT)。流水并行是一种模型并行，主要针对 GPU 内存不能满足模型容量的情况。
+通过使用流水并行，我们将原始模型分割成多个阶段，每个阶段保留原始模型的一部分。我们假设你的 GPU 内存不能容纳 ViT/L-16，而你的内存可以容纳这个模型。
 
-##  Table of contents
+##  目录
 
-In this tutorial we will cover:
+在本教程中，我们将介绍:
 
-1. The definition of ViT model, based on [TIMM](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py)
-2. Processing the dataset
-3. Training ViT using pipeline
+1. 基于 [TIMM](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py) 定义 ViT 模型
+2. 处理数据集
+3. 使用流水并行训练 ViT
 
-## Import libraries
+## 导入依赖库
 
 ```python
 import os
@@ -46,26 +44,25 @@ from torchvision.datasets import CIFAR10
 ```
 
 
+## 定义 Vision Transformer 模型
 
-## Define Vision Transformer model
-
-Generally, we provide 3 ways to build a pipelined model:
+总的来说, 我们提供3种方法来建立一个流水并行的模型:
 
 1. `colossalai.builder.build_pipeline_model_from_cfg`
 2. `colossalai.builder.build_pipeline_model`
-3. Split the model by stages by yourself
+3. 自己按阶段拆分模型
 
-When your memory can fit the model, you can use the first two methods to build your model, otherwise you must split the model by yourself. The first two methods first build the whole model on CPU, then split the model, and finally you can just move the corresponding part of model to GPU.
+当你的内存能够容纳模型时，你可以使用前两种方法来建立你的模型，否则你必须自己分割模型。前两种方法首先在 CPU 上建立整个模型，然后分割模型，最后你可以直接把模型的相应部分移到 GPU 上。
 
-`colossalai.builder.build_pipeline_model_from_cfg()` receives a config file of model, and it can split the model uniformly (by layer) or balanced (by parameter size). 
+`colossalai.builder.build_pipeline_model_from_cfg()` 接收一个模型的配置文件，它可以均匀地（按层）或平衡地（按参数大小）分割模型。
 
-If you are familiar with `PyTorch`, you can use  `colossalai.builder.build_pipeline_model()` which receives a `torch.nn.Sequential` model and split it by layer uniformly.
+如果你熟悉 `PyTorch`, 你可以使用 `colossalai.builder.build_pipeline_model()` 它接收一个 `torch.nn.Sequential` 模型并按层均匀分割。
 
-In this tutorial, we will modify [TIMM/ViT](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py) to `torch.nn.Sequential` and then use `colossalai.builder.build_pipeline_model()` to build the pipelined model.
+在本教程中，我们将修改 [TIMM/ViT](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py) to `torch.nn.Sequential`，然后使用 `colossalai.builder.build_pipeline_model()` 来建立流水线模型。
 
-When the data is **one** `Tensor`, you can use the positional argument in `forward()` of your model to get the data tensor. For the first stage of pipeline, the first positional argument of `forward()` is the data tensor loaded from data loader. For other stages, the first positional argument of `forward()` is the output tensor from the previous stage. Note that if the stage is not the last stage, the return of `forward()` must be a `Tensor`. 
+当数据是 **一个** `Tensor`, 你可以使用你的模型 `forward()` 中的位置参数来获得数据张量。对于流水线的第一阶段，`forward()` 的第一个位置参数是从数据加载器加载的数据张量。对于其他阶段，`forward()` 的第一个位置参数是上一阶段的输出张量。注意，如果该阶段不是最后一个阶段，则 `forward()` 的返回必须是一个 `Tensor`。
 
-When the data is a `dict` of `Tensor`, you can use named keyword arguments in `forward()` of your model to get the data `dict`.
+当数据是一个 `Tensor` 的 `dict`, 你可以使用你模型 `forward()` 的命名关键字参数来获得数据的 `dict`。
 
 ```python
 class ViTEmbedding(nn.Module):
@@ -168,9 +165,9 @@ def vit_large_patch16_224(**kwargs):
     return sequential_vit(**model_kwargs)
 ```
 
-## Process the dataset
+## 处理数据集
 
-Generally, we train ViT on large dataset like Imagenet. For simplicity, we just use CIFAR-10 here, since this tutorial is just for pipeline training.
+一般来说, 我们在大型数据集如 ImageNet 上训练 ViT。为了简单期间，我们在这里只使用 CIFAR-10, 因为本教程只是用于流水并行训练。
 
 ```python
 def build_cifar(batch_size):
@@ -193,11 +190,15 @@ def build_cifar(batch_size):
     return train_dataloader, test_dataloader
 ```
 
-## Training ViT using pipeline
+## 使用流水并行训练 ViT
 
-You can set the size of pipeline parallel in config. `NUM_CHUNKS` is useful when using interleved-pipeline (for more details see [Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM](https://arxiv.org/abs/2104.04473) ). The original batch will be split into `num_microbatches`, and each stage will load a micro batch each time. If you certainly know the shape of the output tensor of each stage and the shapes of output tensor of all stages are the same (except the last stage), you can set `tensor_shape` when initializing `PipelineSchedule` and `InterleavedPipelineSchedule`, which can reduce communication. If you train `Transformer` models with pipeline and 1D tensor parallelism together, you can set `scatter_gather_tensors` to `True` when initializing  `PipelineSchedule` and `InterleavedPipelineSchedule` which optimize communication. If you don't need the output and label of model, you can set `return_output_label` to `False` when calling `trainer.fit()` which can further reduce GPU memory usage.
+你可以在配置文件中设置流水并行的大小。`NUM_CHUNKS` 在使用交错流水线时很有用 (更多细节见 [Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM](https://arxiv.org/abs/2104.04473) )。
+原始 batch 将会被分割为 `num_microbatches`, 每个阶段每次将加载一个 micro batch。如果你确定性地知道每个阶段输出张量的形状，并且所有阶段的输出张量的形状是相同的（除了最后一个阶段），你可以在初始化
+`PipelineSchedule` 和 `InterleavedPipelineSchedule` 时设置 `tensor_shape` 来减少通信。如果你用流水和1D张量并行来训练 `Transformer` 
+模型，你可以在初始化 `PipelineSchedule` 和 `InterleavedPipelineSchedule` 时设置 `scatter_gather_tensors` 为 `True` 来优化通信。
+如果你不需要模型的输出和标签，你可以在调用 `trainer.fit()` 时，将 `return_output_label` 设置为 `False`，这样能进一步减少 GPU 显存使用。
 
-You should `export DATA=/path/to/cifar`.
+你应当使用 `export DATA=/path/to/cifar`。
 
 ```python
 BATCH_SIZE = 16
