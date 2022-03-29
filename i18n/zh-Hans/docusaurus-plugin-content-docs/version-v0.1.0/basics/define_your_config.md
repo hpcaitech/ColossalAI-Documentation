@@ -1,41 +1,33 @@
-# Define Your Configuration
+# 构建配置文件
 
-Author: Guangyang Lu, Shenggui Li
+作者: Guangyang Lu, Shenggui Li, Siqi Mai
 
-**Prerequisite:**
-- [Distributed Training](../concepts/distributed_training.md)
-- [Colossal-AI Overview](../concepts/colossalai_overview.md)
+**预备知识:**
+- [分布式训练](../concepts/distributed_training.md)
+- [Colossal-AI 总览](../concepts/colossalai_overview.md)
 
 
-## Introduction
+## 简介
 
-In Colossal-AI, a configuration file is required to specify the features the system will inject into the training process.
-In this tutorial, we will introduce you how to construct your configuration file and how this config file will be used. 
-Using configuration file has several advantages:
+在 Colossal-AI 中，我们需要一个配置文件来指定系统在训练过程中要注入的特征。在本教程中，我们将向您介绍如何构建您的配置文件以及如何使用这个配置文件。使用配置文件有以下一些好处：
 
-1. You can store your feature configuration and training hyper-parameters in different configuration files
-2. New features released in the future can be specified in the configuration without code change in the training script 
+1. 您可以在不同的配置文件中存储您的特征配置和训练超参数。
+2. 对于我们未来发布的新功能，您亦可以在配置中指定，而无需改变训练脚本的代码。 
 
-In this tutorial, we will cover how to define your configuration file.
+在本教程中，我们将向您介绍如何构建您的配置文件。
 
-## Configuration Definition
+## 配置定义
 
-In a configuration file, there are two types of variables. One serves as feature specification and the other serves
-as hyper-parameters. All feature-related variables are reserved keywords. For example, if you want to use mixed precision
-training, you need to use the variable name `fp16` in the confi file and follow a pre-defined format.
+在一个配置文件中，有两种类型的变量。一种是作为特征说明，另一种是作为超参数。所有与特征相关的变量都是保留关键字。例如，如果您想使用混合精度训练，需要在 config 文件中使用变量名`fp16`，并遵循预先定义的格式。
 
-### Feature Specification
+### 功能配置
 
-There is an array of features Colossal-AI provides to speed up training. Each feature is defined by a corresponding field 
-in the config file. In this tutorial, we are not giving the config details for all the features, but rather we are providing 
-an illustration of how to specify a feature. **The details of each feature can be found in its respective tutorial.**
+Colossal-AI 提供了一系列的功能来加快训练速度。每个功能都是由配置文件中的相应字段定义的。在本教程中，我们不会给出所有功能的配置细节，而是提供一个如何指定一个功能的说明。**每个功能的细节可以在其各自的教程中找到。**
 
-To illustrate the use of config file, we use mixed precision training as an example here. In order to do so, you need to 
-follow the steps below.
+为了说明配置文件的使用，我们在这里使用混合精度训练作为例子。您需要遵循以下步骤。
 
-1. create a configuration file (e.g. `config.py`, the file name can be anything)
-2. define the mixed precision configuration in the config file. For example, in order to use mixed precision training 
-natively provided by PyTorch, you can just write these lines of code below into your config file.
+1. 创建一个配置文件（例如 `config.py`，您可以指定任意的文件名）。
+2. 在配置文件中定义混合精度的配置。例如，为了使用 PyTorch 提供的原始混合精度训练，您只需将下面这几行代码写入您的配置文件中。
 
    ```python
    from colossalai.amp import AMP_TYPE
@@ -45,8 +37,7 @@ natively provided by PyTorch, you can just write these lines of code below into 
    )
    ```
 
-3. Tell Colossal-AI where your config file is when launch the distributed environment. For example, the config file is in 
-the current directory.
+3. 当启动分布式环境时，向 Colossal-AI 指定您的配置文件的位置。比如下面的例子是配置文件在当前目录下。
 
    ```python
    import colossalai
@@ -54,21 +45,19 @@ the current directory.
    colossalai.launch(config='./config.py', ...)
    ```
 
-In this way, Colossal-AI knows what features you want to use and will inject this feature during `colossalai.initialize`.
+这样，Colossal-AI 便知道您想使用什么功能，并会在 `colossalai.initialize` 期间注入您所需要的功能。
 
-### Global Hyper-parameters
+### 全局超参数
 
-Besides feature specification, the config file can also serve as a place to define your training hyper-parameters. This 
-comes handy when you want to perform multiple experiments, each experiment details can be put into a single config file 
-to avoid confusion. These parameters will be stored in the global parallel context and can be accessed in the training script.
+除了功能的配置，您还可以在配置文件中定义训练的超参数。当您想进行多个实验时，这将会变得非常方便。每个实验的细节都可以放在独立的配置文件中，以避免混乱。这些参数将被存储在全局并行环境中，可以在训练脚本中访问。
 
-For example, you can specify the batch size in your config file.
+例如，您可以在配置文件中指定批量大小。
 
 ```python
 BATCH_SIZE = 32
 ```
 
-After launch, you are able to access your hyper-parameters through global parallel context.
+启动后，您能够通过全局并行上下文访问您的超参数。
 
 ```python
 import colossalai

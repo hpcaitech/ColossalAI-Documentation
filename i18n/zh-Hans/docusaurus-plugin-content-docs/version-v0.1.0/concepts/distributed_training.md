@@ -1,6 +1,6 @@
 # 分布式训练
 
-作者: Shenggui Li
+作者: Shenggui Li, Siqi Mai
 
 ## 什么是分布式系统？
 
