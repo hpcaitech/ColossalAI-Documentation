@@ -79,7 +79,7 @@ with ZeroInitContext(convert_fp16=True,
 
 You can see the exact usage of `ZeroInitContext` in [API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.init_ctx.init_context.html)
 
-Next, we will firstly give you a configuration template to help you configure ZeRO when using high-level API. Then, we will give you an example of using a low-level API. 
+First, we will give you a configuration template to help you configure ZeRO when using high-level API. Then, we will give you an example of using a low-level API. 
 
 > We now provide `from colossalai.nn.optimizer.CPUAdam`, which is faster than `torch.optim.Adam` when using CPU offload. For more details, see [API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.nn.optimizer.cpu_adam.html).
 
@@ -132,7 +132,7 @@ with ZeroInitContext(convert_fp16=True,
 
 Then you can use `Engine` as usual.
 
-The complete example of training GPT with high-level API can be found on [GPT example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt).
+Here is an example of training GPT with high-level API: [GPT example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt).
 
 ## Train GPT with low-level API
 
