@@ -1,24 +1,22 @@
-# Initialize Features
+# 初始化功能
 
-Author: Shenggui Li
+作者: Shenggui Li, Siqi Mai
 
-**Prerequisite:**
-- [Distributed Training](../concepts/distributed_training.md)
-- [Colossal-AI Overview](../concepts/colossalai_overview.md)
+**预备知识:**
+- [分布式训练](../concepts/distributed_training.md)
+- [Colossal-AI 总览](../concepts/colossalai_overview.md)
 
-## Introduction
+## 简介
 
-In this tutorial, we will cover the use of `colossalai.initialize` which injects features into your training components
-(e.g. model, optimizer, dataloader) seamlessly. Calling `colossalai.initialize` is the standard procedure before you run
-into your training loops.
+在本教程中，我们将介绍 `colossalai.initialize` 的使用。 它包含了如何将特征(例如，模型、优化器、数据加载器）无缝注入您的训练组件中。 调用 `colossalai.initialize` 是您进入训练循环前的基本操作。
 
-In the section below, I will cover how `colossalai.initialize` works and what we should take note  of.
+在下面一节中，我们将介绍 `colossalai.initialize` 是如何工作的以及使用中我们要注意的细节。
 
-## Usage
+## 使用
 
-In a typical workflow, we will launch distributed environment at the beginning of our training script.
-Afterwards, we will instantiate our objects such as model, optimizer, loss function, dataloader etc. At this moment, `colossalai.initialize` 
-can come in to inject features into these objects. A pseudo-code example is like below:
+在一个典型的工作流程中，我们将在训练脚本的开始启动分布式环境。
+之后，我们将实例化我们的对象，如模型、优化器、损失函数、数据加载器等。此时，我们可以使用 `colossalai.initialize` 便捷地为这些对象注入特征。
+具体细节请看以下的伪代码例子。
 
 ```python
 import colossalai
@@ -44,6 +42,5 @@ engine, train_dataloader, test_dataloader, _ = colossalai.initialize(model,
                                                                      test_dataloader)
 ```
 
-The `colossalai.initialize` function will return an `Engine` object. The engine object is a wrapper 
-for model, optimizer and loss function. **The engine object will run with features specified in the config file.**
-More details about the engine can be found in the [Use Engine and Trainer in Training](./engine_trainer.md).
+ `colossalai.initialize` 将返回一个 `Engine` 对象。 该对象把模型、优化器和损失函数封装起来。 **`Engine` 对象会以配置文件中指定的特征运行。**
+关于 `Engine` 的更多使用细节可以在 [在训练中使用Engine和Trainer](./engine_trainer.md) 中获取。

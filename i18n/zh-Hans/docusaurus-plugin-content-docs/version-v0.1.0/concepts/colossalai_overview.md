@@ -1,6 +1,6 @@
 # Colossal-AI 总览
 
-作者: Shenggui Li
+作者: Shenggui Li, Siqi Mai
 
 ## 关于 Colossal-AI
 

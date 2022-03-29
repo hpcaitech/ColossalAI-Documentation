@@ -1,6 +1,6 @@
 # Initialize Features
 
-Author: Shenggui Li
+Author: Shenggui Li, Siqi Mai
 
 **Prerequisite:**
 - [Distributed Training](../concepts/distributed_training.md)

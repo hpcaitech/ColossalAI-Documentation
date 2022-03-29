@@ -1,6 +1,6 @@
 # 并行技术
 
-作者: Shenggui Li
+作者: Shenggui Li, Siqi Mai
 
 ## 简介
 
