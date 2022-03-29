@@ -1,14 +1,15 @@
-# Integrate Mixture-of-Experts Into Your Model
+# 将 MoE 整合进你的模型
 
-Author: Haichen Huang
+作者: Haichen Huang, Yongbin Li
 
-**Example Code**
+**前置教程**
 - [ColossalAI-Examples WideNet](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/image/widenet)
 
-**Related Paper**
+**相关论文**
 - [Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity](https://arxiv.org/abs/2101.03961)
 - [Go Wider Instead of Deeper](https://arxiv.org/abs/2107.11817)
 
+（中文版教程将会在近期提供）
 
 ## Introduction
 

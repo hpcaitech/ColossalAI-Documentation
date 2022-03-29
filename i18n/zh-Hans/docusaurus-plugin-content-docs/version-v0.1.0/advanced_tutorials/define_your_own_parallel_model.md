@@ -1,17 +1,13 @@
-# Define your own parallel model
+# 定义你自己的并行模型
 
-Author: Zhengda Bian
+作者: Zhengda Bian, Yongbin Li
 
-> ⚠️ We are working on this documentation to make it more detailed. We will introduce the mechanism of different parallelism 
-> and how to use them to write a model.
+> ⚠️ 我们正在编写此文档以使其更加详细。 我们将介绍不同并行的机制以及如何使用它们来编写模型。
 
-Let's say that you have a huge MLP model with billions of parameters and its extremely large hidden layer size makes it
-impossible to fit into a single GPU directly. Don't worry, ColossalAI is here to help you sort things out. With the help of ColossalAI, 
-you can write your model in the familiar way in which you used to write models for a single GPU, while ColossalAI automatically 
-splits your model weights and fit them perfectly into a set of GPUs. We give a simple example showing how to write a simple 
-2D parallel model in the Colossal-AI context.
+假设您有一个具有数十亿参数的巨大 MLP 模型，其极大的隐藏层大小使其无法直接被单个 GPU 容纳。别担心，Colossal-AI 可以帮你解决这个问题。
+在 Colossal-AI 的帮助下，您可以用所熟悉的为单个 GPU 编写模型的方式编写大模型，而 Colossal-AI 会自动拆分您的模型权重，并将它们完美地分配到一组 GPU 中。我们给出一个简单的示例，展示如何在 Colossal-AI 中编写简单的 2D 并行模型。
 
-## Write a simple 2D parallel model
+## 写一个简单的2D并行模型
 
 ```python
 from colossalai.nn import Linear2D
@@ -30,7 +26,6 @@ class MLP_2D(nn.Module):
         return x
 ```
 
-## Use pre-defined model
+## 使用预定义的模型
 
-For the sake of your convenience, we kindly provide you in our Model Zoo with some prevalent models such as *BERT*, *VIT*, 
-and *MLP-Mixer*. Feel free to customize them into different sizes to fit into your special needs.
+为了方便您的使用，我们在 Colossal-AI 的 Model Zoo 中提供一些流行的模型，如*BERT*, *ViT*, *MoE* 和 *GPT*，请自由地将它们定制为不同的尺寸，以满足您的特殊需求。

@@ -156,8 +156,8 @@ fp16 = dict(
 
 - opt_level(str, optional, default="O1" ): 纯精度或混合精度优化水平。可选值 “O0”, “O1”, “O2”, and “O3”, 详细解释见上方 Apex AMP 文档。
 
-- num_losses(int, optional, default=1): 选择提前告知 AMP 您计划使用多少次损失/反向传递。 
-当`amp.scale_loss`与 loss_id 参数一起使用时，使 AMP 在每次损失/反向传递时使用不同的损失比例，这可以提高稳定性。如果 num_losses 被设置为1，AMP 仍支持多次损失/反向传递，但对他们都使用同一个全局损失比例。
+- num_losses(int, optional, default=1): 选择提前告知 AMP 您计划使用多少次损失/反向计算。 
+当`amp.scale_loss`与 loss_id 参数一起使用时，使 AMP 在每次损失/反向计算时使用不同的损失比例，这可以提高稳定性。如果 num_losses 被设置为1，AMP 仍支持多次损失/反向计算，但对他们都使用同一个全局损失比例。
 
 - verbosity(int, default=1): 设置为0抑制 AMP 相关输出。
 
