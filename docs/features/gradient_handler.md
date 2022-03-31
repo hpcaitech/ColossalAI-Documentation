@@ -1,8 +1,8 @@
 # Gradient Handler
 
-Author: Shenggui Li
+Author: Shenggui Li, Yongbin Li
 
-**Prerequisite:**
+**Prerequisite**
 - [Define Your Configuration](../basics/define_your_config.md)
 - [Use Engine and Trainer in Training](../basics/engine_trainer.md)
 
@@ -24,7 +24,7 @@ When gradient handlers are used, PyTorch `DistributedDataParallel` will not be u
 
 To implement a customized gradient handler, you need to follow these steps.
 1. inherit `BaseGradientHandler` in Colossal-AI.
-2. register the gradient handler into the `GRADIENT_HANDLER` registry
+2. register the gradient handler into the `GRADIENT_HANDLER`.
 3. implement `handle_gradient` method.
 
 ```python

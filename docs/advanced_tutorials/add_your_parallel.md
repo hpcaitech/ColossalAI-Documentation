@@ -1,6 +1,6 @@
 # Add Your Own Parallel Mode
 
-Author: Shenggui Li
+Author: Shenggui Li, Yongbin Li
 
 **Prerequisite:**
 - [Define Your Configuration](../basics/define_your_config.md)

@@ -1,8 +1,8 @@
 # Auto Mixed Precision Training
 
-Author: Chuanrui Wang, Shenggui Li
+Author: Chuanrui Wang, Shenggui Li, Yongbin Li
 
-**Prerequisite:**
+**Prerequisite**
 - [Define Your Configuration](../basics/define_your_config.md)
 - [Use Engine and Trainer in Training](../basics/engine_trainer.md)
 
@@ -29,7 +29,7 @@ In Colossal-AI, we have incorporated different implementations of mixed precisio
 | AMP_TYPE.APEX | ❌ | ❌ | More fine-grained, we can choose opt_level O0, O1, O2, O3 | 
 | AMP_TYPE.NAIVE | ✅ | ✅ | Model parameters, forward and backward operations are all downcast to fp16 |
 
-The first two rely on the original implementation of PyTorch (version 1.6 and above) and Nvidia Apex. 
+The first two rely on the original implementation of PyTorch (version 1.6 and above) and NVIDIA Apex. 
 The last method is similar to Apex O2 level. 
 Among these methods, apex AMP is not compatible with tensor parallelism. 
 This is because that tensors are split across devices in tensor parallelism, thus, it is required to communicate among different processes to check if inf or nan occurs in the whole model weights. 
@@ -45,7 +45,7 @@ We recommend you to use torch AMP as it generally gives better accuracy than nai
 
 In this tutorial we will cover:
 
-1. Amp introduction
+1. AMP introduction
 2. AMP in Colossal-AI
 3. Hands-on Practice
 
@@ -83,7 +83,7 @@ fp16=dict(
     mode = AMP_TYPE.NAIVE  
 )
 
-# use Nvidia Apex AMP
+# use NVIDIA Apex AMP
 fp16=dict(
     mode = AMP_TYPE.APEX  
 )
@@ -95,7 +95,7 @@ fp16=dict(
 ### AMP Modularity
 
 AMP module is designed to be completely modular and can be used independently. 
-If you wish to only use amp in your code base without `colossalai.initialize`, 
+If you wish to only use AMP in your code base without `colossalai.initialize`, 
 you can use `colossalai.amp.convert_to_amp`.
 
 ```python
@@ -163,12 +163,12 @@ fp16 = dict(
 ```
 
 Parameters: 
-- enabled(bool, optional, default=True): If False, renders all Amp calls no-ops, so your script should run as if Amp were not present.
+- enabled(bool, optional, default=True): If False, renders all AMP calls no-ops, so your script should run as if Amp were not present.
 
 - opt_level(str, optional, default="O1" ): Pure or mixed precision optimization level. 
-Accepted values are “O0”, “O1”, “O2”, and “O3”, explained in detail above.
+Accepted values are “O0”, “O1”, “O2”, and “O3”, explained in detail above Apex AMP Documentation.
 
-- num_losses(int, optional, default=1): Option to tell Amp in advance how many losses/backward passes you plan to use. 
+- num_losses(int, optional, default=1): Option to tell AMP in advance how many losses/backward passes you plan to use. 
 When used in conjunction with the loss_id argument to `amp.scale_loss`, enables Amp to use a different loss scale per 
 loss/backward pass, which can improve stability. If num_losses is left to 1, Amp will still support multiple 
 losses/backward passes, but use a single global loss scale for all of them.
@@ -215,7 +215,7 @@ fp16 = dict(
 )
 ```
 
-The default parameters of naive amp:
+The default parameters of Naive AMP:
 - log_num_zeros_in_grad(bool): return number of zeros in the gradients.
 - initial_scale(int): initial scale of gradient scaler
 - growth_factor(int): the growth rate of loss scale

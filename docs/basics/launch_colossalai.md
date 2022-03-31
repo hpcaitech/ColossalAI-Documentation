@@ -1,6 +1,6 @@
 # Launch Colossal-AI
 
-Author: Chuanrui Wang, Shenggui Li
+Author: Chuanrui Wang, Shenggui Li, Siqi Mai
 
 **Prerequisite:**
 - [Distributed Training](../concepts/distributed_training.md)
@@ -155,7 +155,7 @@ srun python train.py --host <master_node> --port 29500
 ```
 
 ### Launch with OpenMPI
-If you are more familiar with openMPI, you can use `launch_from_openmpi` instead.
+If you are more familiar with OpenMPI, you can use `launch_from_openmpi` instead.
 `launch_from_openmpi` will automatically read the local rank, global rank and world size from the environment variables 
 `OMPI_COMM_WORLD_LOCAL_RANK`, `MPI_COMM_WORLD_RANK` and `OMPI_COMM_WORLD_SIZE` respectively and 
 use them to start the distributed backend.

@@ -1,8 +1,8 @@
 # 1D Tensor Parallelism
 
-Author: Zhengda Bian
+Author: Zhengda Bian, Yongbin Li
 
-**Prerequisite:**
+**Prerequisite**
 - [Define Your Configuration](../basics/define_your_config.md)
 - [Configure Parallelization](../basics/configure_parallelization.md)
 
@@ -14,7 +14,7 @@ Author: Zhengda Bian
 
 ## Introduction
 
-Tensor parallelism partitions each weight parameter across multiple devices in order to reduce memory load.
+Tensor parallelism partitions model weights across multiple devices in order to reduce memory load.
 An efficient 1D tensor parallelism implementation was introduced by [Megatron-LM](https://deepakn94.github.io/assets/papers/megatron-sc21.pdf).
 
 Let's take a linear layer as an example, which consists of a GEMM $Y = XA$. Given 2 processors, we split the columns of $A$ into $[A_1 ~ A_2]$, and calculate $Y_i = XA_i$ on each processor, which then forms $[Y_1 ~ Y_2] = [XA_1 ~ XA_2]$. This is called a column-parallel fashion.
@@ -29,7 +29,7 @@ Thus, we apply an all-reduce across the processors to get $\dot{X}=\dot{Y}A^T=\d
 ## Efficiency
 Given $P$ processors, we present the theoretical computation and memory cost, as well as the communication cost based on the ring algorithm in both the forward and backward pass of 1D tensor parallelism.
 
-| Computation | Memory (weights) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
+| Computation | Memory (parameters) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
 | :-:         | :-:              | :-:                  | :-:                       | :-:                     |
 | $O(1/P)$    | $O(1/P)$         | $O(1)$               | $O(2(P-1)/P)$             | $O(2(P-1))$             |
 
@@ -72,7 +72,9 @@ class MLP(torch.nn.Module):
         x = self.dropout(x)
         return x
 ```
-Launch Colossal-AI on 2 GPUs and build the model
+
+Launch Colossal-AI on 2 GPUs and build the model.
+
 ```python
 parser = colossalai.get_default_parser()
 colossalai.launch(config=CONFIG,
@@ -84,7 +86,7 @@ colossalai.launch(config=CONFIG,
 
 m = MLP()
 ```
-We will see the shapes of partitioned weights in the MLP model.
+We will see the shapes of partitioned parameters(e.g. weights) in the MLP model.
 ```shell
 Weight of the first linear layer: torch.Size([256, 512])
 Weight of the second linear layer: torch.Size([512, 256])
