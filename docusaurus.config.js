@@ -211,7 +211,7 @@ const config = {
           rehypePlugins: [katex],
           // for versioning
           disableVersioning: false,
-          includeCurrentVersion: false, // turn on this if you wish to see the current version
+          includeCurrentVersion: process.env.NODE_ENV == 'development',
           // versions: {
           //   current: {
           //     banner: 'unreleased',

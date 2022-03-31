@@ -22,6 +22,14 @@ yarn start
 
 This command starts a local development server and open up a browser window. Most changes are reflected live without having to restart the server.
 
+You can only test **one** language in development mode. You can set language by:
+
+```console
+yarn start --locale zh-Hans
+```
+
+In this mode, the current version will be browsered. You can test your current docs in this mode.
+
 ## Build
 
 ```console
@@ -54,9 +62,11 @@ Best Versioning Practice:
 2. When you want to add a new documentation to `versioned_docs`, do remember to add this document in the `docs` folder as well so 
 that it won't be missing in the next release.
 
-**The docs in `docs/` or `i18n/<locale>/docusaurus-plugin-content-docs/current` won't be browsed by users and they are only for development.**
+> **The docs in `docs/` or `i18n/<locale>/docusaurus-plugin-content-docs/current` won't be browsed by users and they are only for development.**
 
-**The latest version will be browsed by users. For example, the latest version is `v0.0.2`, and users will browser `v0.0.2` docs by default.**
+> **The latest version will be browsed by users. For example, the latest version is `v0.0.2`, and users will browser `v0.0.2` docs by default.**
+
+> **Make sure `docs/` and `i18n/zh-Hans/docusaurus-plugin-content-docs/current/` have the latest (developing) docs.**
 
 If you want to know more about versioning configuration, please go to [Docusaurus documentation](https://docusaurus.io/docs/versioning) for more details.
 
