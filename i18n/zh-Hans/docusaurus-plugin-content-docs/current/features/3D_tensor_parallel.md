@@ -1,25 +1,25 @@
-# 3D Tensor Parallelism
+# 3D 张量并行
 
-Author: Zhengda Bian, Yongbin Li
+作者: Zhengda Bian, Yongbin Li
 
-**Prerequisite**
-- [Define Your Configuration](../basics/define_your_config.md)
-- [Configure Parallelization](../basics/configure_parallelization.md)
-- [1D Tensor Parallelism](./1D_tensor_parallel.md)
-- [2D Tensor Parallelism](./2D_tensor_parallel.md)
+**前置教程**
+- [定义配置文件](../basics/define_your_config.md)
+- [并行配置](../basics/configure_parallelization.md)
+- [1D 张量并行](./1D_tensor_parallel.md)
+- [2D 张量并行](./2D_tensor_parallel.md)
 
-**Example Code**
+**示例代码**
 - [ColossalAI-Examples - 3D Tensor Parallelism](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/tensor_parallel/tensor_parallel_3d.py)
 
-**Related Paper**
+**相关论文**
 - [Maximizing Parallelism in Distributed Training for Huge Neural Networks](https://arxiv.org/pdf/2105.14450.pdf)
 
-## Introduction
+## 引言
 
-The [3D tensor parallelism](https://arxiv.org/pdf/2105.14450.pdf) is an approach to parallelize the computation of neural models, hoping to obtain the optimal communication cost.
+[3D 张量并行](https://arxiv.org/pdf/2105.14450.pdf) 是一种将神经网络模型的计算并行化，以期望获得最佳通信成本优化的方法。
 
-Let's still take a linear layer $Y = XA$ as an example.
-Given $P=q \times q \times q$ processors (necessary condition), e.g. $q=2$, we split the input $X$ and weight $A$ into
+我们还是以线性层 $Y = XA$ 为例。
+给定 $P=q \times q \times q$ 个处理器（必要条件）, 如 $q=2$, 我们把输入 $X$ 和权重 $A$ 划分为
 
 $$
 \left[\begin{matrix} 
@@ -34,7 +34,7 @@ $$
             A_{100} & A_{101} & A_{110} & A_{111} \end{matrix} 
 \right]
 \text{~respectively,}$$
-where each $X_{ijl}$ and $A_{lji}$ are stored at processor $(i,j,l)$, as shown in the figure below.
+其中每个 $X_{ijl}$ 和 $A_{lji}$ 都被存储在处理器 $(i,j,l)$ 上, 如下图所示。
 
 <center>
 <img src="https://s2.loli.net/2022/02/17/JevO6SED5z4PFdp.png" width = "200" height = "250" />
@@ -43,9 +43,9 @@ where each $X_{ijl}$ and $A_{lji}$ are stored at processor $(i,j,l)$, as shown i
 <img src="https://s2.loli.net/2022/02/17/r2dZQ4hKxwTuIv6.png" width = "200" height = "250" />
 </center>
 
-Then we all-gather $X_{ijl}$ across $(i, 0...q,l)$, as well as $A_{lji}$ across $(0...q, j, l)$.
-So, we have $X_{il}$ and $A_{lj}$ on each processor $(i,j,l)$ to get $X_{il}A_{lj}$.
-Finally, we reduce-scatter the results across $(i, j, 0...q)$ to get $Y_{ijl}$, which forms
+然后我们在 $(i, 0...q,l)$ 上收集 $X_{ijl}$, 以及在$(0...q, j, l)$ 上收集 $A_{lji}$。
+因此，我们在每个处理器 $(i,j,l)$ 上都有 $X_{il}$ 和 $A_{lj}$ 以获得 $X_{il}A_{lj}$。
+最后，我们在 $(i, j, 0...q)$ 对结果进行 reduce-scatter 得到 $Y_{ijl}$, 形成
 $$
 Y=
 \left[\begin{matrix} 
@@ -56,18 +56,19 @@ Y=
 \right].
 $$
 
-We also need to note that in the backward pass, we need to all-gather the gradient $\dot{Y_{ijl}}$, and then reduce-scatter the gradient $\dot{X_{il}}=\dot{Y_{ij}}A_{lj}^T$ and $\dot{A_{lj}}=X_{il}^T\dot{Y_{ij}}$.
+我们还需要注意，在后向传播中, 我们需要 all-gather 梯度 $\dot{Y_{ijl}}$, 然后 reduce-scatter 梯度 $\dot{X_{il}}=\dot{Y_{ij}}A_{lj}^T$ and $\dot{A_{lj}}=X_{il}^T\dot{Y_{ij}}$。
 
-## Efficiency
-Given $P=q \times q \times q$ processors, we present the theoretical computation and memory cost, as well as the communication cost based on the ring algorithm in both the forward and backward pass of 3D tensor parallelism.
+## 效率
+给定 $P=q \times q \times q$ 个处理器, 我们展现理论上的计算和内存成本，以及基于环形算法的3D张量并行的前向和后向的通信成本。
 
-| Computation | Memory (parameters) | Memory (activations) | Communication (bandwidth) | Communication (latency) |
+| 计算 | 内存 (参数) | 内存 (activations) | 通信 (带宽) | 通信 (时延) |
 | :-:         | :-:              | :-:                  | :-:                       | :-:                     |
 | $O(1/q^3)$  | $O(1/q^3)$       | $O(1/q^3)$           | $O(6(q-1)/q^3)$           | $O(6(q-1))$             |
 
-## Usage
+## 使用
 
-To enable 3D tensor parallelism for our model, e.g. on 8 GPUs, we need to configure the parallism setting as below.
+为了使我们的模型能够实现3D张量并行，例如在8个 GPU 上，我们需要配置如下的并行设置。
+
 ```python
 CONFIG = dict(parallel=dict(
     data=1,
@@ -75,9 +76,10 @@ CONFIG = dict(parallel=dict(
     tensor=dict(size=8, mode='3d'),
 ))
 ```
-Then Colossal-AI will automatically apply 3D parallelism to all the layers from `colossalai.nn`.
+然后 Colossal-AI 会自动对所有来自 `colossalai.nn` 的层应用3D张量并行。
 
-Let's define a model that consists of a two-layer multi-layer perceptron (MLP) as below.
+让我们定义一个由两层多层感知器 (MLP) 组成的模型，如下所示。
+
 ```python
 import colossalai
 import colossalai.nn as col_nn
@@ -104,7 +106,7 @@ class MLP(torch.nn.Module):
         x = self.dropout(x)
         return x
 ```
-Launch Colossal-AI on 8 GPUs and build the model
+在8个 GPU 上启动 Colossal-AI 并建立模型。
 ```python
 parser = colossalai.get_default_parser()
 colossalai.launch(config=CONFIG,
@@ -116,15 +118,17 @@ colossalai.launch(config=CONFIG,
 
 m = MLP()
 ```
-We will see the shapes of partitioned parameters(e.g. weights) in the MLP model.
+我们将会看到 MLP 模型中被划分的参数（如权重）的形状。
 ```shell
 Weight of the first linear layer: torch.Size([128, 256])
 Weight of the second linear layer: torch.Size([512, 64])
 ```
-The complete weight of the first linear layer is supposed to have the shape `[256, 1024]`. After the partitioning of 3D parallelism, it becomes `[128, 256]` on each GPU.
-Similarly, the second layer partitions the weight `[1024, 256]` into `[512, 64]`.
 
-We can run the model with some random inputs.
+第一个线性层的完整权重形状应该为 `[256, 1024]`. 经过3D并行划分后，它在每个 GPU 上变成了 `[128, 256]` 。
+同样地，第二层将权重 `[1024, 256]` 划分为 `[512, 64]`.
+
+我们可以用一些随机输入来运行这个模型。
+
 ```python
 from colossalai.context import ParallelMode
 from colossalai.core import global_context as gpc
@@ -140,12 +144,11 @@ print_rank_0(f'Input: {x.shape}')
 
 x = m(x)
 ```
-Then we can see the shapes of activation results.
+然后我们可以看到 activation 结果的形状。
 ```shell
 Input: torch.Size([4, 128])
 Output of the first linear layer: torch.Size([4, 512])
 Output of the second linear layer: torch.Size([4, 128])
 ```
-The activation tensors in 3D parallelism are all split by $q^2$ in the row and $q$ in the column.
-E.g. the output of the first linear layer has the shape `[4, 512]`), while the second layer has the output of `[4, 128]`.
-Note, although the results of 3D parallelism have the same shape as that of 2.5D parallelism for weights here, the content of each partition is different.
+3D并行中的 activation 张量都是同时在$q^2$行和$q$列分割的。例如，第一个线性层的输出是 `[4, 512]`, 而第二层的输出为 `[4, 128]`。
+注意，虽然这里3D并行的结果与2.5D并行的结果形状相同，但每个划分的内容是不同的。

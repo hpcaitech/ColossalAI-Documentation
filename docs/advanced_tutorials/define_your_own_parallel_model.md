@@ -1,13 +1,13 @@
 # Define your own parallel model
 
-Author: Zhengda Bian
+Author: Zhengda Bian, Yongbin Li
 
 > ⚠️ We are working on this documentation to make it more detailed. We will introduce the mechanism of different parallelism 
 > and how to use them to write a model.
 
 Let's say that you have a huge MLP model with billions of parameters and its extremely large hidden layer size makes it
-impossible to fit into a single GPU directly. Don't worry, ColossalAI is here to help you sort things out. With the help of ColossalAI, 
-you can write your model in the familiar way in which you used to write models for a single GPU, while ColossalAI automatically 
+impossible to fit into a single GPU directly. Don't worry, Colossal-AI is here to help you sort things out. With the help of Colossal-AI, 
+you can write your model in the familiar way in which you used to write models for a single GPU, while Colossal-AI automatically 
 splits your model weights and fit them perfectly into a set of GPUs. We give a simple example showing how to write a simple 
 2D parallel model in the Colossal-AI context.
 
@@ -32,5 +32,5 @@ class MLP_2D(nn.Module):
 
 ## Use pre-defined model
 
-For the sake of your convenience, we kindly provide you in our Model Zoo with some prevalent models such as *BERT*, *VIT*, 
-and *MLP-Mixer*. Feel free to customize them into different sizes to fit into your special needs.
+For the sake of your convenience, we kindly provide you in our Model Zoo with some prevalent models such as *BERT*, *ViT*, *MoE*, 
+and *GPT*. Feel free to customize them into different sizes to fit into your special needs.

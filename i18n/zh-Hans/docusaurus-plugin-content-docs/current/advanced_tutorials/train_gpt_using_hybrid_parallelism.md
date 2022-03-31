@@ -1,28 +1,28 @@
-# Train GPT Using Hybrid Parallelism
+# 使用混合并行训练 GPT
 
-Author: Hongxin Liu, Yongbin Li
+作者: Hongxin Liu, Yongbin Li
 
-**Example Code**
+**示例代码**
 - [ColossalAI-Examples GPT2](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt_2)
 - [ColossalAI-Examples GPT3](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt_3)
 
-**Related Paper**
+**相关论文**
 - [Colossal-AI: A Unified Deep Learning System For Large-Scale Parallel Training](https://arxiv.org/abs/2110.14883)
 - [Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM](https://arxiv.org/abs/2104.04473)
 
-## Introduction
+## 引言
 
-In the previous tutorial, we introduce how to train ViT with pipeline. In this tutorial, you will learn a more complex scenario -- train GPT with hybrid parallelism. In this case, GPT-3 is so large that CPU memory cannot fit it as well. Therefore, you must split the model by yourself. 
+在上一篇教程中，我们介绍了如何用流水并行训练 ViT。在本教程中，你将学习一个更复杂的场景--用混合并行方式训练GPT。在这种情况下，由于GPT-3过大，即使CPU内存也无法容纳它。因此，你必须自己分割模型。
 
-## Table of content
+## 目录
 
-In this tutorial we will cover:
+在本教程中，我们将介绍:
 
-1. The definition of GPT model, based on colossalai/model_zoo
-2. Processing the dataset
-3. Training GPT using hybrid parallelism
+1. 基于 colossalai/model_zoo 定义 GPT 模型
+2. 处理数据集
+3. 使用混合并行训练 GPT
 
-## Import libraries
+## 导入依赖库
 
 ```Haskell
 import json
@@ -53,15 +53,18 @@ from transformers import GPT2Tokenizer
 
 
 
-## Define GPT model
+## 定义 GPT 模型
 
-In the previous tutorial, we introduced 3 ways to build a pipelined model. But for huge models like GPT-3, you can't even build the model in CPU. In this case, you must split the model by yourself.
+在前面的教程中，我们介绍了3种建立流水并行模型的方法，但对于像 GPT-3 这样的巨大模型，你甚至不能在 CPU 中建立模型。在这种情况下，你必须自己分割模型。
 
-GPT dataloader returns `input_ids` and `attention_mask`, so we use two keyword arguments in `forward()` to get them. Note that for stages except the first stage, the first positional argument of `forward()` is the output tensor from the previous stage. So the `hidden_states` is from the previous stage, and for the first stage it's `None`. 
+GPT 数据加载器返回 `input_ids` 和 `attention_mask`, 因此我们在 `forward()` 中使用两个关键字参数来获得它们。请注意，对于除第一阶段以外的其他阶段， `forward()` 的第一个位置参数是上一阶段的输出张量。所以 `hidden_states` 来自前一阶段，并且对于第一阶段来说，它是 `None`。 
 
-For GPT, the *word embedding layer* shares the weights with the *output head*. We provide `PipelineSharedModuleWrapper` to share parameters among pipeline stages. It takes a `list` of `int` as argument, which means those ranks share the parameters. You can use `register_module()` or `register_parameter()` to register a module or a parameter as the shared module or parameter. If you have multiple sets of shared modules / parameters, you should have multiple `PipelineSharedModuleWrapper` instance. If the parameter is shared within **one** stage, you should not use `PipelineSharedModuleWrapper`, and just use the same module / parameter instance. In this example, the *word embedding layer* is at the first stage, and the *output head* is at the last stage. Thus, they are shared among ranks `[0, pipeline_size - 1]`. 
+对于 GPT, *word embedding layer* 与 *output head* 共享权重。我们提供 `PipelineSharedModuleWrapper` 在流水阶段间共享参数。它需要一个 `int` 型的 `list` 作为参数, 这意味着 rank 们共享这些参数。你可以使用 `register_module()`
+或 `register_parameter()` 来注册一个模块或一个参数作为共享模块或参数。如果你有多组共享模块/参数，你应该有多个 `PipelineSharedModuleWrapper` 实例。 如果参数在**一个**阶段内共享, 你不应该使用
+`PipelineSharedModuleWrapper`, 而只是使用同一个模块/参数实例。在这个例子中，*word embedding layer* 在第一阶段, 而 *output head* 在最后一个阶段。因此，他们在 rank `[0, pipeline_size - 1]` 之间共享参数。 
 
-For the first stage, it maintains the embedding layer and some transformer blocks. For the last stage, it maintains some transformer blocks and the output head layer. For other stages, they just maintain some transformer blocks. `partition_uniform(num_layers, pipeline_size, num_chunks)` returns the parts of all ranks, and the part is a `tuple` of `(start, end)` (exclude end). `start == 0` means that it's the first stage, and `end == num_layers` means it's the last stage.
+对于第一阶段，它维护 embedding layer 和一些 transformer blocks。对于最后一个阶段，它维护一些 transformer blocks 和 output head layer。对于其他阶段，他们只维护一些 transformer blocks。
+`partition_uniform(num_layers, pipeline_size, num_chunks)` 返回所有 rank 的 parts, part 是一个 `(start, end)` (不包括end) 的 `tuple`。`start == 0` 表示这是第一阶段, 而 `end == num_layers` 表示这是最后一个阶段。
 
 ```Python
 class PipelineGPTHybrid(nn.Module):
@@ -152,9 +155,9 @@ def GPT3_pipeline_hybrid(num_chunks=1, checkpoint=False, dtype=torch.float):
     return build_gpt_pipeline(96, num_chunks, **cfg)
 ```
 
-## Process the dataset
+## 处理数据集
 
-We provide a small GPT web-text dataset here. The original format is loose JSON, and we will save the processed dataset.
+我们在这里提供了一个小型 GPT web-text 数据集。 原始格式是 loose JSON, 我们将保存处理后的数据集。
 
 ```Python
 class WebtextDataset(Dataset):
@@ -192,11 +195,14 @@ class WebtextDataset(Dataset):
         }, self.data[index]
 ```
 
-## Training GPT using hybrid parallelism
+## 使用混合并行训练 GPT
 
-In the previous tutorial, we explained the meanings of some pipeline arguments. In this case, we can determine the shape of each output tensor which is exchanged among pipeline stages. For GPT, the shape is `(MICRO BATCH SIZE, SEQUENCE LEN, HIDDEN SIZE)`. By setting this, we can avoid exchanging the tensor shape of each stage. When you are not sure of the tensor shape, you can just  leave it `None`, and the shape is inferred automatically. Make sure that the `dtype` of your model is correct. When you use `fp16`, the `dtype` of your model must be `torch.half`. Otherwise, the `dtype` must be `torch.float`. For pipeline parallelism, only `AMP_TYPE.NAIVE` is supported.
+在上一个教程中，我们解释了一些流水并行的参数含义。在本例中，我们可以确定在流水阶段之间交换的每个输出张量的形状。对于 GPT，该形状为 
+`(MICRO BATCH SIZE, SEQUENCE LEN, HIDDEN SIZE)`。通过设置该参数，我们可以避免交换每个阶段的张量形状。当你不确定张量的形状时，你可以把它保留为 
+`None`, 形状会被自动推测。请确保你的模型的 `dtype` 是正确的：当你使用 `fp16`，模型的 `dtype` 必须是 `torch.half`；否则，`dtype` 必须是 `torch.float`。对于流水并行，仅支持 `AMP_TYPE.NAIVE`。
 
-You can easily use tensor parallel by setting `parallel` in `CONFIG`. If you train GPT with 1D tensor parallelism and pipeline parallelism together, you can set `scatter_gather_tensors` to `True` to optimize communication. The data parallelism size is automatically set based on the number of GPUs.
+你可以通过在 `CONFIG` 里使用 `parallel` 来轻松使用张量并行。如果你用1D张量并行和流水线并行一起训练 GPT，你可以把
+`scatter_gather_tensors` 设置为 `True` 来优化通信。数据并行的大小是根据 GPU 的数量自动设置的。
 
 ```Python
 NUM_EPOCHS = 60
