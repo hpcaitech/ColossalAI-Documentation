@@ -12,7 +12,7 @@
     "description": "Navbar item with label Examples"
   },
   "item.label.Docs": {
-    "message": "文档",
+    "message": "API文档",
     "description": "Navbar item with label Docs"
   },
   "item.label.Blog": {
