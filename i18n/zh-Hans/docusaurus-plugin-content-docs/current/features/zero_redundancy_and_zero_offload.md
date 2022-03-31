@@ -69,18 +69,17 @@ colossalai.zero.shard_utils import BucketTensorShardStrategy, TensorShardStrateg
 
 ```python
 shard_strategy = TensorShardStrategy()
-with ZeroInitContext(convert_fp16=True,
-                    target_device=torch.cuda.current_device(),
+with ZeroInitContext(target_device=torch.cuda.current_device(),
                     shard_strategy=shard_strategy,
                     shard_param=True):
     model = torch.nn.Linear(2, 2)
 ```
 
-关于 `ZeroInitContext` 的确切用法，你可以参考 [API 文档](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.init_ctx.init_context.html) 。
+关于 `ZeroInitContext` 的确切用法，你可以参考 [API 文档](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.init_ctx.html#colossalai.zero.init_ctx.init_context.ZeroInitContext) 。
 
 接下来，我们将首先给你一个配置模板，帮助你在使用高级别API时配置ZeRO。然后，我们将给你一个使用低级别的API的例子。
 
-> 我们现在提供 `from colossalai.nn.optimizer.CPUAdam`, 它比 `torch.optim.Adam` 更快，当使用 CPU offload 时。更多细节，请参见 [API 文档](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.nn.optimizer.cpu_adam.html) 。
+> 我们现在提供 `from colossalai.nn.optimizer.HybridAdam`, 它比 `torch.optim.Adam` 更快。更多细节，请参见 [API 文档](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.nn.optimizer.hybrid_adam.html#colossalai.nn.optimizer.hybrid_adam.HybridAdam) 。
 
 ## 用高级别API配置ZeRO
 
@@ -98,10 +97,12 @@ zero = dict(
         offload_config=dict(device="cpu"),
         gradient_predivide_factor=1.0,
         use_memory_tracer=False,
-        shard_strategy=TensorShardStrategy()
+        shard_strategy=TensorShardStrategy(),
+        reuse_fp16_shard=False
     ),
     optimizer_config=dict(
         cpu_offload=False,
+        gpu_margin_mem_ratio=0.8,
         initial_scale=2**5,
         min_scale=1,
         growth_factor=2,
@@ -113,7 +114,9 @@ zero = dict(
 )
 ```
 
-`model_config` 和 `optimizer_config` 分别是 `ShardedModelV2` 和 `ShardedOptimizerV2` 的关键参数。关于这些参数的更多细节，请参阅 [ShardedModelV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_model.sharded_model_v2.html) 和 [ShardedOptimizerV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_optim.sharded_optim_v2.html) 。
+`model_config` 和 `optimizer_config` 分别是 `ShardedModelV2` 和 `ShardedOptimizerV2` 的关键参数。关于这些参数的更多细节，请参阅 [ShardedModelV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_model.html#module-colossalai.zero.sharded_model.sharded_model_v2) 和 [ShardedOptimizerV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_optim.html#colossalai.zero.sharded_optim.ShardedOptimizerV2) 。
+
+> ⚠️ 如果你使用梯度累加的话，请确保 `reuse_fp16_shard` 参数被设置为 `False`。
 
 你可以用这种方式初始化你的模型:
 
@@ -122,8 +125,7 @@ import torch
 import colossalai
 from colossalai.zero.init_ctx import ZeroInitContext
 
-with ZeroInitContext(convert_fp16=True,
-                    target_device=torch.cuda.current_device(),
+with ZeroInitContext(target_device=torch.cuda.current_device(),
                     shard_strategy=gpc.config.zero.model_config.shard_strategy,
                     shard_param=True):
     model = torch.nn.Linear(2, 2)
@@ -214,7 +216,7 @@ def main():
     logger.info(f'GPU memory usage: {torch.cuda.memory_allocated() / 1024**2:.2f} MB', ranks=[0])
     # build GPT model
     shard_strategy = TensorShardStrategy()
-    with ZeroInitContext(convert_fp16=True, target_device=torch.cuda.current_device(), shard_strategy=shard_strategy, shard_param=True):
+    with ZeroInitContext(target_device=torch.cuda.current_device(), shard_strategy=shard_strategy, shard_param=True):
         model = gpt2_medium(checkpoint=True)
     # Enable CPU offload for parameters and gradients
     model = ShardedModelV2(model, shard_strategy, offload_config={'device': 'cpu'})

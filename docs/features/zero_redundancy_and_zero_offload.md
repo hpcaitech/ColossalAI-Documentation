@@ -70,18 +70,17 @@ Here is a simple example:
 
 ```python
 shard_strategy = TensorShardStrategy()
-with ZeroInitContext(convert_fp16=True,
-                    target_device=torch.cuda.current_device(),
+with ZeroInitContext(target_device=torch.cuda.current_device(),
                     shard_strategy=shard_strategy,
                     shard_param=True):
     model = torch.nn.Linear(2, 2)
 ```
 
-You can see the exact usage of `ZeroInitContext` in [API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.init_ctx.init_context.html)
+You can see the exact usage of `ZeroInitContext` in [API Reference](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.init_ctx.html#colossalai.zero.init_ctx.init_context.ZeroInitContext)
 
 Next, we will firstly give you a configuration template to help you configure ZeRO when using high-level API. Then, we will give you an example of using a low-level API. 
 
-> We now provide `from colossalai.nn.optimizer.CPUAdam`, which is faster than `torch.optim.Adam` when using CPU offload. For more details, see [API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.nn.optimizer.cpu_adam.html).
+> We now provide `from colossalai.nn.optimizer.HybridAdam`, which is faster than `torch.optim.Adam`. For more details, see [API Reference](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.nn.optimizer.hybrid_adam.html#colossalai.nn.optimizer.hybrid_adam.HybridAdam).
 
 ## Configure ZeRO with high-level API
 
@@ -99,10 +98,12 @@ zero = dict(
         offload_config=dict(device="cpu"),
         gradient_predivide_factor=1.0,
         use_memory_tracer=False,
-        shard_strategy=TensorShardStrategy()
+        shard_strategy=TensorShardStrategy(),
+        reuse_fp16_shard=False
     ),
     optimizer_config=dict(
         cpu_offload=False,
+        gpu_margin_mem_ratio=0.8,
         initial_scale=2**5,
         min_scale=1,
         growth_factor=2,
@@ -114,7 +115,9 @@ zero = dict(
 )
 ```
 
-`model_config` and `optimizer_config` are keyword arguments of `ShardedModelV2` and `ShardedOptimizerV2` respectively. For more details of these arguments, see [ShardedModelV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_model.sharded_model_v2.html) and [ShardedOptimizerV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_optim.sharded_optim_v2.html).
+`model_config` and `optimizer_config` are keyword arguments of `ShardedModelV2` and `ShardedOptimizerV2` respectively. For more details of these arguments, see [ShardedModelV2 API Reference](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_model.html#module-colossalai.zero.sharded_model.sharded_model_v2) and [ShardedOptimizerV2 API Reference](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_optim.html#colossalai.zero.sharded_optim.ShardedOptimizerV2).
+
+> ⚠️ If you use gradient accumulation, make sure `reuse_fp16_shard` is `False`.
 
 You can initialize your model in this way:
 
@@ -123,8 +126,7 @@ import torch
 import colossalai
 from colossalai.zero.init_ctx import ZeroInitContext
 
-with ZeroInitContext(convert_fp16=True,
-                    target_device=torch.cuda.current_device(),
+with ZeroInitContext(target_device=torch.cuda.current_device(),
                     shard_strategy=gpc.config.zero.model_config.shard_strategy,
                     shard_param=True):
     model = torch.nn.Linear(2, 2)
@@ -216,7 +218,7 @@ def main():
     logger.info(f'GPU memory usage: {torch.cuda.memory_allocated() / 1024**2:.2f} MB', ranks=[0])
     # build GPT model
     shard_strategy = TensorShardStrategy()
-    with ZeroInitContext(convert_fp16=True, target_device=torch.cuda.current_device(), shard_strategy=shard_strategy, shard_param=True):
+    with ZeroInitContext(target_device=torch.cuda.current_device(), shard_strategy=shard_strategy, shard_param=True):
         model = gpt2_medium(checkpoint=True)
     # Enable CPU offload for parameters and gradients
     model = ShardedModelV2(model, shard_strategy, offload_config={'device': 'cpu'})
