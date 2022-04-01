@@ -27,7 +27,7 @@ is turned into a data parallel example.
 
 Hybrid parallel includes data, tensor, and pipeline parallelism. In Colossal-AI, we support different types of tensor 
 parallelism (i.e. 1D, 2D, 2.5D and 3D). You can switch between different tensor parallelism by simply changing the configuration
-in the `config.py`.You can follow the [GPT example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt). 
+in the `config.py`. You can follow the [GPT example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt). 
 Detailed instructions can be found in its `README.md`.
 
 #### 3. MoE parallel
