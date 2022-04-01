@@ -17,7 +17,7 @@ Colossal-AI 可用于在具有多个 GPU 的分布式系统上训练深度学习
 
 #### 2. 混合并行
 
-混合并行包括数据、张量和流水线并行。在 Colossal-AI 中，我们支持不同类型的张量并行（即 1D、2D、2.5D 和 3D）。您可以通过简单地改变 `config.py` 中的配置在不同的张量并行之间切换。您也可以从`README.md`了解更多细节。
+混合并行包括数据、张量和流水线并行。在 Colossal-AI 中，我们支持不同类型的张量并行（即 1D、2D、2.5D 和 3D）。您可以通过简单地改变 `config.py` 中的配置在不同的张量并行之间切换。您可以参考 [GPT example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt), 更多细节能在它的 `README.md` 中被找到。
 
 #### 3. MoE并行
 
