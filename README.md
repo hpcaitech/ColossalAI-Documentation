@@ -7,6 +7,10 @@ variables using
 (We would have preferred using [styled-components](https://styled-components.com/) but docusaurus has no ssr support for
 it yet)
 
+## Prerequisite
+
+You must install the latest `Nodejs` and `yarn` before starting your work.
+
 ## Installation
 
 ```console
@@ -36,6 +40,11 @@ In this mode, the current version will be browsered. You can test your current d
 yarn build
 ```
 This command generates static content into the `build` directory and can be served using any static contents hosting service.
+
+```console
+yarn build:serve
+```
+This command generates static content into the `build` directory and start a web serve on localhost.
 
 ## Versioning
 
