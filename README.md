@@ -7,6 +7,10 @@ variables using
 (We would have preferred using [styled-components](https://styled-components.com/) but docusaurus has no ssr support for
 it yet)
 
+## Prerequisite
+
+You must install the latest `Nodejs` and `yarn` before starting your work.
+
 ## Installation
 
 ```console
@@ -37,57 +41,53 @@ yarn build
 ```
 This command generates static content into the `build` directory and can be served using any static contents hosting service.
 
+```console
+yarn build:serve
+```
+This command generates static content into the `build` directory and start a web serve on localhost.
+
 ## Versioning
 
+> **`docs` and `versioned_docs` are symbolic links. Don't modify them directly.**
+
 ```text
-├── docs    # this is for development
-├── versioned_docs  # this is for users to see
+├── i18n
+├──── en
+├────── docusaurus-plugin-content-docs
+├──────── current # latest en docs
+├──────── version-v0.0.2 # v0.0.2 en docs
+├──── zh-Hans
+├────── docusaurus-plugin-content-docs
+├──────── current # latest zh-Hans docs
+├──────── version-v0.0.2 # v0.0.2 zh-Hans docs
 ```
 
-During development stage, you should push your documentation to the `docs` folder. 
-When the documentation is ready for release, you should use the command below to create a new version. 
-When you want to edit the documentation in the `versioned_docs`, it will only have effect on the specific version.
+The above is the docs folder structure. We don't need to modify `docs` and `versioned_docs`, since they are auto generated.
 
-```command
-yarn run docusaurus docs:version <version>
-
-# example
-yarn run docusaurus docs:version v0.0.2
-```
+Here is a short instruction of releasing a new version:
+1. Write the latest docs in `i18n/en/docusaurus-plugin-content-docs/current` and `i18n/zh-Hans/docusaurus-plugin-content-docs/current`.
+2. Maybe update `sidebars.js` if you add/delete files or you want to adjust the order.
+3. Run `node release.js <version>`, e.g. `node release.js v1.0.0`.
+4. Translate and update `i18n/zh-Hans/docusaurus-plugin-content-docs/version-<version>.json`.
+5. Update `i18n/en/docusaurus-plugin-content-docs/current.json` based on `i18n/en/docusaurus-plugin-content-docs/version-<version>.json`. Do the same for `zh-Hans`.
 
 > **Do start the version with a 'v' for consistency**.
 
 Best Versioning Practice:
 1. Only run the command when the documentation is fully ready to avoid future changes
-2. When you want to add a new documentation to `versioned_docs`, do remember to add this document in the `docs` folder as well so 
-that it won't be missing in the next release.
+2. When you modify `i18n/<locale>/docusaurus-plugin-content-docs/version-<version>`, do remember to modify `i18n/<locale>/docusaurus-plugin-content-docs/current` as well so that it won't be missing in the next release.
 
-> **The docs in `docs/` or `i18n/<locale>/docusaurus-plugin-content-docs/current` won't be browsed by users and they are only for development.**
+> **The docs in `i18n/<locale>/docusaurus-plugin-content-docs/current` won't be browsed by users and they can only be browsered in development mode.**
 
-> **The latest version will be browsed by users. For example, the latest version is `v0.0.2`, and users will browser `v0.0.2` docs by default.**
+> **Make sure `i18n/<locale>/docusaurus-plugin-content-docs/current/` have the latest (developing) docs.**
 
-> **Make sure `docs/` and `i18n/zh-Hans/docusaurus-plugin-content-docs/current/` have the latest (developing) docs.**
+> **Make sure `i18n/<locale>/docusaurus-plugin-content-docs/current.json` have the latest (developing) translations.**
 
 If you want to know more about versioning configuration, please go to [Docusaurus documentation](https://docusaurus.io/docs/versioning) for more details.
 
 ## Internationalization
 
-```text
-├── docs    # this is for development
-├── versioned_docs  # this is for users to see
-├──── version-v0.0.2
-├── i18n
-├──── zh-Hans
-├────── docusaurus-plugin-content-docs
-├──────── current # latest zh-Hans docs, same dir structure as docs
-├──────── version-v0.0.2 # v0.0.2 zh-Hans docs, same dir structure as versioned_docs/version-v0.0.2
-```
-
-After releasing, you should update sidebars:
-```shell
-yarn run docusaurus write-translations --locale <locale>
-```
-It will generated a JSON file, like `i18n/en/docusaurus-plugin-content-docs/version-v0.0.2.json`. Write your translations in this file.
+After releasing, the translation files are auto-generated. What you have to do is translate and update them.
 
 If you want to know more about i18n, please go to [Docusaurus documentation](https://docusaurus.io/docs/i18n/introduction) and [Docusaurus CLI](https://docusaurus.io/docs/cli#docusaurus-write-translations-sitedir) for more details.
 
