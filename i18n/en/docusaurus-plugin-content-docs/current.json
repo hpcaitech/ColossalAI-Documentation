@@ -11,10 +11,6 @@
     "message": "Concepts",
     "description": "The label for category Concepts in sidebar docs"
   },
-  "sidebar.docs.category.Advanced Tutorials": {
-    "message": "Advanced Tutorials",
-    "description": "The label for category Advanced Tutorials in sidebar docs"
-  },
   "sidebar.docs.category.Basics": {
     "message": "Basics",
     "description": "The label for category Basics in sidebar docs"
@@ -22,5 +18,13 @@
   "sidebar.docs.category.Features": {
     "message": "Features",
     "description": "The label for category Features in sidebar docs"
+  },
+  "sidebar.docs.category.Tensor Parallel": {
+    "message": "Tensor Parallel",
+    "description": "The label for category Tensor Parallel in sidebar docs"
+  },
+  "sidebar.docs.category.Advanced Tutorials": {
+    "message": "Advanced Tutorials",
+    "description": "The label for category Advanced Tutorials in sidebar docs"
   }
 }
