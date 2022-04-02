@@ -23,6 +23,12 @@ function updateSymlink(version) {
     fs.symlinkSync(`../i18n/en/docusaurus-plugin-content-docs/version-${version}`, `version-${version}`)
 }
 
+function updateVersion(version) {
+    const versions = JSON.parse(fs.readFileSync('versions.json'))
+    versions.unshift(version)
+    fs.writeFileSync('versions.json', JSON.stringify(versions, null, 2))
+}
+
 function main() {
     const parser = new ArgumentParser({
         description: 'A script to release a new version.'
@@ -33,6 +39,7 @@ function main() {
     updateDocs('en', args.version)
     updateDocs('zh-Hans', args.version)
     updateSymlink(args.version)
+    updateVersion(args.version)
 }
 
 main()
