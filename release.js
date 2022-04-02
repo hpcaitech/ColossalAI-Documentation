@@ -19,8 +19,10 @@ function updateSidebar(version) {
 }
 
 function updateSymlink(version) {
+    const cwd = process.cwd()
     process.chdir('versioned_docs')
     fs.symlinkSync(`../i18n/en/docusaurus-plugin-content-docs/version-${version}`, `version-${version}`)
+    process.chdir(cwd)
 }
 
 function updateVersion(version) {
