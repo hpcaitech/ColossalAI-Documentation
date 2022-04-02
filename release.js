@@ -2,6 +2,7 @@
 'use strict';
 
 const { ArgumentParser } = require('argparse')
+const { execSync } = require('child_process')
 const fs = require('fs')
 const path = require('path')
 const sidebar = require('./sidebars')
@@ -10,7 +11,6 @@ const sidebar = require('./sidebars')
 function updateDocs(locale, version) {
     const docsRoot = path.join('i18n', locale, 'docusaurus-plugin-content-docs')
     fs.cpSync(path.join(docsRoot, 'current'), path.join(docsRoot, `version-${version}`), { recursive: true })
-    fs.cpSync(path.join(docsRoot, 'current.json'), path.join(docsRoot, `version-${version}.json`))
 }
 
 function updateSidebar(version) {
@@ -42,6 +42,8 @@ function main() {
     updateDocs('zh-Hans', args.version)
     updateSymlink(args.version)
     updateVersion(args.version)
+    execSync('yarn run docusaurus write-translations --locale en')
+    execSync('yarn run docusaurus write-translations --locale zh-Hans')
 }
 
 main()
