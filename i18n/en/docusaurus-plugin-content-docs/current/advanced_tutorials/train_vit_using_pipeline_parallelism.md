@@ -195,7 +195,7 @@ def build_cifar(batch_size):
 
 ## Training ViT using pipeline
 
-You can set the size of pipeline parallel in config. `NUM_CHUNKS` is useful when using interleved-pipeline (for more details see [Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM](https://arxiv.org/abs/2104.04473) ). The original batch will be split into `num_microbatches`, and each stage will load a micro batch each time. If you certainly know the shape of the output tensor of each stage and the shapes of output tensor of all stages are the same (except the last stage), you can set `tensor_shape` when initializing `PipelineSchedule` and `InterleavedPipelineSchedule`, which can reduce communication. If you train `Transformer` models with pipeline and 1D tensor parallelism together, you can set `scatter_gather_tensors` to `True` when initializing  `PipelineSchedule` and `InterleavedPipelineSchedule` which optimize communication. If you don't need the output and label of model, you can set `return_output_label` to `False` when calling `trainer.fit()` which can further reduce GPU memory usage.
+You can set the size of pipeline parallel and number of microbatches in config. `NUM_CHUNKS` is useful when using interleved-pipeline (for more details see [Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM](https://arxiv.org/abs/2104.04473) ). The original batch will be split into `num_microbatches`, and each stage will load a micro batch each time. Then we will generate an approriate schedule for you to execute the pipeline training. If you don't need the output and label of model, you can set `return_output_label` to `False` when calling `trainer.fit()` which can further reduce GPU memory usage.
 
 You should `export DATA=/path/to/cifar`.
 
@@ -203,7 +203,7 @@ You should `export DATA=/path/to/cifar`.
 BATCH_SIZE = 16
 NUM_EPOCHS = 60
 NUM_CHUNKS = 1
-CONFIG = dict(parallel=dict(pipeline=2))
+CONFIG = dict(NUM_MICRO_BATCHES=4, parallel=dict(pipeline=2))
 
 
 def train():
@@ -230,12 +230,7 @@ def train():
                                                                          train_dataloader, test_dataloader)
     timer = MultiTimer()
 
-    if NUM_CHUNKS == 1:
-        schedule = PipelineSchedule(num_microbatches=4)
-    else:
-        schedule = InterleavedPipelineSchedule(num_microbatches=4, num_model_chunks=NUM_CHUNKS)
-
-    trainer = Trainer(engine=engine, timer=timer, logger=logger, schedule=schedule)
+    trainer = Trainer(engine=engine, timer=timer, logger=logger)
 
     hook_list = [
         hooks.LossHook(),

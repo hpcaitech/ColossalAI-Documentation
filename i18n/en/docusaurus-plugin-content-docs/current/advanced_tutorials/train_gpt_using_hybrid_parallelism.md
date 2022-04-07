@@ -196,19 +196,18 @@ class WebtextDataset(Dataset):
 
 In the previous tutorial, we explained the meanings of some pipeline arguments. In this case, we can determine the shape of each output tensor which is exchanged among pipeline stages. For GPT, the shape is `(MICRO BATCH SIZE, SEQUENCE LEN, HIDDEN SIZE)`. By setting this, we can avoid exchanging the tensor shape of each stage. When you are not sure of the tensor shape, you can just  leave it `None`, and the shape is inferred automatically. Make sure that the `dtype` of your model is correct. When you use `fp16`, the `dtype` of your model must be `torch.half`. Otherwise, the `dtype` must be `torch.float`. For pipeline parallelism, only `AMP_TYPE.NAIVE` is supported.
 
-You can easily use tensor parallel by setting `parallel` in `CONFIG`. If you train GPT with 1D tensor parallelism and pipeline parallelism together, you can set `scatter_gather_tensors` to `True` to optimize communication. The data parallelism size is automatically set based on the number of GPUs.
+You can easily use tensor parallel by setting `parallel` in `CONFIG`. The data parallelism size is automatically set based on the number of GPUs.
 
 ```Python
 NUM_EPOCHS = 60
 SEQ_LEN = 1024
 BATCH_SIZE = 192
-NUM_MICRO_BATCHES = 192
 NUM_CHUNKS = None
 TENSOR_SHAPE = (1, 1024, 1600)
 # only pipeline parallel
 # CONFIG = dict(parallel=dict(pipeline=2), fp16=dict(mode=AMP_TYPE.NAIVE))
 # pipeline + 1D model parallel
-CONFIG = dict(parallel=dict(pipeline=2, tensor=dict(mode='1d', size=2)), fp16=dict(mode=AMP_TYPE.NAIVE))
+CONFIG = dict(NUM_MICRO_BATCHES = 192, parallel=dict(pipeline=2, tensor=dict(mode='1d', size=2)), fp16=dict(mode=AMP_TYPE.NAIVE))
 
 
 def train():
@@ -244,21 +243,12 @@ def train():
     global_batch_size = BATCH_SIZE * \
         gpc.get_world_size(ParallelMode.DATA) * getattr(gpc.config, "gradient_accumulation", 1)
     logger.info(f'Init done, global batch size = {global_batch_size}', ranks=[0])
-    if use_interleaved:
-        logger.info('Build InterleavedPipelineSchedule', ranks=[0])
-        schedule = InterleavedPipelineSchedule(NUM_MICRO_BATCHES,
-                                               num_chunks, tensor_shape=TENSOR_SHAPE, scatter_gather_tensors=True)
-    else:
-        logger.info('Build PipelineSchedule', ranks=[0])
-        schedule = PipelineSchedule(NUM_MICRO_BATCHES,
-                                    tensor_shape=TENSOR_SHAPE, scatter_gather_tensors=True)
 
     timer = MultiTimer()
 
     trainer = Trainer(
         engine=engine,
         logger=logger,
-        schedule=schedule,
         timer=timer
     )
 

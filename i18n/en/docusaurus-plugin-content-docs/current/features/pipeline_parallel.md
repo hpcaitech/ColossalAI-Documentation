@@ -64,27 +64,7 @@ This mode is both memory-efficient and time-efficient.
 
 In Colossal-AI, we provided both non-interleaved(as `PipelineSchedule`) and interleaved schedule(as  `InterleavedPipelineSchedule`).
 
-You can set `NUM_MICRO_BATCHES` and the original batch will be splitted into `NUM_MICRO_BATCHES` micro batches whose size is `BATCH_SIZE // NUM_MICRO_BATCHES`. If you certainly know the shape of each pipeline stage's output tensor and the shapes are all the same, you can set `tensor_shape` to further reduce communication. Otherwise, you can just ignore `tensor_shape`, and the shape will be exchanged over pipeline stages automatically. If you are training `Transformer` models with pipeline and 1D tensor parallel, you can set `scatter_gather_tensors` to `True`, which can optimize communication and accelerate your training. Note that even though `NUM_CHUNKS == 1`, you can also use `InterleavedPipelineSchedule` as long as your model is wrapped with `torch.nn.ModuleList()`.
-
-```Python
-from colossalai.engine.schedule import PipelineSchedule, InterleavedPipelineSchedule
-
-use_interleaved = NUM_CHUNKS > 1
-
-if use_interleaved:
-    schedule = InterleavedPipelineSchedule(NUM_MICRO_BATCHES, NUM_CHUNKS, 
-                                           tensor_shape=TENSOR_SHAPE, scatter_gather_tensors=True)
-else:
-    schedule = PipelineSchedule(NUM_MICRO_BATCHES,
-                                tensor_shape=TENSOR_SHAPE, scatter_gather_tensors=True)
-                            
-trainer = Trainer(
-    engine=engine,
-    logger=logger,
-    schedule=schedule,
-    timer=timier
-)                               
-```
+You just need to set `NUM_MICRO_BATCHES` in config file and set `NUM_CHUNKS` in config file if you want to use Interleaved Pipeline Schedule. If you certainly know the shape of each pipeline stage's output tensor and the shapes are all the same, you can set `TENSOR_SHAPE` in config file to further reduce communication. Otherwise, you can just ignore `tensor_shape`, and the shape will be exchanged over pipeline stages automatically. Then we will generate an appropriate schedule for you.
 
 ## Training ResNet with pipeline
 
@@ -250,7 +230,7 @@ In this tutorial, we use `Trainer` to train `ResNet`:
 BATCH_SIZE = 64
 NUM_EPOCHS = 60
 NUM_CHUNKS = 1
-CONFIG = dict(parallel=dict(pipeline=2))
+CONFIG = dict(NUM_MICRO_BATCHES=4, parallel=dict(pipeline=2))
 
 
 def train():
@@ -278,12 +258,7 @@ def train():
                                                                                     train_dataloader, test_dataloader, lr_scheduler)
     timer = MultiTimer()
 
-    if NUM_CHUNKS == 1:
-        schedule = PipelineSchedule(num_microbatches=4)
-    else:
-        schedule = InterleavedPipelineSchedule(num_microbatches=4, num_model_chunks=NUM_CHUNKS)
-
-    trainer = Trainer(engine=engine, timer=timer, logger=logger, schedule=schedule)
+    trainer = Trainer(engine=engine, timer=timer, logger=logger)
 
     hook_list = [
         hooks.LossHook(),
