@@ -63,30 +63,7 @@
 
 在 Colossal-AI 中, 我们提供非交错(`PipelineSchedule`) 和交错(`InterleavedPipelineSchedule`)schedule。
 
-你可以设置 `NUM_MICRO_BATCHES` 将原始 batch 切分成 `NUM_MICRO_BATCHES` 个大小为 `BATCH_SIZE // NUM_MICRO_BATCHES` 的micro batches。 
-如果你确定性地知道每个管道阶段的输出张量的形状，而且形状都是一样的，你可以设置 `tensor_shape` 以进一步减少通信。否则，你可以忽略 `tensor_shape` , 形状将在管道阶段之间自动交换。. 
-如果你用流水线和一维张量并行训练 `Transformer` 模型, 你可以将 `scatter_gather_tensors` 设置为 `True` , 这可以优化通信并加速训练。
-注意，即使 `NUM_CHUNKS == 1` , 你也可以使用 `InterleavedPipelineSchedule` 只要你的模型是用 `torch.nn.ModuleList()` 包装的。
-
-```Python
-from colossalai.engine.schedule import PipelineSchedule, InterleavedPipelineSchedule
-
-use_interleaved = NUM_CHUNKS > 1
-
-if use_interleaved:
-    schedule = InterleavedPipelineSchedule(NUM_MICRO_BATCHES, NUM_CHUNKS, 
-                                           tensor_shape=TENSOR_SHAPE, scatter_gather_tensors=True)
-else:
-    schedule = PipelineSchedule(NUM_MICRO_BATCHES,
-                                tensor_shape=TENSOR_SHAPE, scatter_gather_tensors=True)
-                            
-trainer = Trainer(
-    engine=engine,
-    logger=logger,
-    schedule=schedule,
-    timer=timier
-)                               
-```
+你只需要在配置文件中，设置 `NUM_MICRO_BATCHES` 并在你想使用交错schedule的时候，设置 `NUM_CHUNKS`。 如果你确定性地知道每个管道阶段的输出张量的形状，而且形状都是一样的，你可以设置 `tensor_shape` 以进一步减少通信。否则，你可以忽略 `tensor_shape` , 形状将在管道阶段之间自动交换。 我们将会根据用户提供的配置文件，生成一个合适schedule来支持用户的流水并行训练。
 
 ## 使用流水线训练 ResNet
 
@@ -252,7 +229,7 @@ def build_cifar(batch_size):
 BATCH_SIZE = 64
 NUM_EPOCHS = 60
 NUM_CHUNKS = 1
-CONFIG = dict(parallel=dict(pipeline=2))
+CONFIG = dict(NUM_MICRO_BATCHES=4, parallel=dict(pipeline=2))
 
 
 def train():
@@ -280,12 +257,7 @@ def train():
                                                                                     train_dataloader, test_dataloader, lr_scheduler)
     timer = MultiTimer()
 
-    if NUM_CHUNKS == 1:
-        schedule = PipelineSchedule(num_microbatches=4)
-    else:
-        schedule = InterleavedPipelineSchedule(num_microbatches=4, num_model_chunks=NUM_CHUNKS)
-
-    trainer = Trainer(engine=engine, timer=timer, logger=logger, schedule=schedule)
+    trainer = Trainer(engine=engine, timer=timer, logger=logger)
 
     hook_list = [
         hooks.LossHook(),

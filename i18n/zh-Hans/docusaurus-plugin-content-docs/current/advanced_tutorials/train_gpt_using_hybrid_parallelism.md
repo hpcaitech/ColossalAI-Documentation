@@ -201,20 +201,18 @@ class WebtextDataset(Dataset):
 `(MICRO BATCH SIZE, SEQUENCE LEN, HIDDEN SIZE)`。通过设置该参数，我们可以避免交换每个阶段的张量形状。当你不确定张量的形状时，你可以把它保留为 
 `None`, 形状会被自动推测。请确保你的模型的 `dtype` 是正确的：当你使用 `fp16`，模型的 `dtype` 必须是 `torch.half`；否则，`dtype` 必须是 `torch.float`。对于流水并行，仅支持 `AMP_TYPE.NAIVE`。
 
-你可以通过在 `CONFIG` 里使用 `parallel` 来轻松使用张量并行。如果你用1D张量并行和流水线并行一起训练 GPT，你可以把
-`scatter_gather_tensors` 设置为 `True` 来优化通信。数据并行的大小是根据 GPU 的数量自动设置的。
+你可以通过在 `CONFIG` 里使用 `parallel` 来轻松使用张量并行。数据并行的大小是根据 GPU 的数量自动设置的。
 
 ```Python
 NUM_EPOCHS = 60
 SEQ_LEN = 1024
 BATCH_SIZE = 192
-NUM_MICRO_BATCHES = 192
 NUM_CHUNKS = None
 TENSOR_SHAPE = (1, 1024, 1600)
 # only pipeline parallel
-# CONFIG = dict(parallel=dict(pipeline=2), fp16=dict(mode=AMP_TYPE.NAIVE))
+# CONFIG = dict(NUM_MICRO_BATCHES = 192, parallel=dict(pipeline=2), fp16=dict(mode=AMP_TYPE.NAIVE))
 # pipeline + 1D model parallel
-CONFIG = dict(parallel=dict(pipeline=2, tensor=dict(mode='1d', size=2)), fp16=dict(mode=AMP_TYPE.NAIVE))
+CONFIG = dict(NUM_MICRO_BATCHES = 192, parallel=dict(pipeline=2, tensor=dict(mode='1d', size=2)), fp16=dict(mode=AMP_TYPE.NAIVE))
 
 
 def train():
@@ -250,21 +248,12 @@ def train():
     global_batch_size = BATCH_SIZE * \
         gpc.get_world_size(ParallelMode.DATA) * getattr(gpc.config, "gradient_accumulation", 1)
     logger.info(f'Init done, global batch size = {global_batch_size}', ranks=[0])
-    if use_interleaved:
-        logger.info('Build InterleavedPipelineSchedule', ranks=[0])
-        schedule = InterleavedPipelineSchedule(NUM_MICRO_BATCHES,
-                                               num_chunks, tensor_shape=TENSOR_SHAPE, scatter_gather_tensors=True)
-    else:
-        logger.info('Build PipelineSchedule', ranks=[0])
-        schedule = PipelineSchedule(NUM_MICRO_BATCHES,
-                                    tensor_shape=TENSOR_SHAPE, scatter_gather_tensors=True)
 
     timer = MultiTimer()
 
     trainer = Trainer(
         engine=engine,
         logger=logger,
-        schedule=schedule,
         timer=timer
     )
 
