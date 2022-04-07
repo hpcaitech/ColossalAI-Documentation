@@ -193,10 +193,8 @@ def build_cifar(batch_size):
 ## 使用流水并行训练 ViT
 
 你可以在配置文件中设置流水并行的大小。`NUM_CHUNKS` 在使用交错流水线时很有用 (更多细节见 [Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM](https://arxiv.org/abs/2104.04473) )。
-原始 batch 将会被分割为 `num_microbatches`, 每个阶段每次将加载一个 micro batch。如果你确定性地知道每个阶段输出张量的形状，并且所有阶段的输出张量的形状是相同的（除了最后一个阶段），你可以在初始化
-`PipelineSchedule` 和 `InterleavedPipelineSchedule` 时设置 `tensor_shape` 来减少通信。如果你用流水和1D张量并行来训练 `Transformer` 
-模型，你可以在初始化 `PipelineSchedule` 和 `InterleavedPipelineSchedule` 时设置 `scatter_gather_tensors` 为 `True` 来优化通信。
-如果你不需要模型的输出和标签，你可以在调用 `trainer.fit()` 时，将 `return_output_label` 设置为 `False`，这样能进一步减少 GPU 显存使用。
+原始 batch 将会被分割为 `num_microbatches`, 每个阶段每次将加载一个 micro batch。如果你确定性地知道每个阶段输出张量的形状，你可以在配置文件中设置 `tensor_shape` 来减少通信。
+我们的仓库会自动为用户生成合适的schedule来支持流水并行训练。如果你不需要模型的输出和标签，你可以在调用 `trainer.fit()` 时，将 `return_output_label` 设置为 `False`，这样能进一步减少 GPU 显存使用。
 
 你应当使用 `export DATA=/path/to/cifar`。
 
@@ -204,7 +202,7 @@ def build_cifar(batch_size):
 BATCH_SIZE = 16
 NUM_EPOCHS = 60
 NUM_CHUNKS = 1
-CONFIG = dict(parallel=dict(pipeline=2))
+CONFIG = dict(NUM_MICRO_BATCHES=4, parallel=dict(pipeline=2))
 
 
 def train():
@@ -231,12 +229,7 @@ def train():
                                                                          train_dataloader, test_dataloader)
     timer = MultiTimer()
 
-    if NUM_CHUNKS == 1:
-        schedule = PipelineSchedule(num_microbatches=4)
-    else:
-        schedule = InterleavedPipelineSchedule(num_microbatches=4, num_model_chunks=NUM_CHUNKS)
-
-    trainer = Trainer(engine=engine, timer=timer, logger=logger, schedule=schedule)
+    trainer = Trainer(engine=engine, timer=timer, logger=logger)
 
     hook_list = [
         hooks.LossHook(),
