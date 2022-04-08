@@ -91,7 +91,6 @@ const config = {
       appId: 'XP2V2KAOVI',
       apiKey: 'fcbd654da07a6410891a72bdd5c02b93',
       indexName: 'colossalai',
-      contextualSearch: true,
     },
     colorMode: {
       defaultMode: 'light',
