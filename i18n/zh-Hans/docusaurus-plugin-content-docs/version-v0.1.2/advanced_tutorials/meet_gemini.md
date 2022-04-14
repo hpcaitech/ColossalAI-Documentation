@@ -42,11 +42,21 @@ zero = dict(
 
 目前的一些解决方案，DeepSpeed采用的[Zero-offload](https://arxiv.org/abs/2101.06840)在CPU和GPU内存之间静态划分模型数据，并且它们的内存布局对于不同的训练配置是恒定的。如下图左边所示，当 GPU 内存不足以满足其相应的模型数据要求时，即使当时CPU上仍有可用内存，系统也会崩溃。而ColossalAI可以通过将一部分模型数据换出到CPU上来完成训练。
 
+<figure style={{textAlign: "center"}}>
+<img src="https://github.com/hpcaitech/public_assets/blob/main/colossalai/img/tutorial/gemini/deepspeed_compare.png"/>
+<figcaption>比较</figcaption>
+</figure>
+
 
 ColossalAI设计了Gemini，就像双子星一样，它管理CPU和GPU二者内存空间。它可以让张量在训练过程中动态分布在CPU-GPU的存储空间内，从而让模型训练突破GPU的内存墙。内存管理器由两部分组成，分别是MemStatsCollector(MSC)和StatefuleTensorMgr(STM)。
 
 
 我们利用了深度学习网络训练过程的迭代特性。我们将迭代分为warmup和non-warmup两个阶段，开始时的一个或若干迭代步属于预热阶段，其余的迭代步属于正式阶段。在warmup阶段我们为MSC收集信息，而在non-warmup阶段STM入去MSC收集的信息来移动tensor，以达到最小化CPU-GPU数据移动volume的目的。
+
+<figure style={{textAlign: "center"}}>
+<img src="https://github.com/hpcaitech/public_assets/blob/main/colossalai/img/tutorial/gemini/gemini_workflow.png"/>
+<figcaption>workflow</figcaption>
+</figure>
 
 
 ### StatefulTensorMgr
@@ -71,6 +81,10 @@ STM管理所有model data tensor的信息。在模型的构造过程中，Coloss
 
 尽管可以将采样时刻放在其他位置，比如排除gather buffer的变动新信息，但是会给造成麻烦。不同并行方式Op的实现有差异，比如对于Linear Op，Tensor Parallel中gather buffer的分配在Op中。而对于ZeRO，gather buffer的分配是在PreOp中。将放在PreOp开始时采样有利于将两种情况统一。
 
+<figure style={{textAlign: "center"}}>
+<img src="https://github.com/hpcaitech/public_assets/blob/main/colossalai/img/tutorial/gemini/gemini_mem_curve.png"/>
+<figcaption>workflow</figcaption>
+</figure>
 
 ### Tensor Eviction Strategy
 
