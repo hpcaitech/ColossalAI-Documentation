@@ -65,7 +65,8 @@ module.exports = {
                 'advanced_tutorials/add_your_parallel',
                 'advanced_tutorials/integrate_mixture_of_experts_into_your_model',
                 'advanced_tutorials/train_vit_using_pipeline_parallelism',
-                'advanced_tutorials/train_gpt_using_hybrid_parallelism'
+                'advanced_tutorials/train_gpt_using_hybrid_parallelism',
+                'advanced_tutorials/meet_gemini'
             ],
         },
     ]
