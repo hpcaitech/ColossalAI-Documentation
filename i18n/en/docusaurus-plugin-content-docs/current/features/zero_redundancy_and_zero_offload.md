@@ -30,9 +30,9 @@ and the first and second momentum estimates) are partitioned across the processe
 
 3. **Shard Parameter**: The 16-bit model parameters are partitioned across the processes of a data parallel group.
 
-4. **CPU Offloading**: Offload the Optimizer States from GPU to CPU to save GPU memory usage.
+4. **[Gemini](../advanced_tutorials/meet_gemini.md)**: Dynamic heterogeneous memory space manager for paramters, gradients and optimizer states.
 
-When we shard parameter, gradient and optimizer states, and use CPU offload, we can use three figures to illustrate the training process.
+When we shard parameter, gradient and optimizer states, and set tensor placement policy to `"cpu"`, we can use three figures to illustrate the training process.
 
 <figure style={{textAlign: "center"}}>
 <img src="https://s2.loli.net/2022/03/17/fL2mXBylc4qAUOv.png"/>
@@ -48,6 +48,8 @@ When we shard parameter, gradient and optimizer states, and use CPU offload, we 
 <img src="https://s2.loli.net/2022/03/17/6WMmQ2tFxEJ47cv.png"/>
 <figcaption>Optimizer step</figcaption>
 </figure>
+
+For more details about *Gemini*, click [here](../advanced_tutorials/meet_gemini.md).
 
 ## Usage
 
@@ -78,6 +80,8 @@ with ZeroInitContext(target_device=torch.cuda.current_device(),
 
 You can see the exact usage of `ZeroInitContext` in [API Reference](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.init_ctx.html#colossalai.zero.init_ctx.init_context.ZeroInitContext)
 
+> If you use high-level API, you must configure `shard_strategy` in [config file](#configure-zero-with-high-level-api).
+
 Next, we will firstly give you a configuration template to help you configure ZeRO when using high-level API. Then, we will give you an example of using a low-level API. 
 
 > We now provide `from colossalai.nn.optimizer.HybridAdam`, which is faster than `torch.optim.Adam`. For more details, see [API Reference](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.nn.optimizer.hybrid_adam.html#colossalai.nn.optimizer.hybrid_adam.HybridAdam).
@@ -93,16 +97,15 @@ from colossalai.zero.shard_utils import TensorShardStrategy
 
 zero = dict(
     model_config=dict(
+        shard_strategy=TensorShardStrategy(),
         reduce_scatter_bucket_size_mb=25,
         fp32_reduce_scatter=False,
-        offload_config=dict(device="cpu"),
+        tensor_placement_policy="cuda",
         gradient_predivide_factor=1.0,
         use_memory_tracer=False,
-        shard_strategy=TensorShardStrategy(),
         reuse_fp16_shard=False
     ),
     optimizer_config=dict(
-        cpu_offload=False,
         gpu_margin_mem_ratio=0.8,
         initial_scale=2**5,
         min_scale=1,
@@ -118,6 +121,8 @@ zero = dict(
 `model_config` and `optimizer_config` are keyword arguments of `ShardedModelV2` and `ShardedOptimizerV2` respectively. For more details of these arguments, see [ShardedModelV2 API Reference](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_model.html#module-colossalai.zero.sharded_model.sharded_model_v2) and [ShardedOptimizerV2 API Reference](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_optim.html#colossalai.zero.sharded_optim.ShardedOptimizerV2).
 
 > ⚠️ If you use gradient accumulation, make sure `reuse_fp16_shard` is `False`.
+
+> ⚠️ If you set `tensor_placement_policy` to `"auto"`, make sure no other processes use CUDA during your training.
 
 You can initialize your model in this way:
 
@@ -215,23 +220,22 @@ def main():
     colossalai.launch_from_torch(config={})
     logger = get_dist_logger()
 
-    logger.info(f'GPU memory usage: {torch.cuda.memory_allocated() / 1024**2:.2f} MB', ranks=[0])
+    logger.info(get_mem_info(), ranks=[0])
     # build GPT model
     shard_strategy = TensorShardStrategy()
     with ZeroInitContext(target_device=torch.cuda.current_device(), shard_strategy=shard_strategy, shard_param=True):
         model = gpt2_medium(checkpoint=True)
-    # Enable CPU offload for parameters and gradients
-    model = ShardedModelV2(model, shard_strategy, offload_config={'device': 'cpu'})
-    logger.info(f'GPU memory usage after init model: {torch.cuda.memory_allocated() / 1024**2:.2f} MB', ranks=[0])
+    # Set tensor_placement_policy='cpu', which will offload params, grads and os
+    model = ShardedModelV2(model, shard_strategy, tensor_placement_policy='cpu', reuse_fp16_shard=True)
+    logger.info(get_mem_info(prefix='After init model, '), ranks=[0])
 
     # build criterion
     criterion = GPTLMLoss()
 
     # optimizer
-    optimizer = CPUAdam(model.parameters(), lr=1e-3)
-    # Enable CPU offload for optimizer states
-    optimizer = ShardedOptimizerV2(model, optimizer, cpu_offload=True, initial_scale=2**5)
-    logger.info(f'GPU memory usage after init optim: {torch.cuda.memory_allocated() / 1024**2:.2f} MB', ranks=[0])
+    optimizer = HybridAdam(model.parameters(), lr=1e-3)
+    optimizer = ShardedOptimizerV2(model, optimizer, initial_scale=2**5)
+    logger.info(get_mem_info(prefix='After init optim, '), ranks=[0])
 
     model.train()
     for n in range(NUM_STEPS):
@@ -240,10 +244,11 @@ def main():
         optimizer.zero_grad()
         outputs = model(input_ids, attn_mask)
         loss = criterion(outputs, input_ids)
+        logger.info(get_mem_info(prefix=f'Forward [{n+1}/{NUM_STEPS}] '), ranks=[0])
         optimizer.backward(loss)
+        logger.info(get_mem_info(prefix=f'Backward [{n+1}/{NUM_STEPS}] '), ranks=[0])
         optimizer.step()
-        logger.info(
-            f'Step [{n+1}/{NUM_STEPS}] GPU memory usage: {torch.cuda.memory_allocated() / 1024**2:.2f} MB', ranks=[0])
+        logger.info(get_mem_info(prefix=f'Optimizer step [{n+1}/{NUM_STEPS}] '), ranks=[0])
 ```
 
 The complete example can be found on [ZeRO example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/zero).
