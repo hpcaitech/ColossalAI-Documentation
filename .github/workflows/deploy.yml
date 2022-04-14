@@ -41,3 +41,4 @@ jobs:
           username: ${{ secrets.USER }}
           password: ${{ secrets.PASSWD }}
           dotfiles: true
+          rmRemote: true
