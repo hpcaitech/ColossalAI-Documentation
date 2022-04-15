@@ -50,8 +50,7 @@ jobs:
           username: ${{ secrets.USER }}
           password: ${{ secrets.PASSWD }}
           script: |
-            rm -rf ${OLD_BUILD}/*
-            mv ${NEW_BUILD}/* ${OLD_BUILD}/
+            echo $OLD_BUILD
         env:
           NEW_BUILD: ${{ secrets.REMOTE_NEW_BUILD_DIR }}
           OLD_BUILD: ${{ secrets.REMOTE_OLD_BUILD_DIR }}
