@@ -24,7 +24,7 @@
 
 ## 导入依赖库
 
-```Haskell
+```python
 import json
 import os
 from typing import Callable
@@ -66,7 +66,7 @@ GPT 数据加载器返回 `input_ids` 和 `attention_mask`, 因此我们在 `for
 对于第一阶段，它维护 embedding layer 和一些 transformer blocks。对于最后一个阶段，它维护一些 transformer blocks 和 output head layer。对于其他阶段，他们只维护一些 transformer blocks。
 `partition_uniform(num_layers, pipeline_size, num_chunks)` 返回所有 rank 的 parts, part 是一个 `(start, end)` (不包括end) 的 `tuple`。`start == 0` 表示这是第一阶段, 而 `end == num_layers` 表示这是最后一个阶段。
 
-```Python
+```python
 class PipelineGPTHybrid(nn.Module):
     def __init__(self,
                  num_layers: int = 12,
@@ -159,7 +159,7 @@ def GPT3_pipeline_hybrid(num_chunks=1, checkpoint=False, dtype=torch.float):
 
 我们在这里提供了一个小型 GPT web-text 数据集。 原始格式是 loose JSON, 我们将保存处理后的数据集。
 
-```Python
+```python
 class WebtextDataset(Dataset):
     def __init__(self, path, seq_len=1024) -> None:
         super().__init__()
@@ -203,7 +203,7 @@ class WebtextDataset(Dataset):
 
 你可以通过在 `CONFIG` 里使用 `parallel` 来轻松使用张量并行。数据并行的大小是根据 GPU 的数量自动设置的。
 
-```Python
+```python
 NUM_EPOCHS = 60
 SEQ_LEN = 1024
 BATCH_SIZE = 192
