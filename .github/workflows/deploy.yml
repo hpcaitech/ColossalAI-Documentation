@@ -5,6 +5,10 @@ on:
     branches:
       - '*'
 
+env:
+  new_build: ${{ secrets.REMOTE_NEW_BUILD_DIR }}
+  old_build: ${{ secrets.REMOTE_OLD_BUILD_DIR }}
+
 jobs:
   publish:
     name: Build and deploy website
@@ -36,9 +40,13 @@ jobs:
         uses: garygrossgarten/github-action-scp@release
         with:
           local: build
-          remote: ${{ secrets.REMOTE_DIR }}
+          remote: ${{ secrets.REMOTE_NEW_BUILD_DIR }}
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           password: ${{ secrets.PASSWD }}
           dotfiles: true
           rmRemote: true
+
+      - name: 🔥 Overwrite
+        run: mv $new_build $old_build
+
