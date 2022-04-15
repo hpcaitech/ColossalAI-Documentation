@@ -48,5 +48,7 @@ jobs:
           rmRemote: true
 
       - name: 🔥 Overwrite
-        run: mv $new_build $old_build
+        run: |
+          rm -rf $old_build/*
+          mv $new_build/* $old_build/
 
