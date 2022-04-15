@@ -61,15 +61,19 @@ This command generates static content into the `build` directory and start a web
 ├── i18n
 ├──── en
 ├────── docusaurus-plugin-content-docs
-├──────── current # latest en docs
+├──────── current # prepare for next version
 ├──────── version-v0.0.2 # v0.0.2 en docs
 ├──── zh-Hans
 ├────── docusaurus-plugin-content-docs
-├──────── current # latest zh-Hans docs
+├──────── current # prepare for next version
 ├──────── version-v0.0.2 # v0.0.2 zh-Hans docs
 ```
 
 The above is the docs folder structure. We don't need to modify `docs` and `versioned_docs`, since they are auto generated.
+
+If you want to fix a bug for the latest version, **please update four files in above path at the same time** (`i18n/en/current/xx, i18n/en/current/version-latest, i18n/zh-Hans/current/xx, i18n/zh-Hans/current/version-latest`), thanks. 
+
+If you want to add a new doc for next version, **please update two files in above path at the same time** (`i18n/en/current/xx, i18n/zh-Hans/current/xx`), thanks. `i18n/zh-Hans/current/xx` is optional, you can focus on en doc, others can help to finish the zh-Hans files.
 
 Here is a short instruction of releasing a new version:
 1. Write the latest docs in `i18n/en/docusaurus-plugin-content-docs/current` and `i18n/zh-Hans/docusaurus-plugin-content-docs/current`.

@@ -24,7 +24,7 @@ In this tutorial we will cover:
 
 ## Import libraries
 
-```Haskell
+```python
 import json
 import os
 from typing import Callable
@@ -63,7 +63,7 @@ For GPT, the *word embedding layer* shares the weights with the *output head*. W
 
 For the first stage, it maintains the embedding layer and some transformer blocks. For the last stage, it maintains some transformer blocks and the output head layer. For other stages, they just maintain some transformer blocks. `partition_uniform(num_layers, pipeline_size, num_chunks)` returns the parts of all ranks, and the part is a `tuple` of `(start, end)` (exclude end). `start == 0` means that it's the first stage, and `end == num_layers` means it's the last stage.
 
-```Python
+```python
 class PipelineGPTHybrid(nn.Module):
     def __init__(self,
                  num_layers: int = 12,
@@ -156,7 +156,7 @@ def GPT3_pipeline_hybrid(num_chunks=1, checkpoint=False, dtype=torch.float):
 
 We provide a small GPT web-text dataset here. The original format is loose JSON, and we will save the processed dataset.
 
-```Python
+```python
 class WebtextDataset(Dataset):
     def __init__(self, path, seq_len=1024) -> None:
         super().__init__()
@@ -198,7 +198,7 @@ In the previous tutorial, we explained the meanings of some pipeline arguments. 
 
 You can easily use tensor parallel by setting `parallel` in `CONFIG`. The data parallelism size is automatically set based on the number of GPUs.
 
-```Python
+```python
 NUM_EPOCHS = 60
 SEQ_LEN = 1024
 BATCH_SIZE = 192
