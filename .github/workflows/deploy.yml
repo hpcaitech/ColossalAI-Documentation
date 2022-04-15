@@ -55,6 +55,6 @@ jobs:
           envs: NEW_BUILD, OLD_BUILD
           script: |
             rm -rf $OLD_BUILD
-            mv $NEW_BUILD $OLD_BUILD
+            cp -r $NEW_BUILD $OLD_BUILD
 
 
