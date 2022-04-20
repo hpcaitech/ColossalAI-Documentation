@@ -157,9 +157,9 @@ It is quite simple for you to use the `load_checkpoint`, just define you model a
 Here, we provide an example using pipeline parallel.
 
 ```python
-BATCH_SIZE = 256
+BATCH_SIZE = 128
 NUM_EPOCHS = 10
-CONFIG = dict((parallel=dict(pipeline=2))
+
 
 def train():
   	args = colossalai.get_default_parser().parse_args()
@@ -167,7 +167,6 @@ def train():
 
     logger = get_dist_logger()
     model = vit_lite_patch4_32()
-    model = build_pipeline_model(model)
     load_checkpoint('vit_cifar.pt', model)
     # codes below are ordinary training code
     # define your loss function, optimizer and build the data
