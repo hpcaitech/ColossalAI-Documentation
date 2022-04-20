@@ -159,7 +159,7 @@ Here, we provide an example using pipeline parallel.
 ```python
 BATCH_SIZE = 128
 NUM_EPOCHS = 10
-
+CONFIG = dict()
 
 def train():
   	args = colossalai.get_default_parser().parse_args()
