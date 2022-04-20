@@ -154,7 +154,6 @@ def train():
 
 It is quite simple for you to use the `load_checkpoint`, just define you model and use it.
 
-Here, we provide an example using pipeline parallel.
 
 ```python
 BATCH_SIZE = 128
