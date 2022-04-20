@@ -6,6 +6,8 @@ Author : Guangyang Lu
 - [Launch Colossal-AI](./launch_colossalai.md)
 - [Initialize Colossal-AI](./initialize_features.md)
 
+**This function is experiential.**
+
 ## Introduction
 
 In this tutorial, you will learn how to save and load model checkpoints.
