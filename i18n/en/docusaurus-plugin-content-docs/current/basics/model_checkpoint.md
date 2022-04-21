@@ -6,6 +6,9 @@ Author : Guangyang Lu
 - [Launch Colossal-AI](./launch_colossalai.md)
 - [Initialize Colossal-AI](./initialize_features.md)
 
+**Example Code:**
+- [ColossalAI-Examples Model Checkpoint](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/utils/checkpoint)
+
 **This function is experiential.**
 
 ## Introduction
@@ -17,8 +20,6 @@ To leverage the power of parallel strategies in Colossal-AI, modifications to mo
 Moreover, when loading, you are not demanded to use the same parallel strategy as saving.
 
 ## How to use
-
-**You can check a example of ViT training with Cifar-10 [here](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/utils/checkpoint).**
 
 ### Save
 
