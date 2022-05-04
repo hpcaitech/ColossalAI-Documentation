@@ -25,6 +25,7 @@ module.exports = {
             label: 'Basics',
             collapsed: false,
             items: [
+                'basics/command_line_tool',
                 'basics/define_your_config',
                 'basics/launch_colossalai',
                 'basics/initialize_features',

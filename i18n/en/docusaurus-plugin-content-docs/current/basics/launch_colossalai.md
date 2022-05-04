@@ -22,10 +22,10 @@ we also provide several launching helper methods to access the rank and world si
 set by these launchers directly for your convenience.
 
 In this tutorial we will cover how to launch Colossal-AI to initialize the distributed backends:
-- Launch with colossalai.launch
-- Launch with torch.distributed
-- Launch with slurm
-- Launch with openmpi
+- Launch with `colossalai.launch`
+- Launch with Colossal-AI CLI
+- Launch with SLURM
+- Launch with OpenMPI
 
 ## Launch Distributed Environment
 
@@ -98,11 +98,13 @@ colossalai.launch(config=<CONFIG>,
 ```
 
 
-### Launch with torch.distributed
+### Launch with Colossal-AI CLI
 
-Next, Colossal-AI can utilize the existing launch tool provided by PyTorch as many users are familiar with it. 
-We provide a helper function such that we can invoke the scripts using the distributed launcher provided by PyTorch. 
-The arguments required for distributed environment such as rank, world size, host and port are all set by the PyTorch 
+To enable easy launching on both single or multi nodes, we have implemented a launcher for Colossal-AI. This launcher is
+a wrapper of the torch distributed launch utility but enhanced with the capability of launching multi-node jobs easily. 
+
+First, we need to set the launch method in our code. As this is a wrapper of the torch distributed launch utility, we will 
+use `colossalai.launch_from_torch`. The arguments required for distributed environment such as rank, world size, host and port are all set by the PyTorch 
 launcher and can be read from the environment variable directly.
 
 ```python
@@ -113,22 +115,73 @@ colossalai.launch_from_torch(
 )
 ```
 
-On single/multiple machines, you can directly use `python -m torch.distributed.launch` or `torchrun` to start pre-training on multiple GPUs in parallel. 
-You need to replace <num_gpus> with the number of GPUs available on your machine and <num_nodes> with the number of machines. 
-These numbers can be 1 if you only want to use 1 GPU or 1 node. 
+Next, we can easily start multiple processes with `colossalai run` in your terminal. Below is an example to run the code 
+on a single node with 4 GPUs. You can change the number of GPUs by `nproc_per_node` and the default port by `master_port`. 
 
-If you need to run on multiple machines, you need to invoke this command on each node with a different node rank.
+```shell
+# run on the local node with 4 GPUs (default port: 29500)
+colossalai run --nproc_per_node 4 train.py
 
-```bash
-python -m torch.distributed.launch --nnodes=<num_nodes> --node_rank=<node_rank> --nproc_per_node <num_gpus_per_node> --master_addr <node name> --master_port <29500> train.py
+# run on the local node with 4 GPUs with a different port
+colossalai run --nproc_per_node 4 --master_port 29505 test.py
 ```
 
-If you are using PyTorch v1.10.  You can also try [torchrun](https://pytorch.org/docs/stable/elastic/run.html) (elastic launch) command.
-```bash
-torchrun --nnodes=<num_nodes> --node_rank=<node_rank> --nproc_per_node= <num_gpus_per_node> --rdzv_endpoint=$HOST_NODE_ADDR train.py
+If you are in a cluster and want to launch multi-node training, the CLI can help you start processes on different nodes 
+with one simple command. There are two ways you can launch multi-node jobs.
+
+- Run with `--hosts`
+  
+This is suitable when you only have a few nodes. Let's say I have two nodes, namely `host1` and `host2`,  I can start 
+multi-node training with the following command. Compared to single-node training, you must specify the `master_addr` 
+option, which is auto-set to localhost if running on a single node only. 
+
+:::caution
+
+`master_addr` cannot be localhost when running on multiple nodes, it should be the hostname or IP address of a node.
+
+:::
+
+```shell
+# run on these two nodes
+colossalai run --nproc_per_node 4 --host host1,host2 --master_addr host1 test.py
+```
+- Run with `--hostfile`
+
+This method is suitable when you have a lot of nodes. The host file is a simple text file listing the available nodes. 
+The list of nodes is commonly provided by cluster managers such as SLURM and PBS Pro. For example, you can get the list 
+of nodes allocated to you via the environment variable `SLURM_NODELIST` in SLURM and `PBS_NODEFILE` in PBS Pro. 
+Just do `echo $SLURM_NODELIST` or `cat $PBS_NODEFILE` to check it out. If you do not have such cluster managers, you can
+manually create one for your own use.
+
+The host file given to Colossal-AI launcher must be in the following format where each line is the host name of a node.
+
+```text
+host1
+host2
 ```
 
-`HOST_NODE_ADDR`, in form `<host>[:<port>]` (e.g. node1.example.com:29400), specifies the node and the port
+With the host file ready, we can launch multi-node jobs with the following commands. Just like using `--host`, you also 
+need to specify the `master_addr` option. Some extra options are provided for `--hostfile` as listed below:
+
+- `--include`: specify the hosts to include for multi-node jobs. For example, if your host file has 8 nodes, but you 
+happen to only want to run on 6 nodes instead, you can add `--include host1,host2,host3,...,host6` so that the job will only
+be launcher on the 6 nodes.
+- `--exclude`: specify the hosts to exclude for multi-node jobs. This is useful when some nodes are faulty. For example, 
+if host1 GPU has some problems and you do not wish to run on host1 but all other nodes, you can add `--exclude host1` so that
+the job will only be launched on the remaining nodes.
+
+```shell
+# run with a hostfile 
+colossalai run --nproc_per_node 4 --hostfile ./hostfile --master_addr host1  test.py
+
+# only include certain hosts to execute commands
+# this is used to manually select nodes to run
+colossalai run --nproc_per_node 4 --hostfile ./hostfile --master_addr host1  --include host1 test.py
+
+# exclude certain hosts to execute commands
+# this can be used when certain nodes are faulty
+colossalai run --nproc_per_node 4 --hostfile ./hostfile --master_addr host1  --exclude host2 test.py
+```
 
 ### Launch with SLURM
 
