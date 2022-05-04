@@ -16,9 +16,9 @@
 
 在本教程中，我们将介绍如何启动 Colossal-AI 来初始化分布式后端：
 - 用 colossalai.launch 启动
-- 用 torch.distributed 启动
-- 用 slurm 启动
-- 用 openmpi 启动
+- 用 Colossal-AI命令行 启动
+- 用 SLURM 启动
+- 用 OpenMPI 启动
 
 ## 启动分布式环境
 
@@ -85,9 +85,13 @@ colossalai.launch(config=<CONFIG>,
 ```
 
 
-### 用 torch.distributed 启动
+### 用 Colossal-AI命令行工具 启动
 
-接下来，Colossal-AI 可以利用 PyTorch 提供的现有启动工具，因为许多用户对它很熟悉。我们提供了一个辅助函数，这样我们就可以使用 PyTorch 提供的分布式启动器来调用脚本了。分布式环境所需的参数，如 rank, world size, host 和 port 都是由 PyTorch 启动器设置的，可以直接从环境变量中读取。
+为了更好地支持单节点以及多节点的训练，我们通过封装PyTorch的启动器实现了一个更加方便的启动器。
+PyTorch自带的启动器需要在每个节点上都启动命令才能启动多节点训练，而我们的启动器只需要一次调用即可启动训练。
+
+首先，我们需要在代码里指定我们的启动方式。由于这个启动器是PyTorch启动器的封装，那么我们自然而然应该使用`colossalai.launch_from_torch`。
+分布式环境所需的参数，如 rank, world size, host 和 port 都是由 PyTorch 启动器设置的，可以直接从环境变量中读取。
 
 ```python
 import colossalai
@@ -97,19 +101,70 @@ colossalai.launch_from_torch(
 )
 ```
 
-在单台/多台机器上，您可以直接使用 `python -m torch.distributed.launch` 或 `torchrun` 在多个GPU上并行启动预训练。您需要把 <num_gpus> 替换为您机器上可用的 GPU 数量，把 <num_nodes> 替换为机器的数量。如果您只想使用1个 GPU 或1个节点，这些数字可以是1。
-如果您需要在多台机器上运行，您需要在每个节点上用不同的 node rank 调用这个命令。
+接下来，我们可以轻松地在终端使用`colossalai run`来启动训练。下面的命令可以在当前机器上启动一个4卡的训练任务。
+你可以通过设置`nproc_per_node`来调整使用的GPU的数量，也可以改变`master_port`的参数来选择通信的端口。
 
-```bash
-python -m torch.distributed.launch --nnodes=<num_nodes> --node_rank=<node_rank> --nproc_per_node <num_gpus_per_node> --master_addr <node name> --master_port <29500> train.py
+```shell
+# 在当前节点上启动4卡训练 （默认使用29500端口）
+colossalai run --nproc_per_node 4 train.py
+
+# 在当前节点上启动4卡训练，并使用一个不同的端口
+colossalai run --nproc_per_node 4 --master_port 29505 test.py
 ```
 
-如果您使用的是 PyTorch v1.10.，您也可以尝试使用 [torchrun](https://pytorch.org/docs/stable/elastic/run.html) (弹性启动) 命令。
-```bash
-torchrun --nnodes=<num_nodes> --node_rank=<node_rank> --nproc_per_node= <num_gpus_per_node> --rdzv_endpoint=$HOST_NODE_ADDR train.py
+如果你在使用一个集群，并且想进行多节点的训练，你需要使用Colossal-AI的命令行工具进行一键启动。我们提供了两种方式来启动多节点任务
+
+- 通过`--hosts`来启动
+
+这个方式适合节点数不多的情况。假设我们有两个节点，分别为`host`和`host2`。我们可以用以下命令进行多节点训练。
+比起单节点训练，多节点训练需要手动设置`--master_addr` （在单节点训练中`master_addr`默认为`127.0.0.1`）。
+
+:::caution
+
+多节点训练时，`master_addr`不能为`localhost`或者`127.0.0.1`，它应该是一个节点的名字或者IP地址。
+
+:::
+
+```shell
+# 在两个节点上训练
+colossalai run --nproc_per_node 4 --host host1,host2 --master_addr host1 test.py
 ```
 
-`HOST_NODE_ADDR`，形式为 `<host>[:<port>]` (例如： node1.example.com:29400)， 指定节点和端口。
+
+- 通过`--hostfile`来启动
+
+这个方式适用于节点数很大的情况。host file是一个简单的文本文件，这个文件里列出了可以使用的节点的名字。
+在一个集群中，可用节点的列表一般由SLURM或者PBS Pro这样的集群资源管理器来提供。比如，在SLURM中，
+你可以从`SLURM_NODELIST`这个环境变量中获取到当前分配列表。在PBS Pro中，这个环境变量为`PBS_NODEFILE`。
+可以通过`echo $SLURM_NODELIST` 或者 `cat $PBS_NODEFILE` 来尝试一下。如果你没有这样的集群管理器，
+那么你可以自己手动写一个这样的文本文件即可。
+
+提供给Colossal-AI的host file需要遵循以下格式，每一行都是一个节点的名字。
+
+```text
+host1
+host2
+```
+
+如果host file准备好了，那么我们就可以用以下命令开始多节点训练了。和使用`--host`一样，你也需要指定一个`master_addr`。
+当使用host file时，我们可以使用一些额外的参数：
+- `--include`: 设置你想要启动训练的节点。比如，你的host file里有8个节点，但是你只想用其中的6个节点进行训练，
+  你可以添加`--include host1,host2,host3,...,host6`，这样训练任务只会在这6个节点上启动。
+
+- `--exclude`: 设置你想排除在训练之外的节点。当你的某一些节点坏掉时，这个参数会比较有用。比如假如host1的GPU有一些问题，无法正常使用，
+  那么你就可以使用`--exclude host1`来将其排除在外，这样你就可以训练任务就只会在剩余的节点上启动。
+
+```shell
+# 使用hostfile启动 
+colossalai run --nproc_per_node 4 --hostfile ./hostfile --master_addr host1  test.py
+
+# 只使用部分节点进行训练
+colossalai run --nproc_per_node 4 --hostfile ./hostfile --master_addr host1  --include host1 test.py
+
+# 不使用某些节点进行训练
+colossalai run --nproc_per_node 4 --hostfile ./hostfile --master_addr host1  --exclude host2 test.py
+```
+
 
 ### 用 SLURM 启动
 
