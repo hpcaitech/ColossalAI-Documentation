@@ -10,8 +10,10 @@ Author: Shenggui Li
 
 Colossal-AI provides command-line utilities for the user. 
 The current command line tools support the following features.
+
 - verify Colossal-AI build 
 - launch distributed jobs
+- tensor parallel micro-benchmarking
 
 ## Check Installation
 
