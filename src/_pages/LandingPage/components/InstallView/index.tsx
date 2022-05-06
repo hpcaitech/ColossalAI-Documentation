@@ -4,8 +4,9 @@ import styles from './styles.module.css'
 import { getPipPkgVersions, getColossalaiVersions, getTorchVersions, getCudaVersions } from './pipPackages'
 import RadioGroup from './components/RadioGroup';
 
+type Props = { getStartedRef: React.RefObject<HTMLDivElement> }
 
-const InstallView: React.FC = () => {
+const InstallView: React.FC<Props> = ({ getStartedRef }) => {
     const { windowHeight } = useWindowSize();
 
     const [pipPkgVersions, setPipPkgVersions] = useState(new Set())
@@ -50,6 +51,7 @@ const InstallView: React.FC = () => {
         <div
             className={styles.Container}
             style={{ height: windowHeight > 800 ? windowHeight : undefined }}
+            ref={getStartedRef}
         >
             <h1 className={styles.Title} id='get-started'>Get Started</h1>
             <RadioGroup groupName='ColossalAI version:' values={colossalaiVersions} selectedValue={colossalaiVersion} onClick={setColossalaiVersion}></RadioGroup>
