@@ -9,7 +9,7 @@
 **示例代码:**
 - [ColossalAI-Examples Model Checkpoint](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/utils/checkpoint)
 
-**函数是经验函数.**
+**该功能仍处在测试阶段.**
 
 ## 简介
 
