@@ -10,7 +10,9 @@ const sidebar = require('./sidebars')
 
 function updateDocs(locale, version) {
     const docsRoot = path.join('i18n', locale, 'docusaurus-plugin-content-docs')
-    fs.cpSync(path.join(docsRoot, 'current'), path.join(docsRoot, `version-${version}`), { recursive: true })
+    const src_path = path.join(docsRoot, 'current')
+    const dst_path = path.join(docsRoot, `version-${version}`)
+    execSync(`cp -r ${src_path} ${dst_path}`)
 }
 
 function updateSidebar(version) {

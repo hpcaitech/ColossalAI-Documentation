@@ -20,11 +20,9 @@ const HeaderView: React.FC<Props> = ({ getStartedRef }) => {
   const [toTypeWords] = useState(
     shuffle(trans('landing.typer', i18n))
   );
-  const getStartedButtonOnClick = () => {
-    getStartedRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
-  }
 
-  const getStartedUrl = useBaseUrl('/docs/get_started/installation')
+  const getStartedUrl = useBaseUrl('/download')
+
   return (
     <div
       className={styles.Container}
@@ -50,7 +48,8 @@ const HeaderView: React.FC<Props> = ({ getStartedRef }) => {
         <div className={styles.ButtonContainer}>
           <PrimaryButton
             className={styles.GetStartedButton}
-            onClick={getStartedButtonOnClick}>
+            to={getStartedUrl}
+          >
             {translate({ message: 'GET STARTED', id: 'landing.getStarted' })}
           </PrimaryButton>
           <GithubButton

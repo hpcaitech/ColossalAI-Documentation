@@ -23,8 +23,8 @@ jobs:
           node-version: '16'
           cache: 'yarn'
 
-      # Install Dependencies
-      - name: ⏳ Install
+      # Download Dependencies
+      - name: ⏳ Download
         run: yarn install
 
       # Build
