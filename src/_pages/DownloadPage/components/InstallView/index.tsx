@@ -1,3 +1,4 @@
+import { translate } from '@docusaurus/Translate';
 import React, { useEffect, useState } from 'react';
 import { useWindowSize } from '../../../../hooks/useWindowSize';
 import styles from './styles.module.css'
@@ -53,7 +54,15 @@ const InstallView: React.FC<Props> = ({ getStartedRef }) => {
             style={{ height: windowHeight > 800 ? windowHeight : undefined }}
             ref={getStartedRef}
         >
-            <h1 className={styles.Title} id='get-started'>Get Started</h1>
+            <h1 className={styles.Title} id='Start Locally'>
+                {translate({ message: 'Start Locally', id: 'theme.download.header' })}
+            </h1>
+            <p>
+
+                {translate({ message: 'You can choose your PyTorch and CUDA versions accordingly in the table below. As some CUDA versions are not supported by the Official PyTorch releases, You may need to install Colossal-AI from source if not available.', id: 'theme.download.about' })}
+            </p>
+            <hr/>
+
             <RadioGroup groupName='ColossalAI version:' values={colossalaiVersions} selectedValue={colossalaiVersion} onClick={setColossalaiVersion}></RadioGroup>
             <RadioGroup groupName='PyTorch version:' values={torchVersions} selectedValue={torchVersion} onClick={setTorchVersion}></RadioGroup>
             <RadioGroup groupName='CUDA version:' values={cudaVersions} selectedValue={cudaVersion} onClick={setCudaVersion}></RadioGroup>

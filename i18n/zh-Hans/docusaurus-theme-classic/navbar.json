@@ -3,6 +3,10 @@
     "message": " ",
     "description": "The title in the navbar"
   },
+  "item.label.Download": {
+    "message": "下载",
+    "description": "Navbar item with label Download"
+  },
   "item.label.Tutorials": {
     "message": "教程",
     "description": "Navbar item with label Tutorials"
