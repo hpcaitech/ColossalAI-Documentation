@@ -31,6 +31,7 @@ module.exports = {
                 'basics/initialize_features',
                 'basics/engine_trainer',
                 'basics/configure_parallelization',
+                'basics/model_checkpoint'
             ],
         },
         {
