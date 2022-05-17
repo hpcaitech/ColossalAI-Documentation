@@ -12,14 +12,17 @@ import Rocket from './components/Rocket';
 import styles from './styles.module.css';
 import { trans } from '../../../../i18n';
 
-const HeaderView: React.FC = () => {
+type Props = { getStartedRef: React.RefObject<HTMLDivElement> }
+
+const HeaderView: React.FC<Props> = ({ getStartedRef }) => {
   const { siteConfig, i18n } = useDocusaurusContext();
   const { windowHeight } = useWindowSize();
   const [toTypeWords] = useState(
     shuffle(trans('landing.typer', i18n))
   );
 
-  const getStartedUrl = useBaseUrl('/docs/get_started/installation')
+  const getStartedUrl = useBaseUrl('/download')
+
   return (
     <div
       className={styles.Container}
@@ -45,7 +48,8 @@ const HeaderView: React.FC = () => {
         <div className={styles.ButtonContainer}>
           <PrimaryButton
             className={styles.GetStartedButton}
-            to={getStartedUrl}>
+            to={getStartedUrl}
+          >
             {translate({ message: 'GET STARTED', id: 'landing.getStarted' })}
           </PrimaryButton>
           <GithubButton

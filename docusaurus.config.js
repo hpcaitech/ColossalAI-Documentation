@@ -111,6 +111,11 @@ const config = {
       },
       items: [
         {
+          label: 'Download',
+          position: 'left',
+          to: '/download'
+        },
+        {
           label: 'Tutorials',
           position: 'left',
           to: 'docs/get_started/installation'
