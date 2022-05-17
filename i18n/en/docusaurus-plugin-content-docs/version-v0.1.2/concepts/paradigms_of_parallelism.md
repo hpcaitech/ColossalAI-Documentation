@@ -37,7 +37,7 @@ Tensor parallel training is to split a tensor into `N` chunks along a specific d
 of the whole tensor while not affecting the correctness of the computation graph. This requires additional communication
 to make sure that the result is correct. 
 
-Taking a general matrix multiplication as an example, let's save we have C = AB. We can split B along the column dimension 
+Taking a general matrix multiplication as an example, let's say we have C = AB. We can split B along the column dimension 
 into `[B0 B1 B2 ... Bn]` and each device holds a column. We then multiply `A` with each column in `B` on each device, we 
 will get `[AB0 AB1 AB2 ... ABn]`. At this moment, each device still holds partial results, e.g. device rank 0 holds `AB0`. 
 To make sure the result is correct, we need to all-gather the partial result and concatenate the tensor along the column 

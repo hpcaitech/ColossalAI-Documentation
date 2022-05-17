@@ -23,8 +23,8 @@ jobs:
           node-version: '16'
           cache: 'yarn'
 
-      # Install Dependencies
-      - name: ⏳ Install
+      # Download Dependencies
+      - name: ⏳ Download
         run: yarn install
 
       # Build
@@ -36,8 +36,25 @@ jobs:
         uses: garygrossgarten/github-action-scp@release
         with:
           local: build
-          remote: ${{ secrets.REMOTE_DIR }}
+          remote: ${{ secrets.REMOTE_NEW_BUILD_DIR }}
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           password: ${{ secrets.PASSWD }}
           dotfiles: true
+          rmRemote: true
+
+      - name: 🔥 Overwrite
+        uses: appleboy/ssh-action@master
+        env:
+          NEW_BUILD: ${{ secrets.REMOTE_NEW_BUILD_DIR }}
+          OLD_BUILD: ${{ secrets.REMOTE_OLD_BUILD_DIR }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWD }}
+          envs: NEW_BUILD, OLD_BUILD
+          script: |
+            rm -rf $OLD_BUILD
+            cp -r $NEW_BUILD $OLD_BUILD
+
+

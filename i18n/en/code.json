@@ -1,4 +1,10 @@
 {
+  "theme.download.header": {
+    "message": "Start Locally"
+  },
+  "theme.download.about": {
+    "message": "You can choose your PyTorch and CUDA versions accordingly in the table below. As some CUDA versions are not supported by the Official PyTorch releases, You may need to install Colossal-AI from source if not available."
+  },
   "theme.docs.sidebar.expandButtonTitle": {
     "message": "Expand sidebar",
     "description": "The ARIA label and title attribute for expand button of doc sidebar"

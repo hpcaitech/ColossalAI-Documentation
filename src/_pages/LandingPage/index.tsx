@@ -6,10 +6,11 @@ import styles from './styles.module.css';
 
 
 const LandingPage: React.FC = () => {
+  const getStartedRef = React.useRef<HTMLDivElement>();
   return (
     <PageLayout>
       <main className={styles.Container}>
-        <HeaderView />
+        <HeaderView getStartedRef={getStartedRef} />
       </main>
     </PageLayout>
   );

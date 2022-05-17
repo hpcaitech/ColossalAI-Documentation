@@ -17,7 +17,7 @@ If you want to use `ZeRO`, you can run:
 pip install colossalai[zero]
 ```
 
-## Install From Source
+## Download From Source
 
 > The version of Colossal-AI will be in line with the main branch of the repository. Feel free to raise an issue if you encounter any problem. :)
 
