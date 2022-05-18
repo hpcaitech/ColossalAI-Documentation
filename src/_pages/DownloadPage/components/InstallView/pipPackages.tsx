@@ -15,9 +15,7 @@ export async function getPipPkgVersions(): Promise<Set<string>> {
 function filterVersions(versions: Set<string>): string[] {
     // return the oldest version and the top-3 latest versions
     let sortedVersions = Array.from(versions)
-    sortedVersions = sortedVersions.map((version) => `${version}.0`)
-    sortedVersions.sort(semver.compare)
-    sortedVersions = sortedVersions.map((version) => version.slice(0, version.lastIndexOf('.')))
+    sortedVersions.sort((v1, v2) => semver.compare(semver.coerce(v1), semver.coerce(v2)))
     let truncVersions = sortedVersions.slice(-3)
     if (sortedVersions.length > 3) {
         truncVersions.unshift(sortedVersions[0])
