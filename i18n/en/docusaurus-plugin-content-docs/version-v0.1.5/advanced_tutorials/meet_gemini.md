@@ -1,5 +1,5 @@
 
-# Meet Gemini:The Heterogeneous Memory Manager of Colossal
+# Meet Gemini:The Heterogeneous Memory Manager of Colossal-AI
 
 Author: [Jiarui Fang](https://github.com/feifeibear)
 
@@ -7,7 +7,7 @@ Translator: Jianing Bai
 
 ## Brief
 
-When you only have a few GPUs for large model training tasks, **heterogeneous training** is the most effective approach. By accommodating model data in CPU and GPU and moving the data to the computing device when necessary, it can breakthrough the GPU memory wall by using GPU  and CPU memory (composed of CPU DRAM or nvme SSD memory) together at the same time. Moreover, the model scale can be further improved by combining heterogeneous training with the other parallel approaches, such as data parallel, tensor parallel and pipeline parallel . We now describe the design details of **Gemini**, the heterogeneous memory space manager of colossalAI. Its idea comes from [PatrickStar](https://arxiv.org/abs/2108.05818), which has been adapted to ColossalAI.
+When you only have a few GPUs for large model training tasks, **heterogeneous training** is the most effective approach. By accommodating model data in CPU and GPU and moving the data to the computing device when necessary, it can breakthrough the GPU memory wall by using GPU  and CPU memory (composed of CPU DRAM or nvme SSD memory) together at the same time. Moreover, the model scale can be further improved by combining heterogeneous training with the other parallel approaches, such as data parallel, tensor parallel and pipeline parallel . We now describe the design details of **Gemini**, the heterogeneous memory space manager of colossal-AI. Its idea comes from [PatrickStar](https://arxiv.org/abs/2108.05818), which has been adapted to Colossal-AI.
 
 ## Usage
 
@@ -24,14 +24,11 @@ zero = dict(
 )
 ```
 
-Note that Gemini and parallel strategies such as tensor parallelism, data parallelism, pipeline parallelism and zero should be decoupled. However, ColossalAI request the user use Gemini with ZeRO. Although they are not necessarily coupled, we will improve it in the near future.
+Note that Gemini and parallel strategies such as tensor parallelism, data parallelism, pipeline parallelism and zero should be decoupled. However, Colossal-AI request the user use Gemini with ZeRO. Although they are not necessarily coupled, we will improve it in the near future.
 
 ## Concepts
 
-TLDR
-
-**Op**(**OP**erator)：operation of a neural network layer, such as linear, LayerNorm, etc. The operator can be a forward propagation calculation or a back-propagation calculation.
-Neural networks must manage two types of training data during training.
+**OP**(**OP**erator)：operation of a neural network layer, such as linear, LayerNorm, etc. The operator can be a forward propagation calculation or a back-propagation calculation.
 
 Neural networks must manage two types of training data during training.
 **model data**: consists of parameters, gradients and optimizer states, and its scale is related to the definition of model structure.
@@ -40,9 +37,8 @@ Neural networks must manage two types of training data during training.
 
 ## Design Details
 
-TLDR
 
-In some current solutions, the [Zero-offload](https://arxiv.org/abs/2101.06840)adopted by DeepSpeed statically divides model data between CPU and GPU memory, and their memory layout is constant for different training configurations. As shown on the left of the figure below, when the GPU memory is insufficient to meet its corresponding model data requirements, the system will crash even if there is still available memory on the CPU at that time. While ColossalAI can complete the training by changing out part of the model data to the CPU.
+In some current solutions, the [Zero-offload](https://arxiv.org/abs/2101.06840)adopted by DeepSpeed statically divides model data between CPU and GPU memory, and their memory layout is constant for different training configurations. As shown on the left of the figure below, when the GPU memory is insufficient to meet its corresponding model data requirements, the system will crash even if there is still available memory on the CPU at that time. While Colossal-AI can complete the training by changing out part of the model data to the CPU.
 
 <figure style={{textAlign: "center"}}>
 <img src="https://raw.githubusercontent.com/hpcaitech/public_assets/main/colossalai/img/tutorial/gemini/deepspeed_compare.png"/>
@@ -50,7 +46,7 @@ In some current solutions, the [Zero-offload](https://arxiv.org/abs/2101.06840)a
 </figure>
 
 
-ColossalAI designed Gemini, just like two-stars, which manages the memory space of CPU and GPU efficiently. It can make the tensor dynamically distributed in the storage space of CPU-GPU during training, so that the model training can break through the memory wall of GPU. The memory manager consists of two parts: **MemStatsCollector(MSC)** and **StatefuleTensorMgr(STM)**.
+Colossal-AI designed Gemini, just like two-stars, which manages the memory space of CPU and GPU efficiently. It can make the tensor dynamically distributed in the storage space of CPU-GPU during training, so that the model training can break through the memory wall of GPU. The memory manager consists of two parts: **MemStatsCollector(MSC)** and **StatefuleTensorMgr(STM)**.
 
 We take advantage of the iterative characteristics of the deep learning network training process. We divide iterations into two stages: warmup and non-warmup. One or several iterative steps at the beginning belong to the warmup stage, and the other iterative steps belong to the non-warmup stage. In the warmup stage, we collect information for the MSC, while in the non-warmup stage, STM gets the information collected by the MSC to move the tensor, so as to minimize the CPU-GPU data movement volume.
 
@@ -62,17 +58,17 @@ We take advantage of the iterative characteristics of the deep learning network 
 
 ### StatefulTensorMgr
 
-STM manages the information of all model data tensors. In the process of model construction, colossalAI registers all model data tensors with STM. The memory manager marks each tensor with state information. The state set includes three types: HOLD, COMPUTE and FREE. The functions of STM are as follows:
+STM manages the information of all model data tensors. In the process of model construction, colossal-AI registers all model data tensors with STM. The memory manager marks each tensor with state information. The state set includes three types: HOLD, COMPUTE and FREE. The functions of STM are as follows:
 
 **Query memory usage:**by traversing the locations of all tensors in heterogeneous space, obtain the memory occupation of CPU and GPU by model data.
 
-**Transition tensor state:** it marks the tensor as COMPUTE state before each model data tensor participates in the operator calculation, and as HOLD state after calculation. If the tensor is no longer used, the free state of the marker.
+**Transition tensor state:** it marks the tensor as COMPUTE state before each model data tensor participates in the operator calculation, and as HOLD state after calculation. The FREE state marked if the tensor is no longer in use.
 
 **Adjust tensor position:**tensor manager ensures that the tensor in COMPUTE state is placed on the computing device. If the storage space of the computing device is insufficient, it is necessary to move some tensors in HOLD state to other devices for storage. Tensor eviction strategy requires information from MSC, which will be introduced later.
 
 
 ### MemStatsCollector
-In the warmup stage, the memory information statistician monitors the memory usage of model data and non-model data in CPU and GPU for reference in the non-warmup stage. We can obtain the memory usage of model data at a certain time by querying STM. However, the memory usage of non-model data is difficult to obtain. Owing to the life cycle of non-model data not managed by users, the existing deep learning framework does not expose the tracking interface of non-model data to users. MSC obtains the usage of CPU and GPU memory by non-model in the warmup stage through sampling. The specific methods are as follows:
+In the warmup stage, the memory information statistician monitors the memory usage of model data and non-model data in CPU and GPU for reference in the non-warmup stage. We can obtain the memory usage of model data at a certain time by querying STM. However, the memory usage of non-model data is difficult to obtain. Owing to the life cycle of non-model data not being managed by users, the existing deep learning framework does not expose the tracking interface of non-model data to users. MSC obtains the usage of CPU and GPU memory by non-model in the warmup stage through sampling. The specific methods are as follows:
 
 We trigger the memory sampling operation at the beginning and end of the operator. We call this time point **sampling moment**, and the time between the two sampling moments is called **period**. The calculation process is a black box. Due to the possible allocation of temporary buffer, the memory usage is very complex. However, we can accurately obtain the maximum memory usage of the system during the period. The use of non-model data can be obtained by the maximum memory use of the system between two statistical moments-model memory use.
 
