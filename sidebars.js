@@ -68,7 +68,9 @@ module.exports = {
                 'advanced_tutorials/integrate_mixture_of_experts_into_your_model',
                 'advanced_tutorials/train_vit_using_pipeline_parallelism',
                 'advanced_tutorials/train_gpt_using_hybrid_parallelism',
-                'advanced_tutorials/meet_gemini'
+                'advanced_tutorials/meet_gemini',
+		        'advanced_tutorials/step_by_step_en_vit_code',
+		        'advanced_tutorials/step_by_step_en_zero'
             ],
         },
     ]
