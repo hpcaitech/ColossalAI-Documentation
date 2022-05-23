@@ -25,7 +25,7 @@ it is even possible to achieve linear and super-linear speedup.
 ## Why we need distributed training for machine learning?
 
 Back in 2012, [AlexNet](https://arxiv.org/abs/1404.5997) won the champion of the ImageNet competition, and it was trained 
-on a single GPU.
+on two GTX 580 3GB GPUs.
 Today, most models that appear in the top AI conferences are trained on multiple GPUs. Distributed training is definitely 
 a common practice when researchers and engineers develop AI models. There are several reasons behind this trend.
 
