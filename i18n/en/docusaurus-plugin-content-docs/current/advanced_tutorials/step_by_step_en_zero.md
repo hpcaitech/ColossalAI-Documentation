@@ -1,5 +1,18 @@
-# Pretrain GPT-2 on single GPU with ZeRO
-[Code](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt)
+# Step By Step: Pretrain GPT-2 On Single GPU with ZeRO
+
+Author: Yuxuan Lou
+
+**Example Code**
+
+- [ColossalAI-Examples GPT](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt)
+
+**Related Papers**
+- [Language Models are Unsupervised Multitask Learners](https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)
+- [ZeRO: Memory Optimizations Toward Training Trillion
+Parameter Models](https://arxiv.org/pdf/1910.02054.pdf)
+
+## Introduction
+
 
 Generative Pre-trained Transformer-2 (GPT-2) is an autoregressive language model created by OpenAI. It uses deep learning to produce human-like text. 
 As the quality of the text generated is very high, GPT-2 is well known and widely used. However, it is hard for researchers and users to pretrain GPT-2 
@@ -20,18 +33,22 @@ For more details, you can check [here](https://www.colossalai.org/docs/features/
 
 In this step-by-step tutorial, we will teach you how to build ZeRO GPT-2 model and pretrain it on single GPU.
 
+
+## Tabel of Contents
+In this tutorial we will cover:
+
+1. Colossal-AI installation
+2. Preparation of Webtext data for GPT2 training
+3. Steps to apply ZeRO to training GPT2 
 ## Colossal-AI Installation
 You can install Colossal-AI pacakage and its dependencies with PyPI.
 ```bash
 pip install colossalai
 ```
 
-## Access Example Code
-```bash
-git clone https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt
-```
 
-## Define your configuration file `/gpt2_configs/gpt2_zero3.py `
+
+## Define your configuration file `(/gpt2_configs/gpt2_zero3.py)`
 
 Add ZeRo dict in the configuration file, which contains CPU offload and shard strategy settings.
 
@@ -53,7 +70,6 @@ zero = dict(
 
 Other configs:
 
-Colossal-AI provides `colossalai.nn.optimizer.CPUAdam`, which will acclerate computation when CPU offload is applied.
 
 ```python
 BATCH_SIZE = 2
@@ -61,7 +77,7 @@ NUM_EPOCHS = 60
 SEQ_LEN = 1024
 
 optimizer = dict(
-    type=CPUAdam,
+    type=HybridAdam,
     lr=0.00015,
     weight_decay=1e-2,
 )

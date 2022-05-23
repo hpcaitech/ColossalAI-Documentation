@@ -1,8 +1,26 @@
-# From data parallel to hybrid parallel: Accelerate ViT training with Colossal-AI (step by step tutorial, multi-gpu, with code details)
-[Code](https://github.com/yuxuan-lou/Step-by-Step-ViT-training-on-Cifar10-with-Colossal-AI)
+# Step By Step: Accelerate ViT Training With Colossal-AI (From Data Parallel to Hybrid Parallel)
+
+Author: Yuxuan Lou
+
+**Example Code**
+
+- [Colossal-AI Examples ViT on Cifar10](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/image/vision_transformer)
+
+**Related Paper**
+- [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/pdf/2010.11929.pdf)
+
+
+## Introduction
 
 Colossal-AI provides three different parallelism techniques which acclerate model training: data parallelism, pipeline parallelism and tensor parallelism. 
 In this example, we will show you how to train ViT on Cifar10 dataset with these parallelism techniques. To run this example, you will need 2-4 GPUs. 
+
+
+## Tabel of Contents
+1. Colossal-AI installation
+2. Steps to train ViT with data parallelism
+3. Steps to train ViT with pipeline parallelism
+4. Steps to train ViT with tensor parallelism or hybrid parallelism
 
 ## Colossal-AI Installation
 You can install Colossal-AI pacakage and its dependencies with PyPI.
@@ -10,17 +28,14 @@ You can install Colossal-AI pacakage and its dependencies with PyPI.
 pip install colossalai
 ```
 
-## Access Example Code
-```bash
-git clone https://github.com/yuxuan-lou/Step-by-Step-ViT-training-on-Cifar10-with-Colossal-AI.git
-```
+
 
 ## Data Parallelism
 Data parallism is one basic way to accelerate model training process. You can apply data parallism to training by only two steps:
 1. Define a configuration file
 2. Change a few lines of code in train script
 
-### Define your configuration file `config_data_parallel.py`
+### Define your configuration file (`data_parallel/config.py`)
 To use Colossal-AI, the first step is to define a configuration file. And there are two kinds of variables here:
 
 1. **Colossal-AI feature specification**
@@ -53,7 +68,7 @@ dali = dict(
 )
 ```
 
-### Modify train script (`train_dp.py`)
+### Modify train script (`/data_parallel/train_with_cifar10.py`)
 
 #### Import modules
 - Colossal-AI related modules
@@ -212,15 +227,12 @@ torchrun --standalone --nproc_per_node <NUM_GPUs>  train_dp.py --config ./config
 # python -m torch.distributed.launch --nproc_per_node <NUM_GPUs> --master_addr <node_name> --master_port 29500 train_dp.py --config ./configs/config.py
 ```
 
-During Training:
-<p align="center">
-  <img src="https://github.com/yuxuan-lou/Colossal-AI-tutorials/blob/main/img/vit_dp.png" width="800">
-</p>
+
 
 ## Pipeline Parallelism
 Aside from data parallelism, Colossal-AI also support pipleline parallelism. In specific, Colossal-AI uses 1F1B pipeline introduced by Nvidia. For more details, you can view the related [documents](https://www.colossalai.org/tutorials/features/pipeline_parallel).
 
-### Define your configuration file(`config_pipeline_parallel.py`)
+### Define your configuration file(`hybrid_parallel/configs/vit_pipeline.py`)
 To apply pipleline parallel on the data parallel basis, you only need to add a **parallel dict**
 ```python
 from colossalai.amp import AMP_TYPE
@@ -259,7 +271,7 @@ CHECKPOINT = True
 SEQ_LENGTH = (IMG_SIZE // PATCH_SIZE) ** 2 + 1  # add 1 for cls token
 ```
 
-### Build pipeline model (`model/vit.py`)
+### Build pipeline model (`/hybrid_parallel/model/vit.py`)
 Colossal-AI provides two methods to build a pipeline model from the existing model.
 - `colossalai.builder.build_pipeline_model_from_cfg`
 - `colossalai.builder.build_pipeline_model`
@@ -399,7 +411,7 @@ def build_pipeline_vit(num_layers, num_chunks, device=torch.device('cuda'), **kw
     return _build_pipeline_vit(PipelineVisionTransformer, num_layers, num_chunks, device, **kwargs)
 ```
 
-### Modify train script (`train_hybrid.py`)
+### Modify train script (`/hybrid_parallel/train_with_cifar10.py`)
 
 #### Import modules
 ```python
@@ -572,21 +584,13 @@ torchrun --standalone --nproc_per_node <NUM_GPUs>  train_hybrid.py --config ./co
 # python -m torch.distributed.run --standalone --nproc_per_node= <NUM_GPUs> train_hybrid.py --config ./configs/config_pipeline_parallel.py
 ```
 
-Initial parallel settings and build pipeline model:
-<p align="center">
-  <img src="https://github.com/yuxuan-lou/Colossal-AI-tutorials/blob/main/img//vit_pp_1.png" width="800">
-</p>
 
-During training:
-<p align="center">
-  <img src="https://github.com/yuxuan-lou/Colossal-AI-tutorials/blob/main/img/vit_pp_2.png" width="800">
-</p>
 
 
 ## Tensor Parallelism and Hybrid Parallelism
 Tensor parallelism partitions each weight parameter across multiple devices in order to reduce memory load. Colossal-AI support 1D, 2D, 2.5D and 3D tensor parallelism. Besides, you can combine tensor parallelism with pipeline parallelism and data parallelism to reach hybrid parallelism. Colossal-AI also provides an easy way to apply tensor parallelism and hybrid parallelism. On the basis of pipeline parallelism, a few lines of code changing in config file is all you need.
 
-### Define your configuration file(`config_hybrid_parallel.py`)
+### Define your configuration file(`/hybrid_parallel/configs/vit_1d_tp2_pp2.py`)
 To use tensor parallelism, you only need to add related information to the **parallel dict**. To be specific, `TENSOR_PARALLEL_MODE` can be '1d', '2d', '2.5d', '3d'. And the size of different parallelism should satisfy: `#GPUs = pipeline parallel size x tensor parallel size x data parallel size`.  `data parallel size` will automatically computed after you specify the number of GPUs, pipeline parallel size and tensor parallel size.
 
 ```python
@@ -640,13 +644,3 @@ torchrun --standalone --nproc_per_node <NUM_GPUs>  train_hybrid.py --config ./co
 # If your torch >= 1.9.0
 # python -m torch.distributed.run --standalone --nproc_per_node= <NUM_GPUs> train_hybrid.py --config ./configs/config_hybrid_parallel.py
 ```
-
-Initial parallel setting and build model:
-<p align="center">
-  <img src="https://github.com/yuxuan-lou/Colossal-AI-tutorials/blob/main/img/vit_hp_1.png" width="800">
-</p>
-
-During Training:
-<p align="center">
-  <img src="https://github.com/yuxuan-lou/Colossal-AI-tutorials/blob/main/img/vit_hp_2.png" width="800">
-</p>
