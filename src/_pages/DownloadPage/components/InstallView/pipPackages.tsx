@@ -1,8 +1,8 @@
 import api from "../../../../core/api"
 import semver from 'semver'
 
-export async function getPipPkgVersions(): Promise<Set<string>> {
-    const response = await api.get('https://release.colossalai.org')
+export async function getPipPkgVersions(url: string): Promise<Set<string>> {
+    const response = await api.get(url)
     const text = await response.raw.text()
     const pipPkgVersions: Set<string> = new Set()
     for (let wheel of text.match(/colossalai-[0-9.]+%2B.+\.whl/g)) {
