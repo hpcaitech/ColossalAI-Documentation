@@ -28,7 +28,7 @@ const InstallView: React.FC<Props> = ({ getStartedRef }) => {
         async function setupPkg() {
             const pipPkgVersions = await getPipPkgVersions(pipUrl)
             const previewPipPkgVersions = await getPipPkgVersions(previewPipUrl)
-            const allPipPkgVersions = new Set([...pipPkgVersions, ...previewPipPkgVersions])
+            const allPipPkgVersions = new Set(Array.from(pipPkgVersions).concat(Array.from(previewPipPkgVersions)))
             const colossalaiVersions = getColossalaiVersions(pipPkgVersions)
             const torchVersions = getTorchVersions(allPipPkgVersions)
             const cudaVersions = getCudaVersions(allPipPkgVersions)
