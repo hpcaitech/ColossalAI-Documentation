@@ -71,8 +71,7 @@ const InstallView: React.FC<Props> = ({ getStartedRef }) => {
                 {translate({ message: 'Start Locally', id: 'theme.download.header' })}
             </h1>
             <p>
-
-                {translate({ message: 'You can choose your PyTorch and CUDA versions accordingly in the table below. As some CUDA versions are not supported by the Official PyTorch releases, You may need to install Colossal-AI from source if not available.', id: 'theme.download.about' })}
+                {translate({ message: 'You can choose your PyTorch and CUDA versions accordingly in the table below. As some CUDA versions are not supported by the Official PyTorch releases, You may need to install Colossal-AI from source if not available. As for the nightly version, you need to have Python 3.8 and the latest PyTorch and CUDA versions.', id: 'theme.download.about' })}
             </p>
             <hr />
 
