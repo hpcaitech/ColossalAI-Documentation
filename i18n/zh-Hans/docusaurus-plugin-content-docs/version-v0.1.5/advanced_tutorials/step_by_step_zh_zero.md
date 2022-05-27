@@ -13,14 +13,14 @@ Parameter Models](https://arxiv.org/pdf/1910.02054.pdf)
 
 ## 引言
 
-生成型预训练变换器 (Generative Pre-trained Transformer-2, GPT-2) 是由 OpenAI 提出的一种自回归语言模型。它使用深度学习来生成类似人类书写出来的文本。由于生成的文本质量非常高，GPT-2 得到了广泛的关注和应用。然而，由于其的模型规模极大，研究人员和用户很难实现 GPT-2 模型的预训练。
+GPT-2 (Generative Pre-trained Transformer-2) 是由 OpenAI 提出的一种自回归语言模型。它使用深度学习来生成类似人类书写出来的文本。由于生成的文本质量非常高，GPT-2 得到了广泛的关注和应用。然而，由于其的模型规模极大，研究人员和用户很难实现 GPT-2 模型的预训练。
 
-Colossal-AI 提供了一个完美的解决方案：使用零冗余优化器 (ZeRO)。ZeRO通过划分三个模型状态（优化器状态、梯度和参数）的方法来消除内存冗余，而不是通过复制的方法。这样，与经典的数据并行性策略相比，极大提高了内存使用效率，同时不牺牲计算粒度和通信效率。此外，ZeRO 支持 CPU 卸载：将优化器状态从 GPU 卸载到 CPU ，以节省 GPU 内存占用空间。
+Colossal-AI 提供了一个良好的解决方案：使用零冗余优化器 (ZeRO)。ZeRO通过划分三个模型状态（优化器状态、梯度和参数）的方法来消除内存冗余，而不是像通常直接复制的做法。这样，与经典的数据并行性策略相比，可极大提高内存使用效率，同时不牺牲计算粒度和通信效率。此外，ZeRO 支持 CPU 卸载：将优化器状态从 GPU 卸载到 CPU ，以节省 GPU 内存被占用的空间。
 
-目前，Colossal-AI 提供了使用 ZeRO 的两个级别应用程序编程接口 (API)。
+目前，Colossal-AI 提供了使用 ZeRO 两个级别的 API。
 
-- **低级 API**: 直接使用 ShardedModel 和 ShardedOptimizer ，从scratch 中直接编写自己的训练步骤。
-- **高级 API**: 使用 Engine 并且在配置文件中配置 ZeRO 。可以使用 Trainer 或者编写自己的训练步骤。
+- **低级 API**: 直接使用 ShardedModel 和 ShardedOptimizer ，完全自行构建训练循环。
+- **高级 API**: 使用 Engine 并且在配置文件中配置 ZeRO 。可以使用 Trainer 或者编写自己的训练循环。
 
 了解更详细内容，可以点击[这里](https://www.colossalai.org/docs/features/zero_redundancy_and_zero_offload/).
 
@@ -31,8 +31,8 @@ Colossal-AI 提供了一个完美的解决方案：使用零冗余优化器 (ZeR
 本教程将涵盖如下内容：
 
 1. Colossal-AI 安装方法
-2. 准备 GPT2 训练的 Webtext 数据
-3. 将 ZeRO 应用于 GPT2 的训练方法
+2. 准备 GPT-2 训练的 Webtext 数据
+3. 将 ZeRO 应用于 GPT-2 的训练方法
 ## Colossal-AI 安装方法
 可以通过 Python 的官方索引来安装 Colossal-AI 软件包。
 ```bash
@@ -43,7 +43,7 @@ pip install colossalai
 
 ## 定义配置文件 `(/gpt2_configs/gpt2_zero3.py)`
 
-直接在配置文件中添加 ZeRo。ZeRo 同时包含了 CPU 卸载策略和碎片策略的相关设置。
+直接在配置文件中添加 ZeRO，这包含 CPU 卸载策略和分片策略的相关设置。
 
 ```python
 from model_zoo.gpt.gpt import gpt2_small
@@ -104,7 +104,7 @@ python setup.py install
 
 2. 解压 zip 文件，得到一个 `URLs` 文件，这里面包含很多文本文件，文本文件的内容由很多 url 组成。
 
-3. 删除 URL 黑名单。
+3. 删除已被列入黑名单的 URL 。
 
    *特别鸣谢 Megatron-LM 公开了数据处理代码。 我们复制了 Megatron-LM 代码，并修改了一下代码漏洞。方便起见，我们整理了所需要的文件，在 `tools/Megatron` 。 点击[这里](https://github.com/NVIDIA/Megatron-LM.git) 查看 Megatron-LM 的源代码。*
 
@@ -113,9 +113,9 @@ python setup.py install
    python Megatron/blacklist_urls.py <path/to/URLs> <path/to/clean_urls.txt>
    ```
 
-4. 从清理后的 url 中下载数据并将内容合并为一个松散的 json 文件，其中每个 json 文件以 `{'text': text, 'url': unique_url}` 的形式为一行。
+4. 从清理后的 URL 中下载数据并将内容合并为一个松散的 json 文件，其中每个 json 文件以 `{'text': text, 'url': unique_url}` 的形式为一行。
 
-   *我们复制和修改了 [openwebtext](https://github.com/yet-another-account/openwebtext) 一些代码漏洞。方便起见，我们提供修改过的版本在 `tools/download`。*
+   *我们复制了 [openwebtext](https://github.com/yet-another-account/openwebtext) 的代码，并修复了其中的一些bug。方便起见，我们提供修改过的版本在 `tools/download`。*
 
    ```bash
    python download/download.py <path/to/clean_urls.txt> --n_procs 50 --output <path/to/raw.json>
@@ -123,7 +123,7 @@ python setup.py install
 
 ### 准备 GPT 训练数据
 
-1. 执行 ftfy ，进行英文检测并删除标记少于128的文档。此步骤可以进行分片并在不同的分片上运行。
+1. 执行 ftfy, English 检测并删除 tokens 少于128的文档。此步骤可以被分片化并在不同的分片上运行。
 
    ```bash
    python Megatron/cleanup_dataset.py <path/to/raw.json> <path/to/clean.json>
@@ -131,7 +131,7 @@ python setup.py install
 
    其他清除方法 (例如，删除少于512个字符的文档或特定数据集，如stories、realnews数据集) 可以使用 `cleanup_fix_dataset.py` 来实现。 有关更多详细信息，请运行 `python cleanup_fix_dataset.py --help` 查看。
 
-2. 使用 LSH ，找到可能的重复项并将其存储在文件中以供以后处理。该代码支持保存和加载指纹以进行重复数据消除，还支持多线程以加快处理速度。有关更多详细信息，请访问 `python find_duplicate.py --help` 。
+2. 使用 LSH，找到可能的重复项并将其存储在文件中以供以后处理。该代码支持保存和加载指纹以进行重复数据消除，还支持多线程以加快处理速度。有关更多详细信息，请访问 `python find_duplicate.py --help` 。
 
    ```bash
    python Megatron/find_duplicates.py --inputs <path/to/clean.json> url --output <path/to/process_stage_one.json>
@@ -249,7 +249,7 @@ train_dataloader = utils.get_dataloader(train_ds,
                                         drop_last=True)
 ```
 
-### 构建 Zero GPT-2 模型
+### 构建 ZeRO GPT-2 模型
 ```python
 logger.info('Build model', ranks=[0])
 use_pipeline = is_using_pp()

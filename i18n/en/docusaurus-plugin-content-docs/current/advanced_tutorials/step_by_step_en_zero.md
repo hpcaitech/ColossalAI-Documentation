@@ -8,8 +8,7 @@ Author: Yuxuan Lou
 
 **Related Papers**
 - [Language Models are Unsupervised Multitask Learners](https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)
-- [ZeRO: Memory Optimizations Toward Training Trillion
-Parameter Models](https://arxiv.org/pdf/1910.02054.pdf)
+- [ZeRO: Memory Optimizations Toward Training Trillion Parameter Models](https://arxiv.org/pdf/1910.02054.pdf)
 
 ## Introduction
 
@@ -38,8 +37,8 @@ In this step-by-step tutorial, we will teach you how to build ZeRO GPT-2 model a
 In this tutorial we will cover:
 
 1. Colossal-AI installation
-2. Preparation of Webtext data for GPT2 training
-3. Steps to apply ZeRO to training GPT2 
+2. Preparation of Webtext data for GPT-2 training
+3. Steps to apply ZeRO to training GPT-2 
 ## Colossal-AI Installation
 You can install Colossal-AI pacakage and its dependencies with PyPI.
 ```bash
@@ -50,7 +49,7 @@ pip install colossalai
 
 ## Define your configuration file `(/gpt2_configs/gpt2_zero3.py)`
 
-Add ZeRo dict in the configuration file, which contains CPU offload and shard strategy settings.
+Add ZeRO dict in the configuration file, which contains CPU offload and shard strategy settings.
 
 ```python
 from model_zoo.gpt.gpt import gpt2_small
@@ -267,7 +266,7 @@ train_dataloader = utils.get_dataloader(train_ds,
                                         drop_last=True)
 ```
 
-### Build Zero GPT-2 model
+### Build ZeRO GPT-2 model
 ```python
 logger.info('Build model', ranks=[0])
 use_pipeline = is_using_pp()

@@ -12,8 +12,8 @@ Author: Yuxuan Lou
 
 ## Introduction
 
-Colossal-AI provides three different parallelism techniques which acclerate model training: data parallelism, pipeline parallelism and tensor parallelism. 
-In this example, we will show you how to train ViT on Cifar10 dataset with these parallelism techniques. To run this example, you will need 2-4 GPUs. 
+In this example for ViT model, Colossal-AI provides three different parallelism techniques which acclerate model training: data parallelism, pipeline parallelism and tensor parallelism. 
+We will show you how to train ViT on CIFAR-10 dataset with these parallelism techniques. To run this example, you will need 2-4 GPUs. 
 
 
 ## Tabel of Contents
@@ -123,7 +123,7 @@ If only data parallelism is required, you do not need to make any changes to you
 model = vit_base_patch16_224(drop_rate=0.1, num_classes=gpc.config.NUM_CLASSES)
 ```
 
-#### Build Cifar10 Dataloader
+#### Build CIFAR-10 Dataloader
 `colossalai.utils.get_dataloader` can help you build dataloader easily.
 
 ```python
@@ -153,7 +153,7 @@ train_dataloader, test_dataloader = build_cifar(gpc.config.BATCH_SIZE)
 
 #### Define optimizer, loss function and LR scheduler
 
-Colossal-AI provides its own optimizer, loss function and LR scheduler. Those from pytorch are also compatible.
+Colossal-AI provides its own optimizer, loss function and LR scheduler. Those from PyTorch are also compatible.
 
 ```python
 # build optimizer
@@ -213,9 +213,9 @@ trainer.fit(
 ```
 
 ### Start training
-`DATA` is the filepath where Cifar10 dataset will be automatically downloaded and stored.
+`DATA` is the filepath where CIFAR-10 dataset will be automatically downloaded and stored.
 
-`<NUM_GPUs>` is the number of GPUs you want to use to train ViT on Cifar10 with data parallelism.
+`<NUM_GPUs>` is the number of GPUs you want to use to train ViT on CIFAR-10 with data parallelism.
 
 ```bash
 export DATA=<path_to_data>
@@ -230,7 +230,7 @@ torchrun --standalone --nproc_per_node <NUM_GPUs>  train_dp.py --config ./config
 
 
 ## Pipeline Parallelism
-Aside from data parallelism, Colossal-AI also support pipleline parallelism. In specific, Colossal-AI uses 1F1B pipeline introduced by Nvidia. For more details, you can view the related [documents](https://www.colossalai.org/tutorials/features/pipeline_parallel).
+Aside from data parallelism, Colossal-AI also support pipleline parallelism. In specific, Colossal-AI uses 1F1B pipeline introduced by NVIDIA. For more details, you can view the related [documents](https://www.colossalai.org/tutorials/features/pipeline_parallel).
 
 ### Define your configuration file(`hybrid_parallel/configs/vit_pipeline.py`)
 To apply pipleline parallel on the data parallel basis, you only need to add a **parallel dict**

@@ -12,8 +12,8 @@ Author: Yuxuan Lou
 
 ## Introduction
 
-Colossal-AI provides three different parallelism techniques which acclerate model training: data parallelism, pipeline parallelism and tensor parallelism. 
-In this example, we will show you how to train ViT on Cifar10 dataset with these parallelism techniques. To run this example, you will need 2-4 GPUs. 
+In this example for ViT model, Colossal-AI provides three different parallelism techniques which acclerate model training: data parallelism, pipeline parallelism and tensor parallelism. 
+We will show you how to train ViT on CIFAR-10 dataset with these parallelism techniques. To run this example, you will need 2-4 GPUs. 
 
 
 ## Tabel of Contents
@@ -48,16 +48,20 @@ Global hyper-parameters include model-specific hyper-parameters, training settin
 
 ```python
 from colossalai.amp import AMP_TYPE
+
 # ViT Base
 BATCH_SIZE = 256
 DROP_RATE = 0.1
 NUM_EPOCHS = 300
+
 # mix precision
 fp16 = dict(
     mode=AMP_TYPE.TORCH,
 )
+
 gradient_accumulation = 16
 clip_grad_norm = 1.0
+
 dali = dict(
     gpu_aug=True,
     mixup_alpha=0.2
@@ -81,8 +85,11 @@ from colossalai.trainer import Trainer, hooks
 - Other modules
 ```python
 import os
+
 import torch
 from timm.models import vit_base_patch16_224
+
+
 from torchvision import transforms
 from torchvision.datasets import CIFAR10
 ```
@@ -96,6 +103,7 @@ In train script,  you need to initialize the distributed environment for Colossa
 parser = colossalai.get_default_parser()
 args = parser.parse_args()
 colossalai.launch_from_torch(config=args.config)
+
 disable_existing_loggers()
 logger = get_dist_logger()
 ```
@@ -115,7 +123,7 @@ If only data parallelism is required, you do not need to make any changes to you
 model = vit_base_patch16_224(drop_rate=0.1, num_classes=gpc.config.NUM_CLASSES)
 ```
 
-#### Build Cifar10 Dataloader
+#### Build CIFAR-10 Dataloader
 `colossalai.utils.get_dataloader` can help you build dataloader easily.
 
 ```python
@@ -131,24 +139,29 @@ def build_cifar(batch_size):
         transforms.ToTensor(),
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
     ])
+
     train_dataset = CIFAR10(root=os.environ['DATA'], train=True, download=True, transform=transform_train)
     test_dataset = CIFAR10(root=os.environ['DATA'], train=False, transform=transform_test)
     train_dataloader = get_dataloader(dataset=train_dataset, shuffle=True, batch_size=batch_size, pin_memory=True)
     test_dataloader = get_dataloader(dataset=test_dataset, batch_size=batch_size, pin_memory=True)
     return train_dataloader, test_dataloader
+
+
 # build dataloader
 train_dataloader, test_dataloader = build_cifar(gpc.config.BATCH_SIZE)
 ```
 
 #### Define optimizer, loss function and LR scheduler
 
-Colossal-AI provides its own optimizer, loss function and LR scheduler. Those from pytorch are also compatible.
+Colossal-AI provides its own optimizer, loss function and LR scheduler. Those from PyTorch are also compatible.
 
 ```python
 # build optimizer
 optimizer = colossalai.nn.Lamb(model.parameters(), lr=1.8e-2, weight_decay=0.1)
+
 # build loss
 criterion = torch.nn.CrossEntropyLoss()
+
 # lr_scheduelr
 lr_scheduler = LinearWarmupLR(optimizer, warmup_steps=50, total_steps=gpc.config.NUM_EPOCHS)
 ```
@@ -171,12 +184,14 @@ Besides, In trainer, the user can customize some hooks and attach these hooks to
 ```python
 # build trainer
 trainer = Trainer(engine=engine, logger=logger)
+
 # build hooks
 hook_list = [
     hooks.LossHook(),
     hooks.AccuracyHook(accuracy_func=MixupAccuracy()),
     hooks.LogMetricByEpochHook(logger),
     hooks.LRSchedulerHook(lr_scheduler, by_epoch=True),
+
     # comment if you do not need to use the hooks below
     hooks.SaveCheckpointHook(interval=1, checkpoint_dir='./ckpt'),
     hooks.TensorboardHook(log_dir='./tb_logs', ranks=[0]),
@@ -198,9 +213,9 @@ trainer.fit(
 ```
 
 ### Start training
-`DATA` is the filepath where Cifar10 dataset will be automatically downloaded and stored.
+`DATA` is the filepath where CIFAR-10 dataset will be automatically downloaded and stored.
 
-`<NUM_GPUs>` is the number of GPUs you want to use to train ViT on Cifar10 with data parallelism.
+`<NUM_GPUs>` is the number of GPUs you want to use to train ViT on CIFAR-10 with data parallelism.
 
 ```bash
 export DATA=<path_to_data>
@@ -215,18 +230,20 @@ torchrun --standalone --nproc_per_node <NUM_GPUs>  train_dp.py --config ./config
 
 
 ## Pipeline Parallelism
-Aside from data parallelism, Colossal-AI also support pipleline parallelism. In specific, Colossal-AI uses 1F1B pipeline introduced by Nvidia. For more details, you can view the related [documents](https://www.colossalai.org/tutorials/features/pipeline_parallel).
+Aside from data parallelism, Colossal-AI also support pipleline parallelism. In specific, Colossal-AI uses 1F1B pipeline introduced by NVIDIA. For more details, you can view the related [documents](https://www.colossalai.org/tutorials/features/pipeline_parallel).
 
 ### Define your configuration file(`hybrid_parallel/configs/vit_pipeline.py`)
 To apply pipleline parallel on the data parallel basis, you only need to add a **parallel dict**
 ```python
 from colossalai.amp import AMP_TYPE
+
 parallel = dict(
     pipeline=2
 )
 # pipeline config
 NUM_MICRO_BATCHES = parallel['pipeline']
 TENSOR_SHAPE = (BATCH_SIZE // NUM_MICRO_BATCHES, SEQ_LENGTH, HIDDEN_SIZE)
+
 fp16 = dict(mode=AMP_TYPE.NAIVE)
 clip_grad_norm = 1.0
 ```
@@ -241,6 +258,7 @@ LEARNING_RATE = 3e-3
 WEIGHT_DECAY = 0.3
 NUM_EPOCHS = 300
 WARMUP_EPOCHS = 32
+
 # model config
 IMG_SIZE = 224
 PATCH_SIZE = 16
@@ -262,6 +280,7 @@ Besides, you can also build a pipeline model from scrath with Colossal-AI.
 ```python
 import math
 from typing import Callable
+
 import inspect
 import torch
 from colossalai import nn as col_nn
@@ -272,6 +291,8 @@ from colossalai.context import ParallelMode
 from colossalai.builder.pipeline import partition_uniform
 from torch import dtype, nn
 from model_zoo.vit.vit import ViTBlock, ViTEmbedding, ViTHead
+
+
 @MODELS.register_module
 class PipelineVisionTransformer(nn.Module):
     def __init__(self,
@@ -298,7 +319,9 @@ class PipelineVisionTransformer(nn.Module):
                  start_idx=None,
                  end_idx=None,):
         super().__init__()
+
         layers = []
+
         if first_stage:
             embed = ViTEmbedding(img_size=img_size,
                                  patch_size=patch_size,
@@ -308,11 +331,14 @@ class PipelineVisionTransformer(nn.Module):
                                  dtype=dtype,
                                  init_method=init_method)
             layers.append(embed)
+
         # stochastic depth decay rule
         dpr = [x.item() for x in torch.linspace(0, drop_path, depth)]
+
         if start_idx is None and end_idx is None:
             start_idx = 0
             end_idx = depth
+
         blocks = [
             ViTBlock(
                 dim=dim,
@@ -329,6 +355,7 @@ class PipelineVisionTransformer(nn.Module):
             ) for i in range(start_idx, end_idx)
         ]
         layers.extend(blocks)
+
         if last_stage:
             norm = col_nn.LayerNorm(normalized_shape=dim, eps=layernorm_epsilon, dtype=dtype)
             head = ViTHead(dim=dim,
@@ -338,15 +365,21 @@ class PipelineVisionTransformer(nn.Module):
                            bias=bias,
                            init_method=init_method)
             layers.extend([norm, head])
+
         self.layers = nn.Sequential(
             *layers
         )
+
     def forward(self, x):
         x = self.layers(x)
         return x
+
+
 def _filter_kwargs(func, kwargs):
     sig = inspect.signature(func)
     return {k: v for k, v in kwargs.items() if k in sig.parameters}
+
+
 def _build_pipeline_vit(module_cls, num_layers, num_chunks, device=torch.device('cuda'), **kwargs):
     logger = get_dist_logger()
     if gpc.is_initialized(ParallelMode.PIPELINE):
@@ -358,6 +391,7 @@ def _build_pipeline_vit(module_cls, num_layers, num_chunks, device=torch.device(
     rank = gpc.get_global_rank()
     parts = partition_uniform(num_layers, pipeline_size, num_chunks)[pipeline_rank]
     models = []
+
     for start, end in parts:
         kwargs['first_stage'] = start == 0
         kwargs['last_stage'] = end == num_layers
@@ -371,6 +405,8 @@ def _build_pipeline_vit(module_cls, num_layers, num_chunks, device=torch.device(
     else:
         model = nn.ModuleList(models)
     return model
+
+
 def build_pipeline_vit(num_layers, num_chunks, device=torch.device('cuda'), **kwargs):
     return _build_pipeline_vit(PipelineVisionTransformer, num_layers, num_chunks, device, **kwargs)
 ```
@@ -383,7 +419,9 @@ from colossalai.engine.schedule import (InterleavedPipelineSchedule,
                                         PipelineSchedule)
 from colossalai.utils import MultiTimer
 import os
+
 import colossalai
+
 import torch
 from colossalai.context import ParallelMode
 from colossalai.core import global_context as gpc
@@ -394,6 +432,7 @@ from colossalai.utils import is_using_pp, get_dataloader
 from model.vit import build_pipeline_vit
 from model_zoo.vit.vit import _create_vit_model
 from tqdm import tqdm
+
 from torchvision import transforms
 from torchvision.datasets import CIFAR10
 ```
@@ -405,17 +444,21 @@ from torchvision.datasets import CIFAR10
 # initialize distributed setting
 parser = colossalai.get_default_parser()
 args = parser.parse_args()
+
 # launch from torch
 colossalai.launch_from_torch(config=args.config)
+
 # get logger
 logger = get_dist_logger()
 logger.info("initialized distributed environment", ranks=[0])
+
 if hasattr(gpc.config, 'LOG_PATH'):
     if gpc.get_global_rank() == 0:
         log_path = gpc.config.LOG_PATH
         if not os.path.exists(log_path):
             os.mkdir(log_path)
         logger.log_to_file(log_path)
+
 use_pipeline = is_using_pp()
 ```
 
@@ -432,6 +475,7 @@ model_kwargs = dict(img_size=gpc.config.IMG_SIZE,
                     num_classes=gpc.config.NUM_CLASSES,
                     init_method='jax',
                     checkpoint=gpc.config.CHECKPOINT)
+
 if use_pipeline:
     model = build_pipeline_vit(num_layers=model_kwargs['depth'], num_chunks=1, **model_kwargs)
 else:
@@ -469,6 +513,7 @@ def build_cifar(batch_size):
         transforms.ToTensor(),
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
     ])
+
     train_dataset = CIFAR10(root=os.environ['DATA'], train=True, download=True, transform=transform_train)
     test_dataset = CIFAR10(root=os.environ['DATA'], train=False, transform=transform_test)
     train_dataloader = get_dataloader(dataset=train_dataset, shuffle=True, batch_size=batch_size, pin_memory=True)
@@ -478,10 +523,13 @@ def build_cifar(batch_size):
     
 # craete dataloaders
 train_dataloader , test_dataloader = build_cifar()
+
 # create loss function
 criterion = CrossEntropyLoss(label_smoothing=0.1)
+
 # create optimizer
 optimizer = torch.optim.AdamW(model.parameters(), lr=gpc.config.LEARNING_RATE, weight_decay=gpc.config.WEIGHT_DECAY)
+
 # create lr scheduler
 lr_scheduler = CosineAnnealingWarmupLR(optimizer=optimizer,
                                        total_steps=gpc.config.NUM_EPOCHS,
@@ -497,6 +545,7 @@ engine, train_dataloader, test_dataloader, _ = colossalai.initialize(model=model
                                                                      criterion=criterion,
                                                                      train_dataloader=train_dataloader,
                                                                      test_dataloader=test_dataloader)
+
 logger.info("Engine is built", ranks=[0])
 ```
 
@@ -506,9 +555,11 @@ In the data parallelism example, we show how to train a model with Trainer API. 
 
 ```python
 data_iter = iter(train_dataloader)
+
 for epoch in range(gpc.config.NUM_EPOCHS):
     # training
     engine.train()
+
     if gpc.get_global_rank() == 0:
         description = 'Epoch {} / {}'.format(
             epoch,
@@ -547,12 +598,16 @@ from colossalai.amp import AMP_TYPE
 # parallel setting
 TENSOR_PARALLEL_SIZE = 2
 TENSOR_PARALLEL_MODE = '1d'
+
 parallel = dict(
     pipeline=2,
     tensor=dict(mode=TENSOR_PARALLEL_MODE, size=TENSOR_PARALLEL_SIZE)
 )
+
 fp16 = dict(mode=AMP_TYPE.NAIVE)
 clip_grad_norm = 1.0
+
+
 # pipeline config
 NUM_MICRO_BATCHES = parallel['pipeline']
 TENSOR_SHAPE = (BATCH_SIZE // NUM_MICRO_BATCHES, SEQ_LENGTH, HIDDEN_SIZE)
@@ -568,6 +623,7 @@ LEARNING_RATE = 3e-3
 WEIGHT_DECAY = 0.3
 NUM_EPOCHS = 300
 WARMUP_EPOCHS = 32
+
 # model config
 IMG_SIZE = 224
 PATCH_SIZE = 16

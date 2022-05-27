@@ -8,8 +8,7 @@ Author: Yuxuan Lou
 
 **Related Papers**
 - [Language Models are Unsupervised Multitask Learners](https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)
-- [ZeRO: Memory Optimizations Toward Training Trillion
-Parameter Models](https://arxiv.org/pdf/1910.02054.pdf)
+- [ZeRO: Memory Optimizations Toward Training Trillion Parameter Models](https://arxiv.org/pdf/1910.02054.pdf)
 
 ## Introduction
 
@@ -38,8 +37,8 @@ In this step-by-step tutorial, we will teach you how to build ZeRO GPT-2 model a
 In this tutorial we will cover:
 
 1. Colossal-AI installation
-2. Preparation of Webtext data for GPT2 training
-3. Steps to apply ZeRO to training GPT2 
+2. Preparation of Webtext data for GPT-2 training
+3. Steps to apply ZeRO to training GPT-2 
 ## Colossal-AI Installation
 You can install Colossal-AI pacakage and its dependencies with PyPI.
 ```bash
@@ -50,12 +49,13 @@ pip install colossalai
 
 ## Define your configuration file `(/gpt2_configs/gpt2_zero3.py)`
 
-Add ZeRo dict in the configuration file, which contains CPU offload and shard strategy settings.
+Add ZeRO dict in the configuration file, which contains CPU offload and shard strategy settings.
 
 ```python
 from model_zoo.gpt.gpt import gpt2_small
 from colossalai.nn.optimizer import CPUAdam
 from colossalai.zero.shard_utils import TensorShardStrategy
+
 zero = dict(
     model_config=dict(
         offload_config=dict(device="cpu"),
@@ -74,11 +74,13 @@ Other configs:
 BATCH_SIZE = 2
 NUM_EPOCHS = 60
 SEQ_LEN = 1024
+
 optimizer = dict(
     type=HybridAdam,
     lr=0.00015,
     weight_decay=1e-2,
 )
+
 model = dict(
     type=gpt2_small,
     checkpoint=True,
@@ -123,7 +125,7 @@ If you couldn't install it successfully, you may try to replace the `cMinhash.cp
 4. Download the content from the clean urls and merge the contents into one loose json file with 1 json per newline of the format `{'text': text, 'url': unique_url}`. 
 
    *We have forked and modified [openwebtext](https://github.com/yet-another-account/openwebtext) as there are some bugs in it. For your convenience, we provide our modified version in `tools/download`.*
-
+   
    ```bash
    python download/download.py <path/to/clean_urls.txt> --n_procs 50 --output <path/to/raw.json>
    ```
@@ -135,9 +137,9 @@ If you couldn't install it successfully, you may try to replace the `cMinhash.cp
    ```bash
    python Megatron/cleanup_dataset.py <path/to/raw.json> <path/to/clean.json>
    ```
-
+   
    Additional cleanup (e.g. remove documents less than 512 characters or dataset specific cleaning like stories, realnews datasets) can be done using `cleanup_fix_dataset.py`. More details can be found by running `python cleanup_fix_dataset.py --help`.
-
+   
 2. Using LSH, find possible duplicates and store them in a file for later processing. The code supports saving and loading fingerprints for recurrent deduplications, and is also multithreaded for faster processing. More details are can be found by `python find_duplicate.py --help`.
 
    ```bash
@@ -161,15 +163,18 @@ If you couldn't install it successfully, you may try to replace the `cMinhash.cp
    ```bash
    shuf <path/to/dedup.json> -o <path/to/train_data.json>
    ```
-
+   
 ## Build Webtext dataset(`./dataset/webtext.py`)
 ```python
 import json
 import os
+
 import torch
 from colossalai.registry import DATASETS
 from torch.utils.data import Dataset
 from transformers import GPT2Tokenizer
+
+
 @DATASETS.register_module
 class WebtextDataset(Dataset):
     def __init__(self, path, seq_len=1024) -> None:
@@ -192,8 +197,10 @@ class WebtextDataset(Dataset):
         self.data = encoded_data['input_ids']
         self.attention_mask = encoded_data['attention_mask']
         torch.save((seq_len, self.data, self.attention_mask), encoded_data_cache_path)
+
     def __len__(self):
         return len(self.data)
+
     def __getitem__(self, index):
         return {'input_ids': self.data[index],
             'attention_mask': self.attention_mask[index]}, self.data[index]
@@ -211,6 +218,7 @@ Other modules:
 ```python
 import contextlib
 import os
+
 import colossalai
 import colossalai.utils as utils
 import torch
@@ -225,6 +233,7 @@ from colossalai.trainer import Trainer, hooks
 from colossalai.utils import is_using_pp
 from colossalai.utils.timer import MultiTimer
 from model_zoo.gpt.gpt import GPTLMLoss
+
 from dataset.webtext import WebtextDataset
 ```
 
@@ -241,6 +250,7 @@ else:
                                  host=args.host,
                                  port=29500,
                                  seed=42)
+
 logger = get_dist_logger()
 ```
 
@@ -256,12 +266,13 @@ train_dataloader = utils.get_dataloader(train_ds,
                                         drop_last=True)
 ```
 
-### Build Zero GPT-2 model
+### Build ZeRO GPT-2 model
 ```python
 logger.info('Build model', ranks=[0])
 use_pipeline = is_using_pp()
 use_interleaved = hasattr(gpc.config.model, 'num_chunks')
 use_zero3 = hasattr(gpc.config, 'zero')
+
 ctx = contextlib.nullcontext()
 if use_zero3:
     ctx = ZeroInitContext(target_device=torch.cuda.current_device(),
@@ -281,9 +292,11 @@ if criterion is not None:
     criterion = criterion.type()
 else:
     criterion = GPTLMLoss()
+
 logger.info('Build optimizer', ranks=[0])
 optimizer = gpc.config.optimizer.pop('type')(
     model.parameters(), **gpc.config.optimizer)
+
 lr_scheduler = LinearWarmupLR(
     optimizer, total_steps=gpc.config.NUM_EPOCHS, warmup_steps=5)
 ```
@@ -295,9 +308,11 @@ engine, train_dataloader, _, lr_scheduler = colossalai.initialize(model,
                                                                   criterion,
                                                                   train_dataloader=train_dataloader,
                                                                   lr_scheduler=lr_scheduler)
+
 global_batch_size = gpc.config.BATCH_SIZE * \
     gpc.get_world_size(ParallelMode.DATA) * getattr(gpc.config, "gradient_accumulation", 1)
 logger.info(f'Init done, global batch size = {global_batch_size}', ranks=[0])
+
 timier = MultiTimer()   
 ```
 
@@ -308,6 +323,7 @@ trainer = Trainer(
     logger=logger,
     timer=timier
 )
+
 hook_list = [
     hooks.LossHook(),
     hooks.LRSchedulerHook(lr_scheduler=lr_scheduler, by_epoch=True),
@@ -332,3 +348,4 @@ Here we pretrain GPT-2 with ZeRO on single GPU, so `nproc_per_node`=1.
 export DATA=/path/to/train_data.json
 torchrun --standalone --nproc_per_node=1 train_gpt.py --config=gpt2_configs/gpt2_zero3.py --from_torch
 ```
+

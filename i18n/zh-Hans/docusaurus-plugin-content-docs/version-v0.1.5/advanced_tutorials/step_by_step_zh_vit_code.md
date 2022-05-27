@@ -12,7 +12,7 @@
 
 ## 引言
 
-Colossal-AI 提供了三种不同的并行技术来加速模型训练：数据并行，流水线并行和张量并行。在本例中，我们将展示如何使用这三种并行技术在 Cifar10 数据集上训练 ViT。为了运行项目，需要2-4个 GPU。
+在这个ViT模型的样例中，Colossal-AI 提供了三种不同的并行技术来加速模型训练：数据并行，流水线并行和张量并行。我们将展示如何使用这三种并行技术在 CIFAR-10 数据集上训练 ViT。为了运行项目，需要2-4个 GPU。
 
 
 ## 目录
@@ -109,7 +109,6 @@ print(gpc.config.BATCH_SIZE)
 
 #### 构建模型
 
-If only data parallelism is required, you do not need to make any changes to your model. Here, we use `vit_base_patch16_224` from `timm`.
 如果只需要数据并行性，则无需对模型代码进行任何更改。这里，我们使用 `timm` 中的 `vit_base_patch16_224`。
 
 ```python
@@ -117,7 +116,7 @@ If only data parallelism is required, you do not need to make any changes to you
 model = vit_base_patch16_224(drop_rate=0.1, num_classes=gpc.config.NUM_CLASSES)
 ```
 
-#### 构建 Cifar10 数据加载器
+#### 构建 CIFAR-10 数据加载器
 `colossalai.utils.get_dataloader` 可以帮助您轻松构建数据加载器。
 
 ```python
@@ -144,8 +143,7 @@ train_dataloader, test_dataloader = build_cifar(gpc.config.BATCH_SIZE)
 
 #### 定义优化器，损失函数和学习率调度器
 
-Colossal-AI provides its own optimizer, loss function and LR scheduler. Those from pytorch are also compatible.
-Colossal-AI 提供了自己的优化器、损失函数和学习率调度器。这些组件与PyTorch也兼容。
+Colossal-AI 提供了自己的优化器、损失函数和学习率调度器。PyTorch 的这些组件与Colossal-AI也兼容。
 
 ```python
 # build optimizer
@@ -201,9 +199,9 @@ trainer.fit(
 ```
 
 ### 开始训练
-`DATA` 是自动下载和存储Cifar10数据集的文件路径。
+`DATA` 是自动下载和存储 CIFAR-10 数据集的文件路径。
 
-`<NUM_GPUs>` 是要用于使用 Cifar10 数据集，以数据并行方式训练 ViT 的 GPU 数。
+`<NUM_GPUs>` 是要用于使用 CIFAR-10 数据集，以数据并行方式训练 ViT 的 GPU 数。
 
 ```bash
 export DATA=<path_to_data>
@@ -218,7 +216,7 @@ torchrun --standalone --nproc_per_node <NUM_GPUs>  train_dp.py --config ./config
 
 
 ## 流水线并行
-除了数据并行性，Colossal-AI 还支持流水线并行。具体而言，Colossal-AI 使用 Nvidia 引入的1F1B 流水线。更多详细信息，您可以查看相关[文档](https://www.colossalai.org/tutorials/features/pipeline_parallel)。
+除了数据并行性，Colossal-AI 还支持流水线并行。具体而言，Colossal-AI 使用 NVIDIA 引入的 1F1B 流水线。更多详细信息，您可以查看相关[文档](https://www.colossalai.org/tutorials/features/pipeline_parallel)。
 
 ### 构建配置文件(`hybrid_parallel/configs/vit_pipeline.py`)
 要在数据并行的基础上应用流水线并行，只需添加一个 **parallel dict**
@@ -261,7 +259,7 @@ Colossal-AI 提供了两种从现有模型构建流水线模型的方法。
 - `colossalai.builder.build_pipeline_model_from_cfg`
 - `colossalai.builder.build_pipeline_model`
 
-此外，您还可以使用 Colossal-AI 从scratch构建流水线模型。
+此外，您还可以使用 Colossal-AI 从头开始构建流水线模型。
 ```python
 import math
 from typing import Callable
@@ -402,7 +400,7 @@ from torchvision.datasets import CIFAR10
 ```
 
 #### 启动 Colossal-AI
-`colossalai.utils.is_using_pp` 可以帮您检查配置文件中要求实现流水线并行。
+`colossalai.utils.is_using_pp` 可以帮您检查配置文件是否满足流水线并行的要求。
 
 ```python
 # initialize distributed setting
@@ -505,7 +503,7 @@ logger.info("Engine is built", ranks=[0])
 
 #### 训练：基于engine
 
-在数据并行示例中，我们展示了如何使用Trainer API训练模型。我们还可以直接训练基于 engine 的模型。通过这种方式，您可以使用更多功能自定义训练方法。
+在数据并行示例中，我们展示了如何使用 Trainer API 训练模型。我们还可以直接训练基于 engine 的模型。通过这种方式，您可以使用更多功能自定义训练方法。
 
 ```python
 data_iter = iter(train_dataloader)
