@@ -63,9 +63,9 @@ module.exports = {
             label: 'Advanced Tutorials',
             collapsed: false,
             items: [
-                'advanced_tutorials/step_by_step_en_zero',
+                'advanced_tutorials/train_with_zero',
                 'advanced_tutorials/train_vit_using_pipeline_parallelism',
-                'advanced_tutorials/step_by_step_en_vit_code',
+                'advanced_tutorials/train_vit_with_hybrid_parallelism',
                 'advanced_tutorials/train_gpt_using_hybrid_parallelism',
                 'advanced_tutorials/define_your_own_parallel_model',
                 'advanced_tutorials/add_your_parallel',
