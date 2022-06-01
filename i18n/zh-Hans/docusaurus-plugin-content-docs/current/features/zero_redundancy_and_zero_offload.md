@@ -58,7 +58,7 @@
 我们提供了一些 *分片策略* 来管理你的模型分片过程:
 
 ```python
-colossalai.zero.shard_utils import BucketTensorShardStrategy, TensorShardStrategy
+from colossalai.zero.shard_utils import BucketTensorShardStrategy, TensorShardStrategy
 ```
 
 `TensorShardStrategy` 是一个朴素的实现，将每个张量均匀地分片到所有 rank 上。 
