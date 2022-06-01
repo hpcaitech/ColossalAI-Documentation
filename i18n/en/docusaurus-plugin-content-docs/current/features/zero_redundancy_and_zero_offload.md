@@ -61,7 +61,7 @@ We provide two levels of API to use ZeRO.
 We provide some *shard strategies* to manage the process of sharding your model:
 
 ```python
-colossalai.zero.shard_utils import BucketTensorShardStrategy, TensorShardStrategy
+from colossalai.zero.shard_utils import BucketTensorShardStrategy, TensorShardStrategy
 ```
 
 `TensorShardStrategy` is a naive implementation that shard each tensor evenly over all ranks. `BucketTensorShardStrategy` fattens the tensors belonging to an operator, e.g. nn.Linear, and then shards them evenly over all ranks. It is especially useful when an operator contains `bias` since we cannot utilize network bandwidth well if we only gather a `bias` tensor (`bias` is usually small).
@@ -102,7 +102,6 @@ zero = dict(
         fp32_reduce_scatter=False,
         tensor_placement_policy="cuda",
         gradient_predivide_factor=1.0,
-        use_memory_tracer=False,
         reuse_fp16_shard=False
     ),
     optimizer_config=dict(
