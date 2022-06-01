@@ -101,7 +101,6 @@ zero = dict(
         fp32_reduce_scatter=False,
         tensor_placement_policy="cuda",
         gradient_predivide_factor=1.0,
-        use_memory_tracer=False,
         reuse_fp16_shard=False
     ),
     optimizer_config=dict(
