@@ -5,9 +5,12 @@ export async function getPipPkgVersions(url: string): Promise<Set<string>> {
     const response = await api.get(url)
     const text = await response.raw.text()
     const pipPkgVersions: Set<string> = new Set()
-    for (let wheel of text.match(/colossalai-[0-9.]+%2B.+\.whl/g)) {
-        let version = wheel.split('-')[1].replace('%2B', '+')
-        pipPkgVersions.add(version)
+    let matched_vers = text.match(/colossalai-[0-9.]+%2B.+\.whl/g)
+    if (matched_vers){
+        for (let wheel of matched_vers) {
+            let version = wheel.split('-')[1].replace('%2B', '+')
+            pipPkgVersions.add(version)
+        }
     }
     return pipPkgVersions
 }
