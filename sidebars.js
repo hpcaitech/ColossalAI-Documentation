@@ -44,6 +44,7 @@ module.exports = {
                 'features/gradient_clipping',
                 'features/gradient_handler',
                 'features/zero_redundancy_and_zero_offload',
+                'features/zero_with_chunk',
                 {
                     type: 'category',
                     label: 'Tensor Parallel',
