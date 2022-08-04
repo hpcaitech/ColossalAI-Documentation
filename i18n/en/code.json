@@ -3,7 +3,7 @@
     "message": "Start Locally"
   },
   "theme.download.about": {
-    "message": "You can choose your PyTorch and CUDA versions accordingly in the table below. As some CUDA versions are not supported by the Official PyTorch releases, You may need to install Colossal-AI from source if not available."
+    "message": "You can choose your PyTorch and CUDA versions accordingly in the table below. As some CUDA versions are not supported by the Official PyTorch releases, You may need to install Colossal-AI from source if not available. As for the nightly version, you need to have Python 3.8 and the latest PyTorch and CUDA versions."
   },
   "theme.docs.sidebar.expandButtonTitle": {
     "message": "Expand sidebar",

@@ -1,13 +1,16 @@
 import api from "../../../../core/api"
 import semver from 'semver'
 
-export async function getPipPkgVersions(): Promise<Set<string>> {
-    const response = await api.get('https://release.colossalai.org')
+export async function getPipPkgVersions(url: string): Promise<Set<string>> {
+    const response = await api.get(url)
     const text = await response.raw.text()
     const pipPkgVersions: Set<string> = new Set()
-    for (let wheel of text.match(/colossalai-[0-9.]+%2B.+\.whl/g)) {
-        let version = wheel.split('-')[1].replace('%2B', '+')
-        pipPkgVersions.add(version)
+    let matched_vers = text.match(/colossalai-[0-9.]+%2B.+\.whl/g)
+    if (matched_vers){
+        for (let wheel of matched_vers) {
+            let version = wheel.split('-')[1].replace('%2B', '+')
+            pipPkgVersions.add(version)
+        }
     }
     return pipPkgVersions
 }
@@ -15,9 +18,7 @@ export async function getPipPkgVersions(): Promise<Set<string>> {
 function filterVersions(versions: Set<string>): string[] {
     // return the oldest version and the top-3 latest versions
     let sortedVersions = Array.from(versions)
-    sortedVersions = sortedVersions.map((version) => `${version}.0`)
-    sortedVersions.sort(semver.compare)
-    sortedVersions = sortedVersions.map((version) => version.slice(0, version.lastIndexOf('.')))
+    sortedVersions.sort((v1, v2) => semver.compare(semver.coerce(v1), semver.coerce(v2)))
     let truncVersions = sortedVersions.slice(-3)
     if (sortedVersions.length > 3) {
         truncVersions.unshift(sortedVersions[0])

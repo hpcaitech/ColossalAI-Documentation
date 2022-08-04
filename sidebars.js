@@ -31,6 +31,7 @@ module.exports = {
                 'basics/initialize_features',
                 'basics/engine_trainer',
                 'basics/configure_parallelization',
+                'basics/model_checkpoint',
             ],
         },
         {
@@ -62,12 +63,14 @@ module.exports = {
             label: 'Advanced Tutorials',
             collapsed: false,
             items: [
+                'advanced_tutorials/train_with_zero',
+                'advanced_tutorials/train_vit_using_pipeline_parallelism',
+                'advanced_tutorials/train_vit_with_hybrid_parallelism',
+                'advanced_tutorials/train_gpt_using_hybrid_parallelism',
                 'advanced_tutorials/define_your_own_parallel_model',
                 'advanced_tutorials/add_your_parallel',
+                'advanced_tutorials/meet_gemini',
                 'advanced_tutorials/integrate_mixture_of_experts_into_your_model',
-                'advanced_tutorials/train_vit_using_pipeline_parallelism',
-                'advanced_tutorials/train_gpt_using_hybrid_parallelism',
-                'advanced_tutorials/meet_gemini'
             ],
         },
     ]
