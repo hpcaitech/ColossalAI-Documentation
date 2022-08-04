@@ -1,7 +1,7 @@
 
 # Meet Gemini:The Heterogeneous Memory Manager of Colossal-AI
 
-Author: [Jiarui Fang](https://github.com/feifeibear)
+Author: [Jiarui Fang](https://github.com/feifeibear), Yang You
 
 ## Brief
 
