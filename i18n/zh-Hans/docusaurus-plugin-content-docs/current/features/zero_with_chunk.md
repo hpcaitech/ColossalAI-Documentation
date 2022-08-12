@@ -6,7 +6,7 @@
 - [零冗余优化器 (ZeRO) 和 ZeRO Offload](../features/zero_redundancy_and_zero_offload.md)
 
 **示例代码**
-- [ColossalAI-Examples Zero](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/zero)
+- [ColossalAI-Examples Zero](https://github.com/hpcaitech/ColossalAI-Examples/blob/main/features/zero/train_v2.py)
 
 **相关论文**
 - [ZeRO: Memory Optimizations Toward Training Trillion Parameter Models](https://arxiv.org/abs/1910.02054)
@@ -30,23 +30,20 @@
 
 除此之外，由于小Tensor的通信、内存移动没法完全利用NVLINK、PCIE带宽，而且每次通信、内存移动都有kernel launch的开销。使用了Chunk之后可以把多次小Tensor的通信、内存移动变为一次大Tensor的通信、内存移动，既提高了带宽利用，也减小了kernel launch的开销。
 
-对比我们前置教程中使用的ZeRO，基于Chunk内存管理的ZeRO通常可以提高20%左右的性能。
 
 ## 使用
-
-> ⚠️ 此功能是实验性功能，目前仍在开发和测试中。
 
 由于此功能仍在开发中，我们目前只提供低级API，无法与`Engine`和`Trainer`一起使用。
 
 我们首先用一个最简单的代码段演示如何使用基于Chunk内存管理的ZeRO，然后给出一个训练GPT的例子。
 
 ```python
+from colossalai.gemini import ChunkManager, GeminiManager
 from colossalai.utils.model.colo_init_context import ColoInitContext
-from colossalai.tensor import ChunkManager
-from colossalai.gemini import GeminiManager
+from colossalai.utils import get_current_device
 from colossalai.nn.parallel import ZeroDDP
 from colossalai.zero import ZeroOptimizer
-from colossalai.utils import get_current_device
+from colossalai.tensor import ProcessGroup
 ```
 
 首先确保你的模型是在`ColoInitContext`上下文中初始化的：
@@ -58,8 +55,9 @@ with ColoInitContext(device=get_current_device()):
 
 ```python
 PLACEMENT_POLICY = 'cuda'
+pg = ProcessGroup()
 chunk_size = ChunkManager.search_chunk_size(model, 64 * 1024**2, 32)
-chunk_manager = ChunkManager(chunk_size, enable_distributed_storage=True,
+chunk_manager = ChunkManager(chunk_size, pg, enable_distributed_storage=True,
                                 init_device=GeminiManager.get_default_device(PLACEMENT_POLICY))
 gemini_manager = GeminiManager(PLACEMENT_POLICY, chunk_manager)
 model = ZeroDDP(model, gemini_manager)
@@ -78,7 +76,7 @@ from colossalai.zero import ZeroOptimizer
 optimizer = HybridAdam(model.parameters(), lr=1e-3)
 optimizer = ZeroOptimizer(optimizer, model)
 ```
-这样就完成了优化器的初始化。关于`ZeroOptimizer`的详细参数设置，见[API文档](#使用)
+这样就完成了优化器的初始化。关于`ZeroOptimizer`的详细参数设置，见[API文档](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.zero_optimizer.html#colossalai.zero.zero_optimizer.ZeroOptimizer)
 
 ```python
 optimizer.zero_grad()
@@ -88,6 +86,10 @@ optimizer.backward(loss)
 optimizer.step()
 ```
 训练时，只需循环上面的代码即可。
+
+> ⚠️ 在使用CPUAdam或HybridAdam时，建议设置环境变量OMP_NUM_THREADS=8
+
+> CPUAdam和HybridAdam支持NVMe offload，用法详见[API文档](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.nn.optimizer.hybrid_adam.html#colossalai.nn.optimizer.hybrid_adam.HybridAdam)
 
 ### 训练GPT
 
@@ -99,15 +101,20 @@ optimizer.step()
 
 ```python
 import colossalai
+import psutil
 import torch
 import torch.nn as nn
 from colossalai.logging import disable_existing_loggers, get_dist_logger
-from colossalai.nn.optimizer import CPUAdam
-from colossalai.zero.init_ctx import ZeroInitContext
-from colossalai.zero.shard_utils import TensorShardStrategy
-from colossalai.zero.sharded_model import ShardedModelV2
-from colossalai.zero.sharded_optim import ShardedOptimizerV2
+from colossalai.nn.optimizer import HybridAdam
 from transformers import GPT2Config, GPT2LMHeadModel
+from time import time
+from functools import partial
+from colossalai.gemini import ChunkManager, GeminiManager
+from colossalai.utils.model.colo_init_context import ColoInitContext
+from colossalai.utils import get_current_device
+from colossalai.nn.parallel import ZeroDDP
+from colossalai.zero import ZeroOptimizer
+from colossalai.tensor import ProcessGroup
 ```
 
 接下来我们简单的包装 `Hugging Face Transformers`:
@@ -167,8 +174,10 @@ def main():
     PLACEMENT_POLICY = 'cpu'
     disable_existing_loggers()
     colossalai.launch_from_torch(config={})
+    pg = ProcessGroup()
     logger = get_dist_logger()
 
+    logger.info(get_mem_info(), ranks=[0])
     # build GPT model
     with ColoInitContext(device=get_current_device()):
         model = gpt2_medium(checkpoint=True)
@@ -176,10 +185,11 @@ def main():
     logger.info(f'Model numel: {numel}', ranks=[0])
     get_tflops_func = partial(get_tflops, numel, BATCH_SIZE, SEQ_LEN)
     chunk_size = ChunkManager.search_chunk_size(model, 64 * 1024**2, 32)
-    chunk_manager = ChunkManager(chunk_size, enable_distributed_storage=True,
+    chunk_manager = ChunkManager(chunk_size, pg, enable_distributed_storage=True,
                                  init_device=GeminiManager.get_default_device(PLACEMENT_POLICY))
     gemini_manager = GeminiManager(PLACEMENT_POLICY, chunk_manager)
     model = ZeroDDP(model, gemini_manager)
+    logger.info(get_mem_info(prefix='After init model, '), ranks=[0])
     logger.info(chunk_manager, ranks=[0])
 
     # build criterion
@@ -188,6 +198,7 @@ def main():
     # optimizer
     optimizer = HybridAdam(model.parameters(), lr=1e-3)
     optimizer = ZeroOptimizer(optimizer, model, initial_scale=2**5)
+    logger.info(get_mem_info(prefix='After init optim, '), ranks=[0])
 
     model.train()
     for n in range(NUM_STEPS):
@@ -197,10 +208,14 @@ def main():
         start = time()
         outputs = model(input_ids, attn_mask)
         loss = criterion(outputs, input_ids)
+        logger.info(get_mem_info(prefix=f'[{n+1}/{NUM_STEPS}] Forward '), ranks=[0])
         optimizer.backward(loss)
+        logger.info(get_mem_info(prefix=f'[{n+1}/{NUM_STEPS}] Backward '), ranks=[0])
         optimizer.step()
+        logger.info(get_mem_info(prefix=f'[{n+1}/{NUM_STEPS}] Optimizer step '), ranks=[0])
         step_time = time() - start
-        logger.info(f'[{n+1}/{NUM_STEPS}] Loss:{loss.item():.3f}, Step time: {step_time:.3f}s', ranks=[0])
+        logger.info(
+            f'[{n+1}/{NUM_STEPS}] Loss:{loss.item():.3f}, Step time: {step_time:.3f}s, TFLOPS: {get_tflops_func(step_time):.3f}', ranks=[0])
 ```
 
-完整的例子代码可以在 [ZeRO example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/zero) 获得。
+完整的例子代码可以在 [ZeRO example](https://github.com/hpcaitech/ColossalAI-Examples/blob/main/features/zero/train_v2.py) 获得。
