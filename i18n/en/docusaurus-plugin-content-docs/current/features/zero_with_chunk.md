@@ -1,6 +1,6 @@
 # Zero Redundancy Optimizer with chunk-based memory management
 
-Author: Hongxiu Liu
+Author: [Hongxiu Liu](https://github.com/ver217), [Jiarui Fang](https://github.com/feifeibear)
 
 **Prerequisite:**
 - [Zero Redundancy Optimizer and Zero Offload](../features/zero_redundancy_and_zero_offload.md)
@@ -18,18 +18,17 @@ Author: Hongxiu Liu
 
 In the previous tutorial, we introduced the Zero Redundancy Optimizer (ZeRO), this article will introduce the Zero Redundancy Optimizer with chunk-based memory management.
 
-In the previous tutorial, we distributed the model by dividing the parameters. The advantage of this method is that the memory load of each node is completely balanced. The disadvantage is that a temporary memory needs to be applied for communication during all-gather. The problem of memory fragmentation will affect performance to a certain extent.
+In the previous tutorial, we distributed the model by sharding the parameters. The advantage of this method is that the memory of each node is load balanced. But this approach has two significiant disadvantages. First, during communication, a temporary memory buffer needs to be allocated and released afterwards, leading to the memory fragmentation problem. Secondly, using tensor as the granularity for communication will cause the network bandwidth underutilized. Generally, the longer the transmitted message length, the higher the bandwidth utilization.
 
-This tutorial will introduce a new implementation of ZeRO, which will no longer split parameters, and each node saves a subset of all parameters of the model. The advantage of this method is that there is no memory fragmentation. The disadvantage is the memory load of each node may be imbalanced,  because the size of each parameter is not the same. Since this approach facilitates the use of chunk-based memory management, we will use this approach to store the model in a distributed manner.
+Using the Chunk mechanism introduced in ColossalAI v0.1.8, we can improve the efficiency of ZeRO. We store a continuous set of parameters in initialization order into a Chunk (a chunk is a continuous memory space), and each Chunk has the same size. Organizing memory in chunks can lead to efficient use of network bandwidth between PCI-e and GPU-GPU, reduce the number of communications, and avoid potential memory fragmentation.
 
-It is known that ZeRO has a high communication cost when performing parameter aggregation. If a parameter is used multiple times in several consecutive computations, multiple communications will occur, and the efficiency is low. This situation is very common when using Checkpoint. The parameter will recompute forward during backward pass. At this time, the efficiency of ZeRO is not high.
+Before v0.1.8, ZeRO had a high communication cost for parameter communications. If a parameter was used multiple times in several consecutive operators, there will be repeated communications operations, and the efficiency was highly damaged. This situation is very common when using the Gradient Checkpoint technique, and the parameter will recompute the forward propagation during backward propagation.
 
-Taking GPT as an example, its Checkpoint will be applied to each GPT Block, and each GPT Block contains a Self-Attention layer and an MLP layer. During backward pass, the forward of the Self-Attention layer and the MLP layer will be computed in turn, and then the backward of the MLP layer and the Self-Attention layer will be computed in turn.
+Taking GPT as an example, its Checkpoint will be applied to each GPT Block, and each GPT Block contains a Self-Attention layer and an MLP layer. During the backward pass, the forward of the Self-Attention layer and the MLP layer will be computed in turn, and then the backward of the MLP layer and the Self-Attention layer will be computed in turn.
 
-In order to solve this problem, referring to the segmented page management of memory, we store a continuous set of parameters in the operation order into a chunk (a chunk is a continuous memory space), and each chunk has the same size. This not only avoids memory fragmentation, but also greatly reduces the number of communications and improves efficiency. As in the above example, if we put the Self-Attention layer and the MLP layer in the same chunk, there is no need to communicate in the backward of each GPT Block.
+In addition, due to the communication and memory movement of small Tensors, the bandwidth of NVLINK and PCI-E cannot be fully utilized, and each communication and memory movement has the overhead of kernel launch. After using Chunk, multiple small Tensor communication and memory movement can be changed into one large Tensor communication and memory movement, which not only improves bandwidth utilization but also reduces the overhead of kernel launch.
 
-In addition, due to the communication and memory movement of small Tensors, the bandwidth of NVLINK and PCIE cannot be fully utilized, and each communication and memory movement has the overhead of kernel launch. After using Chunk, multiple small Tensor communication and memory movement can be changed into one large Tensor communication and memory movement, which not only improves bandwidth utilization, but also reduces the overhead of kernel launch.
-
+We also provide a lightweight chunk search mechanism to help users automatically find the chunk size with the smallest memory fragmentation.
 
 ## Usage
 

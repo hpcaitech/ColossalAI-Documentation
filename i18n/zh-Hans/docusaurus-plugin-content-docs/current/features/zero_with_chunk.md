@@ -1,6 +1,6 @@
 # 基于Chunk内存管理的零冗余优化器 (ZeRO)
 
-作者: Hongxiu Liu
+作者: [Hongxiu Liu](https://github.com/ver217), [Jiarui Fang](https://github.com/feifeibear)
 
 **前置教程:**
 - [零冗余优化器 (ZeRO) 和 ZeRO Offload](../features/zero_redundancy_and_zero_offload.md)
@@ -18,17 +18,17 @@
 
 在前置教程中，我们介绍了零冗余优化器(ZeRO)，本文将介绍基于Chunk内存管理的零冗余优化器。
 
-前置教程中，我们通过切分参数的方式对模型进行分布式存储，这种方法的优点是每个节点的内存负载是完全均衡的，缺点是gather时需要申请一块临时内存用来通信，存在内存碎片化的问题，一定程度上会影响性能。
+前置教程中，我们通过切分参数的方式对模型进行分布式存储，这种方法的优点是每个节点的内存负载是完全均衡的。但是这种方式有很多缺点。首先，通信时需要申请一块临时内存用来通信，通信完毕释放，这回导致存在内存碎片化的问题。其次，以Tensor为粒度进行通信，会导致网络带宽无法充分利用。通常来说传输的消息长度越长带宽利用率越高。
 
-本文将引入一种新的ZeRO的实现，它将不再切分参数，每个节点保存一个模型所有参数的子集，这种方法的优点是不存在内存碎片，缺点是每个节点的内存负载可能存在不均衡，因为每个参数的大小是不一样的。但是由于这种方法便于使用基于Chunk的内存管理，我们将使用这种方法来分布式存储模型。
+利用ColossalAI v0.1.8引入了Chunk机制，我们可以提升ZeRO的性能。我们将运算顺序上连续的一组参数存入一个Chunk中（Chunk即一段连续的内存空间），每个Chunk的大小相同。Chunk方式组织内存可以保证PCI-e和GPU-GPU之间网络带宽的高效利用，减小了通信次数，同时避免潜在的内存碎片。
 
-已知ZeRO在进行参数聚合时通信成本较高，如果一个参数在连续的几次计算中被使用多次，即会发生多次通信，效率较低。这种情况在使用Checkpoint时非常常见，参数在计算backward时会重计算一遍forward，此时ZeRO的效率便不高。
+在v0.1.8之前，ZeRO在进行参数聚合时通信成本较高，如果一个参数在连续的几次计算中被使用多次，即会发生多次通信，效率较低。这种情况在使用Checkpoint时非常常见，参数在计算backward时会重计算一遍forward。这种情况下，ZeRO的效率便不高。
 
-以GPT为例，其Checkpoint会应用在每一个GPT Block上，每一个GPT Block包含一个Self-Attention层和MLP层。在计算Backward时，会依次计算Self-Attention层、MLP层的forward，然后依次计算MLP层、Self-Attention层的backward。
-
-为了解决这个问题，参考内存的段页式管理，我们将运算顺序上连续的一组参数存入一个Chunk中（Chunk即一段连续的内存空间），每个Chunk的大小相同。这样既避免了内存碎片化，也大大减小了通信次数，提升了效率。如上述例子中，我们如果将Self-Attention层和MLP层放在同一个Chunk中，在每个GPT Block的backward的中便无需再通信。
+以GPT为例，其Checkpoint会应用在每一个GPT Block上，每一个GPT Block包含一个Self-Attention层和MLP层。在计算Backward时，会依次计算Self-Attention层、MLP层的forward，然后依次计算MLP层、Self-Attention层的backward。如使用Chunk机制，我们将Self-Attention层和MLP层放在同一个Chunk中，在每个GPT Block的backward的中便无需再通信。
 
 除此之外，由于小Tensor的通信、内存移动没法完全利用NVLINK、PCIE带宽，而且每次通信、内存移动都有kernel launch的开销。使用了Chunk之后可以把多次小Tensor的通信、内存移动变为一次大Tensor的通信、内存移动，既提高了带宽利用，也减小了kernel launch的开销。
+
+我们提供了轻量级的Chunk搜索机制，帮助用户自动找到内存碎片最小的Chunk尺寸。
 
 
 ## 使用
