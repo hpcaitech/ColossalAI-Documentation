@@ -58,6 +58,7 @@ module.exports = {
                     ],
                 },
                 'features/pipeline_parallel',
+                'features/nvme_offload'
             ],
         },
         {
