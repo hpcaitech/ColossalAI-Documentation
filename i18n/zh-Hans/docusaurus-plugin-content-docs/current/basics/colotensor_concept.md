@@ -11,7 +11,8 @@ Author: [Jiarui Fang](https://github.com/feifeibear), [Hongxin Liu](https://gith
 
 在ColossalAI 0.1.8 版本之后，[ColoTensor](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.tensor.html#colossalai.tensor.ColoTensor) 成为 ColossalAI 中张量的基本数据结构。 它是 torch.Tensor 的子类，可以当做 PyTorch Tensor使用。 此外，一些独特的功能使其能够表示一个payload分布在多个 GPU 设备上的Global  Tensor，并提供一些列方式操作这个Global Tensor。 在 ColoTensor 的帮助下，用户可以以类似编写串行程序方式，编写的分布式 DNN 训练程序。
 
-ColoTensor 包含额外的属性[ColoTensorSpec](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.tensor.tensor_spec.html#colossalai.tensor.tensor_spec.ColoTensorSpec)来描述张量的payload分布和计算模式。
+ColoTensor 包含额外的属性[ColoTensorSpec](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.tensor.tensor_spec.html#colossalai.tensor.tensor_spec.ColoTensorSpec)
+来描述张量的payload分布和计算模式。
 
 - ProcessGroup：如何将进程组织为通信组。
 - Distributed Spec：张量如何在进程组之间分布。

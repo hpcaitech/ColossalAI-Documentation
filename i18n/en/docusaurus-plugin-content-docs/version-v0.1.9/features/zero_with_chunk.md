@@ -4,6 +4,7 @@ Author: [Hongxiu Liu](https://github.com/ver217), [Jiarui Fang](https://github.c
 
 **Prerequisite:**
 - [Zero Redundancy Optimizer and Zero Offload](../features/zero_redundancy_and_zero_offload.md)
+- [ColoTensor Concept](../basics/colotensor_concept.md)
 
 **Example Code**
 - [ColossalAI-Examples Zero](https://github.com/hpcaitech/ColossalAI-Examples/blob/main/features/zero/train_v2.py)
