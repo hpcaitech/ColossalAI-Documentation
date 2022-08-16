@@ -16,7 +16,7 @@ We implement a user-friendly and efficient asynchronous Tensor I/O library: [Ten
 When optimizing a parameter, we can divide the optimization process into three stages: read, compute and offload. We perform the optimization process in a pipelined fashion, which can overlap computation and I/O.
 
 <figure style={{textAlign: "center"}}>
-<img src="https://s2.loli.net/2022/08/12/hSIU5JT6mL7ypfx.png"/>
+<img src="https://s2.loli.net/2022/08/16/CvRnowrsNyB4hza.jpg"/>
 <figcaption>Optimization process</figcaption>
 </figure>
 

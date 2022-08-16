@@ -16,7 +16,7 @@
 在优化参数时，我们可以将优化过程分为三个阶段：读取、计算和 offload。我们以流水线的方式执行优化过程，这可以重叠计算和 I/O。
 
 <figure style={{textAlign: "center"}}>
-<img src="https://s2.loli.net/2022/08/12/XGsyWDSqQ1jFi5b.png"/>
+<img src="https://s2.loli.net/2022/08/16/CvRnowrsNyB4hza.jpg"/>
 <figcaption>优化过程</figcaption>
 </figure>
 
