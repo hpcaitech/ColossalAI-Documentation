@@ -4,6 +4,7 @@
 
 **前置教程:**
 - [零冗余优化器 (ZeRO) 和 ZeRO Offload](../features/zero_redundancy_and_zero_offload.md)
+- [ColoTensor基础](../basics/colotensor_concept.md)
 
 **示例代码**
 - [ColossalAI-Examples Zero](https://github.com/hpcaitech/ColossalAI-Examples/blob/main/features/zero/train_v2.py)
