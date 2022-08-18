@@ -43,7 +43,7 @@ ColoTensor 包含额外的属性[ColoTensorSpec](https://colossalai.readthedocs.
 
 ## Compute Spec
 
-[ComputeSpec](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.tensor.compute_spec.html#colossalai.tensor.compute_spec.ComputeSpec)类描述Tensor如何参与计算。目前，我们将作为module parameter的ColoTensor设置正确的Compute Pattern。可以触发正取的计算模式。具体应用方式我们会在接下来的文档中展示。
+[ComputeSpec](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.tensor.compute_spec.html#colossalai.tensor.compute_spec.ComputeSpec)类描述Tensor如何参与计算。目前，我们将作为module parameter的ColoTensor设置正确的Compute Pattern。可以触发正取的计算模式。具体应用方式我们会在[这篇文档](https://colossalai.org/zh-Hans/docs/advanced_tutorials/parallelize_your_training_like_Megatron/)中展示。
 
 ## ColoParameter
 
