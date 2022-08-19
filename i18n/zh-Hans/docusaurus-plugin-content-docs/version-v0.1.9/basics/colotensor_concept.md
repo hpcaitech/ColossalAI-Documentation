@@ -26,11 +26,11 @@ ColoTensor 包含额外的属性[ColoTensorSpec](https://colossalai.readthedocs.
 
 目前，ColoTensor 的一个进程组由 tp_degree 和 dp_degree 两种配置定义。 在 DP+TP 混合并行的情况下，可以将设备视为 2D 网格。 我们将 TP 通信组放置在设备网格的前导低维上，然后将数据并行组放置在设备网格的高维上。 原因是张量并行比数据并行具有更大的通信开销。 相邻设备放置在一个 TP 进程组内，并且通常放置在同一个节点中。
 
-考虑到8个进程配置为tp_degree=4，dp_degree=2，布局如下图。 进程组 tp0 包含 gpu 0,1,2,3。 进程 dp1 包含 gpu 1 和 5。
+考虑到8个进程配置为tp_degree=2，dp_degree=4，布局如下图。 进程组 tp0 包含 gpu 0,1,2,3。 进程 dp1 包含 gpu 1 和 5。
 
 <figure style={{textAlign: "center"}}>
 <img src="https://raw.githubusercontent.com/hpcaitech/public_assets/main/colossalai/img/ColoTensor_layout_demo.PNG"/>
-<figcaption>Process Group using tp_degree=4, dp_degree=2</figcaption>
+<figcaption>Process Group using tp_degree=2, dp_degree=4</figcaption>
 </figure>
 
 ## Distributed Spec
@@ -51,7 +51,7 @@ ColoTensor 包含额外的属性[ColoTensorSpec](https://colossalai.readthedocs.
 
 ## Example
 
-让我们看一个例子。 使用 tp_degree=4, dp_dgree=2 在 8 个 GPU 上初始化并Shard一个ColoTensor。 然后tensor被沿着 TP 进程组中的最后一个维度进行分片。 最后，我们沿着 TP 进程组中的第一个维度（dim 0）对其进行重新Shard。 我们鼓励用户运行代码并观察每个张量的形状。
+让我们看一个例子。 使用 tp_degree=2, dp_dgree=2 在 4 个 GPU 上初始化并Shard一个ColoTensor。 然后tensor被沿着 TP 进程组中的最后一个维度进行分片。 最后，我们沿着 TP 进程组中的第一个维度（dim 0）对其进行重新Shard。 我们鼓励用户运行代码并观察每个张量的形状。
 
 
 ```python

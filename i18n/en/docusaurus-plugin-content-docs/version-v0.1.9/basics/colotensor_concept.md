@@ -25,11 +25,11 @@ An instance of class [ProcessGroup](https://colossalai.readthedocs.io/en/latest/
 
 Currently, a process group of ColoTensor is defined by two configurations, i.e. tp_degree and dp_degree. In the case of DP+TP hybrid parallelism, the device can be viewed as a 2D mesh. We place TP communication groups on the leading low dimension of the device mesh and then place the data parallel groups along the high dimension of the device mesh. The reason is that tensor parallelism has a larger communication overhead than data parallelism. Neighboring devices are placed inside a TP process group and are often placed in the same node.
 
-Considering that 8 processes are configured as tp_degree=4, and dp_degree=2, the layout is shown below. Process group tp0 contains gpu 0,1,2,3. Process dp1 contains gpu 1 and 5.
+Considering that 8 processes are configured as tp_degree=2, and dp_degree=4, the layout is shown below. Process group tp0 contains gpu 0,1,2,3. Process dp1 contains gpu 1 and 5.
 
 <figure style={{textAlign: "center"}}>
 <img src="https://raw.githubusercontent.com/hpcaitech/public_assets/main/colossalai/img/ColoTensor_layout_demo.PNG"/>
-<figcaption>Process Group using tp_degree=4, dp_degree=2</figcaption>
+<figcaption>Process Group using tp_degree=2, dp_degree=4</figcaption>
 </figure>
 
 ## Distributed Spec
@@ -50,7 +50,7 @@ An instance of class [ComputeSpec](https://colossalai.readthedocs.io/en/latest/c
 
 ## Example
 
-Let's see an example. A ColoTensor is initialized and sharded on 8 GPUs using tp_degree=4, dp_dgree=2. And then the tensor is sharded along the last dim among the TP process groups. Finally, we reshard it along the first dim (0 dim) among the TP process groups. We encourage users to run the code and observe the shape of each tensor.
+Let's see an example. A ColoTensor is initialized and sharded on 8 GPUs using tp_degree=2, dp_dgree=2. And then the tensor is sharded along the last dim among the TP process groups. Finally, we reshard it along the first dim (0 dim) among the TP process groups. We encourage users to run the code and observe the shape of each tensor.
 
 
 ```python
