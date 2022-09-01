@@ -191,10 +191,10 @@ const config = {
         },
       ],
     },
-    // googleAnalytics: {
-    //   trackingID: 'UA-189394644-1',
-    //   anonymizeIP: true, // Should IPs be anonymized?
-    // },
+    googleAnalytics: {
+      trackingID: 'G-1XKZVCCKRZ',
+      anonymizeIP: true, // Should IPs be anonymized?
+    },
   },
   presets: [
     [
