@@ -191,10 +191,10 @@ const config = {
         },
       ],
     },
-    googleAnalytics: {
-      trackingID: 'G-1XKZVCCKRZ',
-      anonymizeIP: true, // Should IPs be anonymized?
-    },
+    // googleAnalytics: {
+    //   trackingID: 'G-1XKZVCCKRZ',
+    //   anonymizeIP: true, // Should IPs be anonymized?
+    // },
   },
   presets: [
     [
@@ -230,6 +230,10 @@ const config = {
         theme: {
           customCss: [require.resolve('./src/css/custom.scss')],
         },
+        gtag: {
+          trackingID: 'G-1XKZVCCKRZ',
+          anonymizeIP: true,
+        }
       },
     ],
   ],
