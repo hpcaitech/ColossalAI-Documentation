@@ -46,7 +46,7 @@ Set the tensor parallelism degree the same as your gpu number.
 tp_init_size = #gpu
 ```
 
-Now, we can launch a service using docker. You can map the path of the checkpoint and directory containing configs to disk volumes.
+Now, we can launch a service using docker. You can map the path of the checkpoint and directory containing configs to local disk path `/model_checkpoint` and `/config`.
 
 
 ```bash
@@ -70,7 +70,7 @@ To use our advanced batching technique to collect multiple queries in batches to
 executor_max_batch_size = 16
 ```
 
-All queries are submitted to a FIFO queue. All consecutive queries whose number of decoding steps is less than or equal to that of the head of the queue can be batched together. Left padding is applied to ensure correctness. executor_max_batch_size should not be too large. This ensures batching won't increase latency. For opt-30b, executor_max_batch_size=16 may be a good choice. But for opt-175b, executor_max_batch_size=4 may be a good choice.
+All queries are submitted to a FIFO queue. All consecutive queries whose number of decoding steps is less than or equal to that of the head of the queue can be batched together. Left padding is applied to ensure correctness. executor_max_batch_size should not be too large. This ensures batching won't increase latency. For opt-30b, `executor_max_batch_size=16` may be a good choice, while for opt-175b, `executor_max_batch_size=4` may be better.
 
 2. Cache Optimization.
 
