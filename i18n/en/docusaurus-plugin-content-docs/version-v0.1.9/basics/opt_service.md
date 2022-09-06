@@ -5,20 +5,21 @@
 This tutorial shows how to build your own service with OPT with the help of [Colossal-AI](https://github.com/hpcaitech/ColossalAI). You can also try an online demo at [here](http://service.colossalai.org/text-generation).
 
 ## Colossal-AI Inference Overview
-Colossal-AI provides a inference subsystem [Energon-AI](https://github.com/hpcaitech/EnergonAI), a serving system built upon Colossal-AI, which has the following characteristics: 
+Colossal-AI provides an inference subsystem [Energon-AI](https://github.com/hpcaitech/EnergonAI), a serving system built upon Colossal-AI, which has the following characteristics: 
 
 **Parallelism for Large-scale Models:** With the help of tensor parallel operations, pipeline parallel strategies from Colossal-AI, Colossal-AI inference enables efficient parallel inference for large-scale models.
 - **Pre-built large models:** There are pre-built implementations for popular models, such as OPT. It supports a caching technique for the generation task and checkpoints loading.
 - **Engine encapsulation：** There has an abstraction layer called an engine. It encapsulates the single instance multiple devices (SIMD) execution with the remote procedure call, making it act as the single instance single device (SISD) execution.
 - **An online service system:** Based on FastAPI, users can launch a web service of a distributed inference quickly. The online service makes special optimizations for the generation task. It adopts both left padding and bucket batching techniques to improve efficiency.
 
-## - Basic Usage:
+## Basic Usage:
 
 1. Download OPT model
 
 To launch the distributed inference service quickly, you can download the OPT-125M from [here](https://huggingface.co/patrickvonplaten/opt_metaseq_125m/blob/main/model/restored.pt). You can get details for loading other sizes of models [here](https://github.com/hpcaitech/EnergonAI/tree/main/examples/opt/script).
 
-2. Prepare a prebuilt service image
+                'advanced_tutorials/opt_service',
+2. Prepare a prebuilt service image 
 
 Pull a docker image from dockerhub installed with Colossal-AI inference.
 
@@ -28,7 +29,7 @@ docker pull hpcaitech/energon-ai:latest
 
 3. Launch an HTTP service
 
-To launch a service, we need to provide python scripts to describe the model type and related configurations, settings for the HTTP service.
+To launch a service, we need to provide python scripts to describe the model type and related configurations, and settings for the HTTP service.
 We have provided a set of [examples](https://github.com/hpcaitech/EnergonAI/tree/main/examples]). We will use the [OPT example](https://github.com/hpcaitech/EnergonAI/tree/main/examples/opt) in this tutorial.  
 The entrance of the service is a bash script server.sh.
 The config of the service is at opt_config.py, which defines the model type, the checkpoint file path, the parallel strategy, and http settings. You can adapt it for your own case.
@@ -45,7 +46,7 @@ Set the tensor parallelism degree the same as your gpu number.
 tp_init_size = #gpu
 ```
 
-Now, we can launch a service using docker. You can map the path of checkpoint and directory containing configs to docker disk volume.
+Now, we can launch a service using docker. You can map the path of the checkpoint and directory containing configs to disk volumes.
 
 
 ```bash
@@ -69,7 +70,7 @@ To use our advanced batching technique to collect multiple queries in batches to
 executor_max_batch_size = 16
 ```
 
-All queries are submitted to a FIFO queue. All consecutive queries whose number of decoding steps is less than or equal to that of the head of queue can be batched together. Left padding is applied to ensure correctness. executor_max_batch_size should not be too large. This ensures batching won't increase latency. For opt-30b, executor_max_batch_size=16 may be a good choice. But for opt-175b, executor_max_batch_size=4 may be a good choice.
+All queries are submitted to a FIFO queue. All consecutive queries whose number of decoding steps is less than or equal to that of the head of the queue can be batched together. Left padding is applied to ensure correctness. executor_max_batch_size should not be too large. This ensures batching won't increase latency. For opt-30b, executor_max_batch_size=16 may be a good choice. But for opt-175b, executor_max_batch_size=4 may be a good choice.
 
 2. Cache Optimization.
 
