@@ -192,7 +192,7 @@ const config = {
       ],
     },
     // googleAnalytics: {
-    //   trackingID: 'UA-189394644-1',
+    //   trackingID: 'G-1XKZVCCKRZ',
     //   anonymizeIP: true, // Should IPs be anonymized?
     // },
   },
@@ -230,6 +230,10 @@ const config = {
         theme: {
           customCss: [require.resolve('./src/css/custom.scss')],
         },
+        gtag: {
+          trackingID: 'G-1XKZVCCKRZ',
+          anonymizeIP: true,
+        }
       },
     ],
   ],
