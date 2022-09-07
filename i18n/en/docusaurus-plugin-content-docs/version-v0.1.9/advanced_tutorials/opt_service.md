@@ -18,7 +18,6 @@ Colossal-AI provides an inference subsystem [Energon-AI](https://github.com/hpca
 
 To launch the distributed inference service quickly, you can download the OPT-125M from [here](https://huggingface.co/patrickvonplaten/opt_metaseq_125m/blob/main/model/restored.pt). You can get details for loading other sizes of models [here](https://github.com/hpcaitech/EnergonAI/tree/main/examples/opt/script).
 
-                'advanced_tutorials/opt_service',
 2. Prepare a prebuilt service image 
 
 Pull a docker image from dockerhub installed with Colossal-AI inference.
