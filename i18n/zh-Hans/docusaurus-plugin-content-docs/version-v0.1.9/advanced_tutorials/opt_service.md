@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This tutorial shows how to build your own service with OPT with the help of [Colossal-AI](https://github.com/hpcaitech/ColossalAI). You can also try an online demo at [here](http://service.colossalai.org/text-generation).
+This tutorial shows how to build your own service with OPT with the help of [Colossal-AI](https://github.com/hpcaitech/ColossalAI). You can also try an online demo at [https://service.colossalai.org/opt](https://service.colossalai.org/opt).
 
 ## Colossal-AI Inference Overview
 Colossal-AI provides an inference subsystem [Energon-AI](https://github.com/hpcaitech/EnergonAI), a serving system built upon Colossal-AI, which has the following characteristics: 
@@ -18,7 +18,6 @@ Colossal-AI provides an inference subsystem [Energon-AI](https://github.com/hpca
 
 To launch the distributed inference service quickly, you can download the OPT-125M from [here](https://huggingface.co/patrickvonplaten/opt_metaseq_125m/blob/main/model/restored.pt). You can get details for loading other sizes of models [here](https://github.com/hpcaitech/EnergonAI/tree/main/examples/opt/script).
 
-                'advanced_tutorials/opt_service',
 2. Prepare a prebuilt service image 
 
 Pull a docker image from dockerhub installed with Colossal-AI inference.
@@ -34,7 +33,7 @@ We have provided a set of [examples](https://github.com/hpcaitech/EnergonAI/tree
 The entrance of the service is a bash script server.sh.
 The config of the service is at opt_config.py, which defines the model type, the checkpoint file path, the parallel strategy, and http settings. You can adapt it for your own case.
 For example, set the model class as opt_125M and set the correct checkpoint path as follows.
-
+ 
 ```bash
 model_class = opt_125M
 checkpoint = 'your_file_path'
