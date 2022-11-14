@@ -1,12 +1,15 @@
-import api from "../../../../core/api"
 import semver from 'semver'
+import api from "../../../../core/api"
 
 export async function getPipPkgVersions(url: string): Promise<Set<string>> {
     const response = await api.get(url)
     const text = await response.raw.text()
     const pipPkgVersions: Set<string> = new Set()
-    let matched_vers = text.match(/colossalai-[0-9.]+%2B.+\.whl/g)
-    if (matched_vers){
+    // Python versioning: <public version identifier>[+<local version label>]
+    // Public version identifier: N(.N)*[{a|b|rc}N][.postN][.devN]
+    // Reference: https://peps.python.org/pep-0440/
+    let matched_vers = text.match(/colossalai-\d+(\.\d+)*((a|b|rc)\d+)?(\.post\d+)?(\.dev\d+)?%2B.+\.whl/g)
+    if (matched_vers) {
         for (let wheel of matched_vers) {
             let version = wheel.split('-')[1].replace('%2B', '+')
             pipPkgVersions.add(version)
