@@ -1,9 +1,9 @@
 import { translate } from '@docusaurus/Translate';
 import React, { useEffect, useState } from 'react';
 import { useWindowSize } from '../../../../hooks/useWindowSize';
-import styles from './styles.module.css'
-import { getPipPkgVersions, getColossalaiVersions, getTorchVersions, getCudaVersions } from './pipPackages'
 import RadioGroup from './components/RadioGroup';
+import { getColossalaiVersions, getCudaVersions, getPipPkgVersions, getTorchVersions } from './pipPackages';
+import styles from './styles.module.css';
 
 type Props = { getStartedRef: React.RefObject<HTMLDivElement> }
 
@@ -72,6 +72,9 @@ const InstallView: React.FC<Props> = ({ getStartedRef }) => {
             </h1>
             <p>
                 {translate({ message: 'You can choose your PyTorch and CUDA versions accordingly in the table below. As some CUDA versions are not supported by the Official PyTorch releases, You may need to install Colossal-AI from source if not available. As for the nightly version, you need to have Python 3.8 and the latest PyTorch and CUDA versions.', id: 'theme.download.about' })}
+            </p>
+            <p className={styles.warn}>
+                {translate({ message: 'Colossal-AI is only Linux supported currently.', id: 'theme.download.warn' })}
             </p>
             <hr />
 
