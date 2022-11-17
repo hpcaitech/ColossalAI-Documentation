@@ -5,6 +5,9 @@
   "theme.download.about": {
     "message": "你可以在下面选择你的PyTorch以及CUDA版本，并下载对应的Colossal-AI。由于PyTorch并没有为每个CUDA版本发布对应的版本，所以您如果没有找到可用的下载，可能需要从源码安装Colossal-AI。如果想要安装预览版本，您需要Python 3.8以及最新版本的PyTorch和CUDA."
   },
+  "theme.download.warn": {
+    "message": "Colossal-AI 目前仅支持 Linux。"
+  },
   "theme.docs.sidebar.expandButtonTitle": {
     "message": "展开侧边栏",
     "description": "The ARIA label and title attribute for expand button of doc sidebar"
