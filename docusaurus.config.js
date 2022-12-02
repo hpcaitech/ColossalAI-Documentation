@@ -77,13 +77,19 @@ const config = {
   favicon: 'img/favicon.ico',
   organizationName: 'HPC-AI Tech',
   themes: ['@docusaurus/theme-live-codeblock'],
-  scripts: [{ src: 'https://snack.expo.io/embed.js', async: true }, {
+  scripts: [
+    {
+     src: 'https://snack.expo.io/embed.js', 
+     async: true 
+    }, 
+    {
     src: 'https://js-eu1.hs-scripts.com/26563514.js',
     async: true,
     defer: true,
     type: "text/javascript",
     id: "hs-script-loader"
-  }], // https://github.com/expo/snack/blob/main/docs/embedding-snacks.md
+  }
+], // https://github.com/expo/snack/blob/main/docs/embedding-snacks.md
   plugins: [
     'docusaurus-plugin-sass',
     'docusaurus2-dotenv',
