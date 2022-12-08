@@ -149,15 +149,24 @@ This example is intended for showing you how to use `ZeRO`. For simplicity, we j
 First, we have to import essential libs:
 
 ```python
-import colossalai
+from functools import partial
+from time import time
+
+import psutil
 import torch
 import torch.nn as nn
+from packaging import version
+from torch.nn.parallel import DistributedDataParallel as DDP
+
+import colossalai
 from colossalai.logging import disable_existing_loggers, get_dist_logger
-from colossalai.nn.optimizer import CPUAdam
-from colossalai.zero.init_ctx import ZeroInitContext
-from colossalai.zero.shard_utils import TensorShardStrategy
-from colossalai.zero.sharded_model import ShardedModelV2
-from colossalai.zero.sharded_optim import ShardedOptimizerV2
+from colossalai.nn.optimizer import HybridAdam
+from colossalai.nn.optimizer.gemini_optimizer import GeminiAdamOptimizer
+from colossalai.nn.optimizer.zero_optimizer import ZeroOptimizer
+from colossalai.nn.parallel import ZeroDDP
+from colossalai.tensor import ColoParameter, ComputePattern, ComputeSpec, ProcessGroup, ReplicaSpec, ShardSpec
+from colossalai.utils import get_current_device
+from colossalai.utils.model.colo_init_context import ColoInitContext
 from transformers import GPT2Config, GPT2LMHeadModel
 ```
 
@@ -165,16 +174,27 @@ Then we simply wrap `Hugging Face Transformers`:
 
 ```python
 class GPTLMModel(nn.Module):
-    def __init__(self, hidden_size=768, num_layers=12, num_attention_heads=12, max_seq_len=1024, vocab_size=50257, checkpoint=False):
+
+    def __init__(self,
+                 hidden_size=768,
+                 num_layers=12,
+                 num_attention_heads=12,
+                 max_seq_len=1024,
+                 vocab_size=50257,
+                 checkpoint=False):
         super().__init__()
         self.checkpoint = checkpoint
-        self.model = GPT2LMHeadModel(GPT2Config(n_embd=hidden_size, n_layer=num_layers,
-                                     n_head=num_attention_heads, n_positions=max_seq_len, n_ctx=max_seq_len, vocab_size=vocab_size))
+        self.model = GPT2LMHeadModel(
+            GPT2Config(n_embd=hidden_size,
+                       n_layer=num_layers,
+                       n_head=num_attention_heads,
+                       n_positions=max_seq_len,
+                       n_ctx=max_seq_len,
+                       vocab_size=vocab_size))
         if checkpoint:
             self.model.gradient_checkpointing_enable()
 
     def forward(self, input_ids, attention_mask):
-        # Only return lm_logits
         return self.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=not self.checkpoint)[0]
 
 def gpt2_medium(checkpoint=False):
@@ -185,6 +205,7 @@ Define our loss function:
 
 ```python
 class GPTLMLoss(nn.Module):
+
     def __init__(self):
         super().__init__()
         self.loss_fn = nn.CrossEntropyLoss()
@@ -192,8 +213,74 @@ class GPTLMLoss(nn.Module):
     def forward(self, logits, labels):
         shift_logits = logits[..., :-1, :].contiguous()
         shift_labels = labels[..., 1:].contiguous()
-        # Flatten the tokens
         return self.loss_fn(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+```
+
+Define tensor parallel and parameter sharding strategies for tensor parallelism:
+
+```python
+def tensor_parallelize(model: torch.nn.Module, pg: ProcessGroup):
+    for mn, module in model.named_modules():
+        for pn, param in module.named_parameters(recurse=False):
+            if hasattr(param, 'visited'):
+                continue
+            param.set_dist_spec(ReplicaSpec())
+            if 'mlp.c_fc' in mn:
+                if 'weight' in pn or 'bias' in pn:
+                    split_param_col_tp1d(param, pg) 
+                    param.compute_spec.set_output_replicate(False)
+                else:
+                    param.set_dist_spec(ReplicaSpec())
+            elif 'mlp.c_proj' in mn:
+                if 'weight' in pn:
+                    split_param_row_tp1d(param, pg)   
+                else:
+                    param.set_dist_spec(ReplicaSpec())
+            elif 'wte' in mn or 'wpe' in mn:
+                split_param_col_tp1d(param, pg)    
+            elif 'c_attn' in mn or 'c_proj' in mn:
+                split_param_col_tp1d(param, pg)   
+            else:
+                param.set_dist_spec(ReplicaSpec())
+
+            param.visited = True
+def split_param_single_dim_tp1d(dim: int, param: ColoParameter, pg: ProcessGroup):
+    spec = (ShardSpec([dim], [pg.tp_world_size()]), ComputeSpec(ComputePattern.TP1D))
+    param.set_tensor_spec(*spec)
+
+
+def split_param_row_tp1d(param: ColoParameter, pg: ProcessGroup):
+    split_param_single_dim_tp1d(0, param, pg)
+
+
+def split_param_col_tp1d(param: ColoParameter, pg: ProcessGroup):
+    split_param_single_dim_tp1d(-1, param, pg)
+```
+
+Define a model which uses Gemini + ZeRO DDP:
+
+```python
+def gemini_zero_dpp(model: torch.nn.Module, pg: ProcessGroup, placememt_policy: str = "auto"):
+    cai_version = colossalai.__version__
+    if version.parse(cai_version) > version.parse("0.1.10"):
+        from colossalai.nn.parallel import GeminiDDP
+        model = GeminiDDP(model,
+                          device=get_current_device(),
+                          placement_policy=placememt_policy,
+                          pin_memory=True,
+                          search_range_mb=32)
+    elif version.parse(cai_version) <= version.parse("0.1.10") and version.parse(cai_version) >= version.parse("0.1.9"):
+        from colossalai.gemini import ChunkManager, GeminiManager
+        chunk_size = ChunkManager.search_chunk_size(model, 64 * 1024**2, 32)
+        gemini_manager = GeminiManager(placememt_policy, chunk_manager)
+        chunk_manager = ChunkManager(chunk_size,
+                                     pg,
+                                     enable_distributed_storage=True,
+                                     init_device=GeminiManager.get_default_device(placememt_policy))
+        model = ZeroDDP(model, gemini_manager)
+    else:
+        raise NotImplemented(f"CAI version {cai_version} is not supported")
+    return model
 ```
 
 As we pre-train GPT in this example, we just use a simple language model loss.
@@ -211,6 +298,7 @@ Finally, we can define our training loop:
 
 ```python
 def main():
+    args = parse_args()
     BATCH_SIZE = 8
     SEQ_LEN = 1024
     VOCAB_SIZE = 50257
@@ -218,37 +306,50 @@ def main():
     disable_existing_loggers()
     colossalai.launch_from_torch(config={})
     logger = get_dist_logger()
-
-    logger.info(get_mem_info(), ranks=[0])
-    # build GPT model
-    shard_strategy = TensorShardStrategy()
-    with ZeroInitContext(target_device=torch.cuda.current_device(), shard_strategy=shard_strategy, shard_param=True):
-        model = gpt2_medium(checkpoint=True)
-    # Set tensor_placement_policy='cpu', which will offload params, grads and os
-    model = ShardedModelV2(model, shard_strategy, tensor_placement_policy='cpu', reuse_fp16_shard=True)
-    logger.info(get_mem_info(prefix='After init model, '), ranks=[0])
+    logger.info(f"using dist plan {args.distplan}", ranks=[0])
 
     # build criterion
     criterion = GPTLMLoss()
 
-    # optimizer
-    optimizer = HybridAdam(model.parameters(), lr=1e-3)
-    optimizer = ShardedOptimizerV2(model, optimizer, initial_scale=2**5)
+    torch.manual_seed(123)
+    default_pg = ProcessGroup(tp_degree=args.tp_degree)
+    default_dist_spec = ShardSpec([-1], [args.tp_degree]) if args.shardinit else None
+    # build GPT model
+    with ColoInitContext(device='cpu', default_dist_spec=default_dist_spec, default_pg=default_pg):
+      model = gpt2_medium(checkpoint=True)
+    pg = default_pg
+    # Tensor Parallelism (TP)
+    tensor_parallelize(model, pg)
+    # Gemini + ZeRO DP, Note it must be used after TP
+    model = gemini_zero_dpp(model, pg, args.placement)
+    # build optimizer
+    optimizer = GeminiAdamOptimizer(model, lr=1e-3, initial_scale=2**5)
     logger.info(get_mem_info(prefix='After init optim, '), ranks=[0])
-
+    numel = sum([p.numel() for p in model.parameters()])
+    logger.info(get_mem_info(prefix='After init model, '), ranks=[0])
+    get_tflops_func = partial(get_tflops, numel, BATCH_SIZE, SEQ_LEN)
+    torch.cuda.synchronize()
     model.train()
     for n in range(NUM_STEPS):
         # we just use randomly generated data here
         input_ids, attn_mask = get_data(BATCH_SIZE, SEQ_LEN, VOCAB_SIZE)
         optimizer.zero_grad()
+        start = time()
         outputs = model(input_ids, attn_mask)
         loss = criterion(outputs, input_ids)
-        logger.info(get_mem_info(prefix=f'Forward [{n+1}/{NUM_STEPS}] '), ranks=[0])
+        logger.info(get_mem_info(prefix=f'[{n+1}/{NUM_STEPS}] Forward '), ranks=[0])
         optimizer.backward(loss)
-        logger.info(get_mem_info(prefix=f'Backward [{n+1}/{NUM_STEPS}] '), ranks=[0])
+        logger.info(get_mem_info(prefix=f'[{n+1}/{NUM_STEPS}] Backward '), ranks=[0])
         optimizer.step()
-        logger.info(get_mem_info(prefix=f'Optimizer step [{n+1}/{NUM_STEPS}] '), ranks=[0])
+        logger.info(get_mem_info(prefix=f'[{n+1}/{NUM_STEPS}] Optimizer step '), ranks=[0])
+        step_time = time() - start
+        logger.info(
+            f'[{n+1}/{NUM_STEPS}] Loss:{loss.item():.3f}, Step time: {step_time:.3f}s, TFLOPS: {get_tflops_func(step_time):.3f}',
+            ranks=[0])
+
+    torch.cuda.synchronize()
 ```
 
-The complete example can be found on [ZeRO example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/zero).
+The complete example can be found on [Train GPT with Colossal-AI](https://github.com/hpcaitech/ColossalAI/tree/main/examples/language/gpt).
+
 
