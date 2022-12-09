@@ -1,6 +1,6 @@
 # 基于Chunk内存管理的零冗余优化器 (ZeRO)
 
-作者: [Hongxiu Liu](https://github.com/ver217), [Jiarui Fang](https://github.com/feifeibear)
+作者: [Hongxiu Liu](https://github.com/ver217), [Jiarui Fang](https://github.com/feifeibear), [Zijian Ye](https://github.com/ZijianYY)
 
 **前置教程:**
 - [零冗余优化器 (ZeRO) 和 ZeRO Offload](../features/zero_redundancy_and_zero_offload.md)
@@ -38,20 +38,6 @@
 ### ChunkManager + GeminiManager
 
 对于ColossalAI v0.1.9和v0.1.10，我们可以运用`ChunkManager` + `GeminiManager`的方式来使用基于Chunk内存管理的ZeRO。
-
-```python
-import colossalai
-from colossalai.logging import disable_existing_loggers, get_dist_logger
-from colossalai.nn.optimizer import HybridAdam
-from colossalai.nn.optimizer.gemini_optimizer import GeminiAdamOptimizer
-from colossalai.nn.optimizer.zero_optimizer import ZeroOptimizer
-from colossalai.nn.parallel import ZeroDDP
-from colossalai.tensor import ColoParameter, ComputePattern, ComputeSpec, ProcessGroup, ReplicaSpec, ShardSpec
-from colossalai.utils import get_current_device
-from colossalai.utils.model.colo_init_context import ColoInitContext
-from transformers import GPT2Config, GPT2LMHeadModel
-from colossalai.gemini import ChunkManager, GeminiManager
-```
 
 首先确保你的模型是在`ColoInitContext`上下文中初始化的：
 ```python
@@ -122,31 +108,7 @@ model = ZeroDDP(model, gemini_manager)
 
 为了简单起见，我们在这里只使用随机生成的数据。
 
-首先, 我们需要导入必要的依赖库:
-
-```python
-from functools import partial
-from time import time
-
-import psutil
-import torch
-import torch.nn as nn
-from packaging import version
-from torch.nn.parallel import DistributedDataParallel as DDP
-
-import colossalai
-from colossalai.logging import disable_existing_loggers, get_dist_logger
-from colossalai.nn.optimizer import HybridAdam
-from colossalai.nn.optimizer.gemini_optimizer import GeminiAdamOptimizer
-from colossalai.nn.optimizer.zero_optimizer import ZeroOptimizer
-from colossalai.nn.parallel import ZeroDDP
-from colossalai.tensor import ColoParameter, ComputePattern, ComputeSpec, ProcessGroup, ReplicaSpec, ShardSpec
-from colossalai.utils import get_current_device
-from colossalai.utils.model.colo_init_context import ColoInitContext
-from transformers import GPT2Config, GPT2LMHeadModel
-```
-
-接下来我们简单的包装 `Hugging Face Transformers`:
+首先, 我们需要简单的包装 `Hugging Face Transformers`:
 
 ```python
 class GPTLMModel(nn.Module):
@@ -279,10 +241,7 @@ def main():
     SEQ_LEN = 1024
     VOCAB_SIZE = 50257
     NUM_STEPS = 10
-    disable_existing_loggers()
     colossalai.launch_from_torch(config={})
-    logger = get_dist_logger()
-    logger.info(f"using dist plan {args.distplan}", ranks=[0])
 
     # build criterion
     criterion = GPTLMLoss()
@@ -300,9 +259,7 @@ def main():
     model = gemini_zero_dpp(model, pg, args.placement)
     # build optimizer
     optimizer = GeminiAdamOptimizer(model, lr=1e-3, initial_scale=2**5)
-    logger.info(get_mem_info(prefix='After init optim, '), ranks=[0])
     numel = sum([p.numel() for p in model.parameters()])
-    logger.info(get_mem_info(prefix='After init model, '), ranks=[0])
     get_tflops_func = partial(get_tflops, numel, BATCH_SIZE, SEQ_LEN)
     torch.cuda.synchronize()
     model.train()
@@ -310,18 +267,10 @@ def main():
         # we just use randomly generated data here
         input_ids, attn_mask = get_data(BATCH_SIZE, SEQ_LEN, VOCAB_SIZE)
         optimizer.zero_grad()
-        start = time()
         outputs = model(input_ids, attn_mask)
         loss = criterion(outputs, input_ids)
-        logger.info(get_mem_info(prefix=f'[{n+1}/{NUM_STEPS}] Forward '), ranks=[0])
         optimizer.backward(loss)
-        logger.info(get_mem_info(prefix=f'[{n+1}/{NUM_STEPS}] Backward '), ranks=[0])
         optimizer.step()
-        logger.info(get_mem_info(prefix=f'[{n+1}/{NUM_STEPS}] Optimizer step '), ranks=[0])
-        step_time = time() - start
-        logger.info(
-            f'[{n+1}/{NUM_STEPS}] Loss:{loss.item():.3f}, Step time: {step_time:.3f}s, TFLOPS: {get_tflops_func(step_time):.3f}',
-            ranks=[0])
 
     torch.cuda.synchronize()
 ```
