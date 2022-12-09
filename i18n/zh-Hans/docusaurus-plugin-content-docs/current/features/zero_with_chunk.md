@@ -6,9 +6,10 @@
 - [零冗余优化器 (ZeRO) 和 ZeRO Offload](../features/zero_redundancy_and_zero_offload.md)
 
 **示例代码**
-- [ColossalAI-Examples Zero](https://github.com/hpcaitech/ColossalAI-Examples/blob/main/features/zero/train_v2.py)
+- [Train GPT with Colossal-AI](https://github.com/hpcaitech/ColossalAI/tree/main/examples/language/gpt)
 
 **相关论文**
+
 - [ZeRO: Memory Optimizations Toward Training Trillion Parameter Models](https://arxiv.org/abs/1910.02054)
 - [ZeRO-Offload: Democratizing Billion-Scale Model Training](https://arxiv.org/abs/2101.06840)
 - [ZeRO-Infinity: Breaking the GPU Memory Wall for Extreme Scale Deep Learning](https://arxiv.org/abs/2104.07857)
@@ -30,107 +31,146 @@
 
 我们提供了轻量级的Chunk搜索机制，帮助用户自动找到内存碎片最小的Chunk尺寸。
 
-
 ## 使用
 
-由于此功能仍在开发中，我们目前只提供低级API，无法与`Engine`和`Trainer`一起使用。
+我们提供了两种方式让不同版本的ColossalAI都可以使用基于Chunk内存管理的零冗余优化器。
 
-我们首先用一个最简单的代码段演示如何使用基于Chunk内存管理的ZeRO，然后给出一个训练GPT的例子。
+### ChunkManager + GeminiManager
+
+对于ColossalAI v0.1.9和v0.1.10，我们可以运用`ChunkManager` + `GeminiManager`的方式来使用基于Chunk内存管理的ZeRO。
 
 ```python
-from colossalai.gemini import ChunkManager, GeminiManager
-from colossalai.utils.model.colo_init_context import ColoInitContext
-from colossalai.utils import get_current_device
+import colossalai
+from colossalai.logging import disable_existing_loggers, get_dist_logger
+from colossalai.nn.optimizer import HybridAdam
+from colossalai.nn.optimizer.gemini_optimizer import GeminiAdamOptimizer
+from colossalai.nn.optimizer.zero_optimizer import ZeroOptimizer
 from colossalai.nn.parallel import ZeroDDP
-from colossalai.zero import ZeroOptimizer
-from colossalai.tensor import ProcessGroup
+from colossalai.tensor import ColoParameter, ComputePattern, ComputeSpec, ProcessGroup, ReplicaSpec, ShardSpec
+from colossalai.utils import get_current_device
+from colossalai.utils.model.colo_init_context import ColoInitContext
+from transformers import GPT2Config, GPT2LMHeadModel
+from colossalai.gemini import ChunkManager, GeminiManager
 ```
 
 首先确保你的模型是在`ColoInitContext`上下文中初始化的：
 ```python
-with ColoInitContext(device=get_current_device()):
-    model = torch.nn.Linear(10, 1)
+with ColoInitContext(device='cpu', default_dist_spec=default_dist_spec, default_pg=default_pg):
+  model = gpt2_medium(checkpoint=True)
 ```
 注意，`device`的类型必须是`torch.device`，例如：`torch.device('cpu')`, `torch.device('cuda:0')`。
 
 ```python
-PLACEMENT_POLICY = 'cuda'
-pg = ProcessGroup()
 chunk_size = ChunkManager.search_chunk_size(model, 64 * 1024**2, 32)
-chunk_manager = ChunkManager(chunk_size, pg, enable_distributed_storage=True,
-                                init_device=GeminiManager.get_default_device(PLACEMENT_POLICY))
-gemini_manager = GeminiManager(PLACEMENT_POLICY, chunk_manager)
+gemini_manager = GeminiManager(placememt_policy, chunk_manager)
+chunk_manager = ChunkManager(chunk_size,
+                             pg,
+                             enable_distributed_storage=True,
+                             init_device=GeminiManager.get_default_device(placememt_policy))
 model = ZeroDDP(model, gemini_manager)
 ```
-`PLACEMENT_POLICY`描述了Gemini的放置策略，目前我们支持`'cuda'`, `'cpu'`和`'auto'`三种策略，关于Gemini的更多细节，点击[这里](../advanced_tutorials/meet_gemini.md)。
-
-为了方便用户设置Chunk的大小，我们提供了Chunk大小搜索的函数：`ChunkManager.search_chunk_size(model, search_range, n_grids, min_chunk_size=None)`。它会在`[min_chunk_size, min_chunk_size+search_range]`的区间内进行网格搜索以获得最优Chunk大小，网格数为`n_grids`。如果`min_chunk_size=None`，它会自动将`min_chunk_size`设置为模型的最大的参数的大小。
+`PLACEMENT_POLICY`描述了Gemini的放置策略，目前我们支持`'cuda'`, `'cpu'`和`'auto'`三种策略，关于Gemini的更多细节，点击[这里](../advanced_tutorials/meet_gemini.md)。如果使用“cpu”策略，参数、梯度和优化器状态将被卸载到 CPU，这意味着将使用最小 CUDA 内存；如果使用“cuda”策略，则不会卸载它们，这意味着将使用最大 CUDA 内存；如果使用“auto”策略，它们会根据 CPU 和 CUDA 内存使用情况动态移动。 这将帮助我们均匀而良好地利用异构内存空间。
 
 如果你不想使用Chunk，直接将传入`ChunkManager`的第一个参数`chunk_size`设为`None`即可。
 
 `enable_distributed_storage`表示是否分布式存储模型，即是否使用ZeRO。
 
 ```python
-from colossalai.nn.optimizer import HybridAdam
-from colossalai.zero import ZeroOptimizer
-optimizer = HybridAdam(model.parameters(), lr=1e-3)
-optimizer = ZeroOptimizer(optimizer, model)
+optimizer = GeminiAdamOptimizer(model, lr=1e-3, initial_scale=2**5)
 ```
-这样就完成了优化器的初始化。关于`ZeroOptimizer`的详细参数设置，见[API文档](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.zero_optimizer.html#colossalai.zero.zero_optimizer.ZeroOptimizer)
+这样就完成了优化器的初始化。
 
 ```python
 optimizer.zero_grad()
-logits = model(data)
-loss = criterion(logits, labels)
+outputs = model(input_ids, attn_mask)
+loss = criterion(outputs, input_ids)
 optimizer.backward(loss)
 optimizer.step()
 ```
-训练时，只需循环上面的代码即可。
+训练代码。
 
-> ⚠️ 在使用CPUAdam或HybridAdam时，建议设置环境变量OMP_NUM_THREADS=8
+### GeminiDDP
 
-> CPUAdam和HybridAdam支持NVMe offload，用法详见[API文档](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.nn.optimizer.hybrid_adam.html#colossalai.nn.optimizer.hybrid_adam.HybridAdam)
+如果你的ColossalAI版本大于v0.1.10，我们将运用`GeminiDDP`的方式来使用基于Chunk内存管理的ZeRO。这是我们新包装的torch.Module ，它使用 ZeRO-DP 和 Gemini，其中ZeRO 用于并行，Gemini 用于内存管理。
+
+同样需要确保你的模型是在 `ColoInitContext` 的上下文中初始化的。
+
+```python
+with ColoInitContext(device='cpu', default_dist_spec=default_dist_spec, default_pg=default_pg):
+  model = gpt2_medium(checkpoint=True)
+```
+
+定义模型参数如下:
+
+```python
+chunk_manager = init_chunk_manager(model=module,
+                                   init_device=device,
+                                   hidden_dim=hidden_dim,
+                                   search_range_mb=search_range_mb,
+                                   min_chunk_size_mb=min_chunk_size_mb)
+gemini_manager = GeminiManager(placement_policy, chunk_manager)
+model = ZeroDDP(model, gemini_manager)
+```
+
+`hidden dim`是DNN的隐藏维度。用户可以提供这个参数来加快搜索速度。如果用户在训练前不知道这个参数也可以。 我们将使用默认值 1024。`min_chunk_size_mb`是以兆字节为单位的最小块大小。如果参数的总大小仍然小于最小块大小，则所有参数将被压缩为一个小块。
+
+优化器初始化代码和训练代码与前一种方式一致。
 
 ### 训练GPT
 
 在此例程中, 我们使用 `Hugging Face Transformers`，并以 `GPT2 Medium` 为例。你必须在允许该例程前安装 `transformers`。 
 
-这个例子是为了向你展示如何使用 `ZeRO`。为了简单起见，我们在这里只使用随机生成的数据。
+为了简单起见，我们在这里只使用随机生成的数据。
 
 首先, 我们需要导入必要的依赖库:
 
 ```python
-import colossalai
+from functools import partial
+from time import time
+
 import psutil
 import torch
 import torch.nn as nn
+from packaging import version
+from torch.nn.parallel import DistributedDataParallel as DDP
+
+import colossalai
 from colossalai.logging import disable_existing_loggers, get_dist_logger
 from colossalai.nn.optimizer import HybridAdam
-from transformers import GPT2Config, GPT2LMHeadModel
-from time import time
-from functools import partial
-from colossalai.gemini import ChunkManager, GeminiManager
-from colossalai.utils.model.colo_init_context import ColoInitContext
-from colossalai.utils import get_current_device
+from colossalai.nn.optimizer.gemini_optimizer import GeminiAdamOptimizer
+from colossalai.nn.optimizer.zero_optimizer import ZeroOptimizer
 from colossalai.nn.parallel import ZeroDDP
-from colossalai.zero import ZeroOptimizer
-from colossalai.tensor import ProcessGroup
+from colossalai.tensor import ColoParameter, ComputePattern, ComputeSpec, ProcessGroup, ReplicaSpec, ShardSpec
+from colossalai.utils import get_current_device
+from colossalai.utils.model.colo_init_context import ColoInitContext
+from transformers import GPT2Config, GPT2LMHeadModel
 ```
 
 接下来我们简单的包装 `Hugging Face Transformers`:
 
 ```python
 class GPTLMModel(nn.Module):
-    def __init__(self, hidden_size=768, num_layers=12, num_attention_heads=12, max_seq_len=1024, vocab_size=50257, checkpoint=False):
+
+    def __init__(self,
+                 hidden_size=768,
+                 num_layers=12,
+                 num_attention_heads=12,
+                 max_seq_len=1024,
+                 vocab_size=50257,
+                 checkpoint=False):
         super().__init__()
         self.checkpoint = checkpoint
-        self.model = GPT2LMHeadModel(GPT2Config(n_embd=hidden_size, n_layer=num_layers,
-                                     n_head=num_attention_heads, n_positions=max_seq_len, n_ctx=max_seq_len, vocab_size=vocab_size))
+        self.model = GPT2LMHeadModel(
+            GPT2Config(n_embd=hidden_size,
+                       n_layer=num_layers,
+                       n_head=num_attention_heads,
+                       n_positions=max_seq_len,
+                       n_ctx=max_seq_len,
+                       vocab_size=vocab_size))
         if checkpoint:
             self.model.gradient_checkpointing_enable()
 
     def forward(self, input_ids, attention_mask):
-        # Only return lm_logits
         return self.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=not self.checkpoint)[0]
 
 def gpt2_medium(checkpoint=False):
@@ -141,6 +181,7 @@ def gpt2_medium(checkpoint=False):
 
 ```python
 class GPTLMLoss(nn.Module):
+
     def __init__(self):
         super().__init__()
         self.loss_fn = nn.CrossEntropyLoss()
@@ -148,8 +189,74 @@ class GPTLMLoss(nn.Module):
     def forward(self, logits, labels):
         shift_logits = logits[..., :-1, :].contiguous()
         shift_labels = labels[..., 1:].contiguous()
-        # Flatten the tokens
         return self.loss_fn(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+```
+
+定义张量并行和参数分片策略：
+
+```python
+def tensor_parallelize(model: torch.nn.Module, pg: ProcessGroup):
+    for mn, module in model.named_modules():
+        for pn, param in module.named_parameters(recurse=False):
+            if hasattr(param, 'visited'):
+                continue
+            param.set_dist_spec(ReplicaSpec())
+            if 'mlp.c_fc' in mn:
+                if 'weight' in pn or 'bias' in pn:
+                    split_param_col_tp1d(param, pg) 
+                    param.compute_spec.set_output_replicate(False)
+                else:
+                    param.set_dist_spec(ReplicaSpec())
+            elif 'mlp.c_proj' in mn:
+                if 'weight' in pn:
+                    split_param_row_tp1d(param, pg)   
+                else:
+                    param.set_dist_spec(ReplicaSpec())
+            elif 'wte' in mn or 'wpe' in mn:
+                split_param_col_tp1d(param, pg)    
+            elif 'c_attn' in mn or 'c_proj' in mn:
+                split_param_col_tp1d(param, pg)   
+            else:
+                param.set_dist_spec(ReplicaSpec())
+
+            param.visited = True
+def split_param_single_dim_tp1d(dim: int, param: ColoParameter, pg: ProcessGroup):
+    spec = (ShardSpec([dim], [pg.tp_world_size()]), ComputeSpec(ComputePattern.TP1D))
+    param.set_tensor_spec(*spec)
+
+
+def split_param_row_tp1d(param: ColoParameter, pg: ProcessGroup):
+    split_param_single_dim_tp1d(0, param, pg)
+
+
+def split_param_col_tp1d(param: ColoParameter, pg: ProcessGroup):
+    split_param_single_dim_tp1d(-1, param, pg)
+```
+
+定义一个使用 Gemini + ZeRO DDP 的模型：
+
+```python
+def gemini_zero_dpp(model: torch.nn.Module, pg: ProcessGroup, placememt_policy: str = "auto"):
+    cai_version = colossalai.__version__
+    if version.parse(cai_version) > version.parse("0.1.10"):
+        from colossalai.nn.parallel import GeminiDDP
+        model = GeminiDDP(model,
+                          device=get_current_device(),
+                          placement_policy=placememt_policy,
+                          pin_memory=True,
+                          search_range_mb=32)
+    elif version.parse(cai_version) <= version.parse("0.1.10") and version.parse(cai_version) >= version.parse("0.1.9"):
+        from colossalai.gemini import ChunkManager, GeminiManager
+        chunk_size = ChunkManager.search_chunk_size(model, 64 * 1024**2, 32)
+        gemini_manager = GeminiManager(placememt_policy, chunk_manager)
+        chunk_manager = ChunkManager(chunk_size,
+                                     pg,
+                                     enable_distributed_storage=True,
+                                 			init_device=GeminiManager.get_default_device(placememt_policy))
+        model = ZeroDDP(model, gemini_manager)
+    else:
+        raise NotImplemented(f"CAI version {cai_version} is not supported")
+    return model
 ```
 
 由于我们在这个例子中对GPT进行预训练，因此只使用了一个简单的语言模型损失函数。
@@ -167,39 +274,37 @@ def get_data(batch_size, seq_len, vocab_size):
 
 ```python
 def main():
+    args = parse_args()
     BATCH_SIZE = 8
     SEQ_LEN = 1024
     VOCAB_SIZE = 50257
     NUM_STEPS = 10
-    PLACEMENT_POLICY = 'cpu'
     disable_existing_loggers()
     colossalai.launch_from_torch(config={})
-    pg = ProcessGroup()
     logger = get_dist_logger()
-
-    logger.info(get_mem_info(), ranks=[0])
-    # build GPT model
-    with ColoInitContext(device=get_current_device()):
-        model = gpt2_medium(checkpoint=True)
-    numel = sum([p.numel() for p in model.parameters()])
-    logger.info(f'Model numel: {numel}', ranks=[0])
-    get_tflops_func = partial(get_tflops, numel, BATCH_SIZE, SEQ_LEN)
-    chunk_size = ChunkManager.search_chunk_size(model, 64 * 1024**2, 32)
-    chunk_manager = ChunkManager(chunk_size, pg, enable_distributed_storage=True,
-                                 init_device=GeminiManager.get_default_device(PLACEMENT_POLICY))
-    gemini_manager = GeminiManager(PLACEMENT_POLICY, chunk_manager)
-    model = ZeroDDP(model, gemini_manager)
-    logger.info(get_mem_info(prefix='After init model, '), ranks=[0])
-    logger.info(chunk_manager, ranks=[0])
+    logger.info(f"using dist plan {args.distplan}", ranks=[0])
 
     # build criterion
     criterion = GPTLMLoss()
 
-    # optimizer
-    optimizer = HybridAdam(model.parameters(), lr=1e-3)
-    optimizer = ZeroOptimizer(optimizer, model, initial_scale=2**5)
+    torch.manual_seed(123)
+    default_pg = ProcessGroup(tp_degree=args.tp_degree)
+    default_dist_spec = ShardSpec([-1], [args.tp_degree]) if args.shardinit else None
+    # build GPT model
+    with ColoInitContext(device='cpu', default_dist_spec=default_dist_spec, default_pg=default_pg):
+      model = gpt2_medium(checkpoint=True)
+    pg = default_pg
+    # Tensor Parallelism (TP)
+    tensor_parallelize(model, pg)
+    # Gemini + ZeRO DP, Note it must be used after TP
+    model = gemini_zero_dpp(model, pg, args.placement)
+    # build optimizer
+    optimizer = GeminiAdamOptimizer(model, lr=1e-3, initial_scale=2**5)
     logger.info(get_mem_info(prefix='After init optim, '), ranks=[0])
-
+    numel = sum([p.numel() for p in model.parameters()])
+    logger.info(get_mem_info(prefix='After init model, '), ranks=[0])
+    get_tflops_func = partial(get_tflops, numel, BATCH_SIZE, SEQ_LEN)
+    torch.cuda.synchronize()
     model.train()
     for n in range(NUM_STEPS):
         # we just use randomly generated data here
@@ -215,7 +320,10 @@ def main():
         logger.info(get_mem_info(prefix=f'[{n+1}/{NUM_STEPS}] Optimizer step '), ranks=[0])
         step_time = time() - start
         logger.info(
-            f'[{n+1}/{NUM_STEPS}] Loss:{loss.item():.3f}, Step time: {step_time:.3f}s, TFLOPS: {get_tflops_func(step_time):.3f}', ranks=[0])
+            f'[{n+1}/{NUM_STEPS}] Loss:{loss.item():.3f}, Step time: {step_time:.3f}s, TFLOPS: {get_tflops_func(step_time):.3f}',
+            ranks=[0])
+
+    torch.cuda.synchronize()
 ```
 
-完整的例子代码可以在 [ZeRO example](https://github.com/hpcaitech/ColossalAI-Examples/blob/main/features/zero/train_v2.py) 获得。
+完整的例子代码可以在 [Train GPT with Colossal-AI](https://github.com/hpcaitech/ColossalAI/tree/main/examples/language/gpt). 获得。
