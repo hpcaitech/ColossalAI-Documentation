@@ -170,7 +170,7 @@ from colossalai.utils.model.colo_init_context import ColoInitContext
 from transformers import GPT2Config, GPT2LMHeadModel
 ```
 
-Then we simply wrap `Hugging Face Transformers`:
+Next, we only need to import GPT2LMHeadModel from Huggingface transformers to define our model, which does not require users to define or modify the model, so that users can use `ZeRO` more conveniently.
 
 ```python
 class GPTLMModel(nn.Module):
