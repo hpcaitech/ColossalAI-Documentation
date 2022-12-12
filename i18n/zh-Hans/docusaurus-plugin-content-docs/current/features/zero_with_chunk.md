@@ -3,7 +3,7 @@
 作者: [Hongxiu Liu](https://github.com/ver217), [Jiarui Fang](https://github.com/feifeibear), [Zijian Ye](https://github.com/ZijianYY)
 
 **前置教程:**
-- [零冗余优化器 (ZeRO) 和 ZeRO Offload](../features/zero_redundancy_and_zero_offload.md)
+- [定义配置文件](../basics/define_your_config.md)
 
 **示例代码**
 - [Train GPT with Colossal-AI](https://github.com/hpcaitech/ColossalAI/tree/main/examples/language/gpt)
@@ -17,9 +17,21 @@
 
 ## 引言
 
-在前置教程中，我们介绍了零冗余优化器(ZeRO)，本文将介绍基于Chunk内存管理的零冗余优化器。
+零冗余优化器 (ZeRO) 通过对三个模型状态（优化器状态、梯度和参数）进行划分而不是复制他们，消除了数据并行进程中的内存冗余。该方法与传统的数据并行相比，内存效率得到了极大的提高，而计算粒度和通信效率得到了保留。
 
-前置教程中，我们通过切分参数的方式对模型进行分布式存储，这种方法的优点是每个节点的内存负载是完全均衡的。但是这种方式有很多缺点。首先，通信时需要申请一块临时内存用来通信，通信完毕释放，这回导致存在内存碎片化的问题。其次，以Tensor为粒度进行通信，会导致网络带宽无法充分利用。通常来说传输的消息长度越长带宽利用率越高。
+1. **分片优化器状态**: 优化器状态 (如 [Adam optimizer](https://arxiv.org/abs/1412.6980), 32位的权重, 
+以及一二阶动量估计) 被划分到各个进程中, 因此每个进程只更新其分区。 
+
+
+2. **分片梯度**: 在梯度在数据并行进程组内进行 reduction 后, 梯度张量也被划分，这样每个进程只存储与其划分的优化器状态对应的梯度。 注意, Colossal-AI 将梯度转换为 FP32 格式以参与更新参数。
+
+3. **分片参数**: 16位的模型参数被划分到一个数据并行组的进程中。
+
+4. **[Gemini](../advanced_tutorials/meet_gemini.md)**: 对于参数、梯度、优化器状态的动态异构内存空间管理器。
+
+此外，我们还将介绍基于Chunk内存管理的零冗余优化器。
+
+在使用零冗余优化器 (ZeRO)时，我们通过切分参数的方式对模型进行分布式存储，这种方法的优点是每个节点的内存负载是完全均衡的。但是这种方式有很多缺点。首先，通信时需要申请一块临时内存用来通信，通信完毕释放，这回导致存在内存碎片化的问题。其次，以Tensor为粒度进行通信，会导致网络带宽无法充分利用。通常来说传输的消息长度越长带宽利用率越高。
 
 利用ColossalAI v0.1.8引入了Chunk机制，我们可以提升ZeRO的性能。我们将运算顺序上连续的一组参数存入一个Chunk中（Chunk即一段连续的内存空间），每个Chunk的大小相同。Chunk方式组织内存可以保证PCI-e和GPU-GPU之间网络带宽的高效利用，减小了通信次数，同时避免潜在的内存碎片。
 
@@ -108,7 +120,7 @@ model = ZeroDDP(model, gemini_manager)
 
 为了简单起见，我们在这里只使用随机生成的数据。
 
-首先, 我们需要简单的包装 `Hugging Face Transformers`:
+首先我们只需要引入`Huggingface transformers` 的 `GPT2LMHeadModel`来定义我们的模型，不需要用户进行模型的定义与修改，方便用户使用。
 
 ```python
 class GPTLMModel(nn.Module):

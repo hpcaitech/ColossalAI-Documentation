@@ -302,7 +302,6 @@ def main():
     VOCAB_SIZE = 50257
     NUM_STEPS = 10
     colossalai.launch_from_torch(config={})
-
     # build criterion
     criterion = GPTLMLoss()
 
