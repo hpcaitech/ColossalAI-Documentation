@@ -122,7 +122,7 @@ In this example, we use `Hugging Face Transformers`. You have to install `transf
 
 For simplicity, we just use randomly generated data here.
 
-First we only need to import GPT2LMHeadModel from Huggingface transformers to define our model, which does not require users to define or modify the model, so that users can use it more conveniently.
+First we only need to import `GPT2LMHeadModel` from `Huggingface transformers` to define our model, which does not require users to define or modify the model, so that users can use it more conveniently.
 
 ```python
 class GPTLMModel(nn.Module):

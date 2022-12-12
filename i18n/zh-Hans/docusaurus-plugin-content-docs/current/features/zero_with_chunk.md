@@ -120,7 +120,7 @@ model = ZeroDDP(model, gemini_manager)
 
 为了简单起见，我们在这里只使用随机生成的数据。
 
-首先我们只需要引入Huggingface transformers 的 GPT2LMHeadModel来定义我们的模型，不需要用户进行模型的定义与修改，方便用户使用。
+首先我们只需要引入`Huggingface transformers` 的 `GPT2LMHeadModel`来定义我们的模型，不需要用户进行模型的定义与修改，方便用户使用。
 
 ```python
 class GPTLMModel(nn.Module):
