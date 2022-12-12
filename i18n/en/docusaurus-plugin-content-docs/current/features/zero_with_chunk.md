@@ -2,7 +2,7 @@
 
 Author: [Hongxiu Liu](https://github.com/ver217), [Jiarui Fang](https://github.com/feifeibear), [Zijian Ye](https://github.com/ZijianYY)
 **Prerequisite:**
-- [Zero Redundancy Optimizer and Zero Offload](../features/zero_redundancy_and_zero_offload.md)
+- [Define Your Configuration](../basics/define_your_config.md)
 
 **Example Code**
 
@@ -16,9 +16,24 @@ Author: [Hongxiu Liu](https://github.com/ver217), [Jiarui Fang](https://github.c
 
 ## Introduction
 
-In the previous tutorial, we introduced the Zero Redundancy Optimizer (ZeRO), this article will introduce the Zero Redundancy Optimizer with chunk-based memory management.
+The Zero Redundancy Optimizer (ZeRO) removes the memory redundancies across data-parallel processes by partitioning three 
+model states (optimizer states, gradients, and parameters) instead of replicating them. 
+By doing so, memory efficiency is boosted drastically compared to classic data parallelism, while the computational granularity 
+and communication efficiency is retained.
 
-In the previous tutorial, we distributed the model by sharding the parameters. The advantage of this method is that the memory of each node is load balanced. But this approach has two significiant disadvantages. First, during communication, a temporary memory buffer needs to be allocated and released afterwards, leading to the memory fragmentation problem. Secondly, using tensor as the granularity for communication will cause the network bandwidth underutilized. Generally, the longer the transmitted message length, the higher the bandwidth utilization.
+1. **Shard Optimizer States**: The optimizer states (e.g., for [Adam optimizer](https://arxiv.org/abs/1412.6980), 32-bit weights, 
+and the first and second momentum estimates) are partitioned across the processes, so that each process updates only its partition. 
+
+
+2. **Shard Gradient**: After reduction inside data parallel process group, gradient tensors are also partitioned such that each process only stores the gradients corresponding to its partition of the optimizer states. Note, Colossal converts gradient into fp32 format to participate in parameter updating.
+
+3. **Shard Parameter**: The 16-bit model parameters are partitioned across the processes of a data parallel group.
+
+4. **[Gemini](../advanced_tutorials/meet_gemini.md)**: Dynamic heterogeneous memory space manager for paramters, gradients and optimizer states.
+
+Besides, this article will introduce the Zero Redundancy Optimizer with chunk-based memory management.
+
+When using ZeRO, we distributed the model by sharding the parameters. The advantage of this method is that the memory of each node is load balanced. But this approach has two significiant disadvantages. First, during communication, a temporary memory buffer needs to be allocated and released afterwards, leading to the memory fragmentation problem. Secondly, using tensor as the granularity for communication will cause the network bandwidth underutilized. Generally, the longer the transmitted message length, the higher the bandwidth utilization.
 
 Using the Chunk mechanism introduced in ColossalAI v0.1.8, we can improve the efficiency of ZeRO. We store a continuous set of parameters in initialization order into a Chunk (a chunk is a continuous memory space), and each Chunk has the same size. Organizing memory in chunks can lead to efficient use of network bandwidth between PCI-e and GPU-GPU, reduce the number of communications, and avoid potential memory fragmentation.
 
