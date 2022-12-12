@@ -319,7 +319,6 @@ def main():
     model = gemini_zero_dpp(model, pg, args.placement)
     # build optimizer
     optimizer = GeminiAdamOptimizer(model, lr=1e-3, initial_scale=2**5)
-    numel = sum([p.numel() for p in model.parameters()])
     get_tflops_func = partial(get_tflops, numel, BATCH_SIZE, SEQ_LEN)
     torch.cuda.synchronize()
     model.train()
@@ -327,10 +326,9 @@ def main():
         # we just use randomly generated data here
         input_ids, attn_mask = get_data(BATCH_SIZE, SEQ_LEN, VOCAB_SIZE)
         optimizer.zero_grad()
+        start = time()
         outputs = model(input_ids, attn_mask)
         loss = criterion(outputs, input_ids)
-        optimizer.backward(loss)
-        optimizer.step()
 
     torch.cuda.synchronize()
 ```
