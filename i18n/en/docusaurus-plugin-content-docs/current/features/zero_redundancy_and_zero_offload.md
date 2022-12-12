@@ -170,7 +170,7 @@ from colossalai.utils.model.colo_init_context import ColoInitContext
 from transformers import GPT2Config, GPT2LMHeadModel
 ```
 
-Then we simply wrap `Hugging Face Transformers`:
+Next, we only need to import GPT2LMHeadModel from Huggingface transformers to define our model, which does not require users to define or modify the model, so that users can use `ZeRO` more conveniently.
 
 ```python
 class GPTLMModel(nn.Module):
@@ -303,10 +303,7 @@ def main():
     SEQ_LEN = 1024
     VOCAB_SIZE = 50257
     NUM_STEPS = 10
-    disable_existing_loggers()
     colossalai.launch_from_torch(config={})
-    logger = get_dist_logger()
-    logger.info(f"using dist plan {args.distplan}", ranks=[0])
 
     # build criterion
     criterion = GPTLMLoss()
@@ -324,9 +321,6 @@ def main():
     model = gemini_zero_dpp(model, pg, args.placement)
     # build optimizer
     optimizer = GeminiAdamOptimizer(model, lr=1e-3, initial_scale=2**5)
-    logger.info(get_mem_info(prefix='After init optim, '), ranks=[0])
-    numel = sum([p.numel() for p in model.parameters()])
-    logger.info(get_mem_info(prefix='After init model, '), ranks=[0])
     get_tflops_func = partial(get_tflops, numel, BATCH_SIZE, SEQ_LEN)
     torch.cuda.synchronize()
     model.train()
@@ -337,15 +331,6 @@ def main():
         start = time()
         outputs = model(input_ids, attn_mask)
         loss = criterion(outputs, input_ids)
-        logger.info(get_mem_info(prefix=f'[{n+1}/{NUM_STEPS}] Forward '), ranks=[0])
-        optimizer.backward(loss)
-        logger.info(get_mem_info(prefix=f'[{n+1}/{NUM_STEPS}] Backward '), ranks=[0])
-        optimizer.step()
-        logger.info(get_mem_info(prefix=f'[{n+1}/{NUM_STEPS}] Optimizer step '), ranks=[0])
-        step_time = time() - start
-        logger.info(
-            f'[{n+1}/{NUM_STEPS}] Loss:{loss.item():.3f}, Step time: {step_time:.3f}s, TFLOPS: {get_tflops_func(step_time):.3f}',
-            ranks=[0])
 
     torch.cuda.synchronize()
 ```
