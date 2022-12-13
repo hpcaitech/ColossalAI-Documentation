@@ -160,16 +160,12 @@ for mn, module in model.named_modules():
 
 ```python
 def gemini_zero_dpp(model: torch.nn.Module, pg: ProcessGroup, placememt_policy: str = "auto"):
-    cai_version = colossalai.__version__
-    if version.parse(cai_version) > version.parse("0.1.10"):
-        from colossalai.nn.parallel import GeminiDDP
-        model = GeminiDDP(model,
-                          device=get_current_device(),
-                          placement_policy=placememt_policy,
-                          pin_memory=True,
-                          search_range_mb=32)
-    else:
-        raise NotImplemented(f"CAI version {cai_version} is not supported")
+    from colossalai.nn.parallel import GeminiDDP
+    model = GeminiDDP(model,
+                        device=get_current_device(),
+                        placement_policy=placememt_policy,
+                        pin_memory=True,
+                        search_range_mb=32)
     return model
 ```
 
