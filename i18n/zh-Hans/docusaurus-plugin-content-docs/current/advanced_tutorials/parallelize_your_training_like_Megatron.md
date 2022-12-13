@@ -7,7 +7,7 @@ Author: [Haichen Huang](https://github.com/1SAA) and [Jiarui Fang](https://githu
 
 ## 介绍
 
-在新版本中，我们引入了ColoTensor。ColoTensor为用户使用并行训练提供了极大的便利，使得用户可以在原本的串行代码上，通过较小的修改将训练改为并行。在本教程中，我们将说明如何修改训练模型以自动使代码采取像 Megatron-LM 一样的方式并行训练。我们以 HuggingFace 提供的 GPT-2 模型为例。
+在新版本中，我们引入了ColoTensor。ColoTensor为用户使用并行训练提供了极大的便利，使得用户可以在原本的串行代码上，通过较小的修改将训练改为并行。在本教程中，我们将说明如何修改训练模型以自动使代码采取像 Megatron-LM 一样的方式并行训练。我们以 HuggingFace 提供的 GPT-2 模型为例，并提供一种方式让你可以在单个GPU上预训练GPT-2模型。
 
 Megatron-LM 提供了一个具有影响力的并行化范式，这个范式主要应用于Transformer大模型的训练。然而，为了大规模训练 Transformer 语言大模型，用户必须使用Megatron-LM提供的特殊模块来构建他们的模型。这给用户带来了一些困难的工作，例如从预先训练的模型中加载权重，或是构建自己的并行训练模型。为了减轻用户的麻烦，我们提供 ColoTensor 类，以完成自动启用张量模型并行。
 
@@ -156,4 +156,21 @@ for mn, module in model.named_modules():
 
 一旦用户指定了每个参数的在并行中的分布模式，ColoTensor 就能够推断出所有算子的计算模式，包括矩阵乘法、线性函数、torch.nn.functional 中的其他逐元素函数，以及其他的一些常用函数。这样，用户可以像往常一样训练他们的模型。
 
-GPT-2 示例在[这里访问](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/colotensor).
+在我们最新示例中还定义了一个Gemini + ZeRO DDP 的模型从而减小开销，提升效率。这一部分的详细内容可以参考[ZeRO](../features/zero_with_chunk.md)，你可以将这两部分内容结合起来看从而理解我们整个训练流程：
+
+```python
+def gemini_zero_dpp(model: torch.nn.Module, pg: ProcessGroup, placememt_policy: str = "auto"):
+    from colossalai.nn.parallel import GeminiDDP
+    model = GeminiDDP(model,
+                        device=get_current_device(),
+                        placement_policy=placememt_policy,
+                        pin_memory=True,
+                        search_range_mb=32)
+    return model
+```
+
+## 在单个GPU上预训练GPT-2 
+
+我们做的上述优化让我们可以在单GPU上训练GPT-2模型，只需要将`run.sh`中设置参数`GPUNUM`=1，再运行文件时就可以在单个GPU上完成模型的训练。
+
+GPT-2 示例在[Train GPT with Colossal-AI](https://github.com/hpcaitech/ColossalAI/tree/main/examples/language/gpt). 获得。

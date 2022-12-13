@@ -9,7 +9,7 @@ Author: [Haichen Huang](https://github.com/1SAA) and [Jiarui Fang](https://githu
 
 Thanks to the convenience given by ColoTensor, users can apply parallelism with the least edition to their serial code. 
 In this tutorial, we will illustrate how to modify the training model to automatically adapt the code to parallel training like Megatron-LM. 
-We take the GPT-2 model offered by HuggingFace as an example.
+We take the GPT-2 model offered by HuggingFace as an example and provide a way for you to pre-train the GPT-2 model on a single GPU.
 
 Megatron-LM provided a profound paradigm to parallelize large transformer language models. 
 However, in order to train large transformer language models at scale, users have to build their models with those modules provided by Megatron. 
@@ -171,4 +171,22 @@ The transformer layers:
 
 Once users have specified the distributed pattern of each parameter, ColoTensor is capable of inferring the computation patterns of all operators, including matrix multiplication, the linear function, other elementwise functions in torch.nn.functional, etc. 
 In this way, users can train their models as usual. 
-The GPT-2 example is accessible at this [link](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/colotensor).
+
+In our latest example, a Gemini + ZeRO DDP model is also defined to reduce overhead and improve efficiency.For the details of this part, please refer to [ZeRO](../features/zero_with_chunk.md). You can combine these two parts to understand our entire training process:
+
+```python
+def gemini_zero_dpp(model: torch.nn.Module, pg: ProcessGroup, placememt_policy: str = "auto"):
+    from colossalai.nn.parallel import GeminiDDP
+    model = GeminiDDP(model,
+                        device=get_current_device(),
+                        placement_policy=placememt_policy,
+                        pin_memory=True,
+                        search_range_mb=32)
+    return model
+```
+
+## Pretrain GPT-2 On Single GPU
+
+The above optimization we made allows us to pretrain the GPT-2 model on a single GPU. We only need to set the parameter `GPUNUM`=1 in `run.sh`, and then we can complete the model training on a single GPU when running the file.
+
+The GPT-2 example is accessible at [Train GPT with Colossal-AI](https://github.com/hpcaitech/ColossalAI/tree/main/examples/language/gpt).
