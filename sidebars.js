@@ -44,7 +44,6 @@ module.exports = {
                 'features/gradient_accumulation',
                 'features/gradient_clipping',
                 'features/gradient_handler',
-                'features/zero_redundancy_and_zero_offload',
                 'features/zero_with_chunk',
                 {
                     type: 'category',
@@ -66,7 +65,6 @@ module.exports = {
             label: 'Advanced Tutorials',
             collapsed: false,
             items: [
-                'advanced_tutorials/train_with_zero',
                 'advanced_tutorials/train_vit_using_pipeline_parallelism',
                 'advanced_tutorials/train_vit_with_hybrid_parallelism',
                 'advanced_tutorials/train_gpt_using_hybrid_parallelism',
