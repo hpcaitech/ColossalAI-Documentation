@@ -3,7 +3,7 @@
 作者: Hongxin Liu
 
 **前置教程:**
-- [零冗余优化器 (ZeRO) 和 ZeRO Offload](../features/zero_redundancy_and_zero_offload.md)
+- [基于Chunk内存管理的零冗余优化器 (ZeRO)](../features/zero_with_chunk.md)
 
 ## 引言
 

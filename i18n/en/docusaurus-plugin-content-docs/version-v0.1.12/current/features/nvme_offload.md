@@ -3,7 +3,7 @@
 Author: Hongxin Liu
 
 **Prerequisite:**
-- [Zero Redundancy Optimizer and Zero Offload](../features/zero_redundancy_and_zero_offload.md)
+- [Zero Redundancy Optimizer with chunk-based memory management](../features/zero_with_chunk.md)
 
 ## Introduction
 
