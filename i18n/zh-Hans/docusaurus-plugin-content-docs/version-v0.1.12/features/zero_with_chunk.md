@@ -1,15 +1,15 @@
-# 零冗余优化器 (ZeRO) 和 ZeRO Offload
+# 基于Chunk内存管理的零冗余优化器 (ZeRO)
 
-作者: Zhujie, Shenggui Li, Hongxin Liu, Yongbin Li
+作者: [Hongxiu Liu](https://github.com/ver217), [Jiarui Fang](https://github.com/feifeibear), [Zijian Ye](https://github.com/ZijianYY)
 
 **前置教程:**
 - [定义配置文件](../basics/define_your_config.md)
-- [在训练中使用Engine和Trainer](../basics/engine_trainer.md)
 
 **示例代码**
-- [ColossalAI-Examples Zero](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/features/zero)
+- [Train GPT with Colossal-AI](https://github.com/hpcaitech/ColossalAI/tree/main/examples/language/gpt)
 
 **相关论文**
+
 - [ZeRO: Memory Optimizations Toward Training Trillion Parameter Models](https://arxiv.org/abs/1910.02054)
 - [ZeRO-Offload: Democratizing Billion-Scale Model Training](https://arxiv.org/abs/2101.06840)
 - [ZeRO-Infinity: Breaking the GPU Memory Wall for Extreme Scale Deep Learning](https://arxiv.org/abs/2104.07857)
@@ -29,146 +29,98 @@
 
 4. **[Gemini](../advanced_tutorials/meet_gemini.md)**: 对于参数、梯度、优化器状态的动态异构内存空间管理器。
 
-当我们在训练过程中将参数、梯度和优化器的状态进行分片，并且张量放置策略设置为`"cpu"`时，可以用三张图来展示流程。
+此外，我们还将介绍基于Chunk内存管理的零冗余优化器。
 
-<figure style={{textAlign: "center"}}>
-<img src="https://s2.loli.net/2022/03/17/fL2mXBylc4qAUOv.png"/>
-<figcaption>前向</figcaption>
-</figure>
+在使用零冗余优化器 (ZeRO)时，我们通过切分参数的方式对模型进行分布式存储，这种方法的优点是每个节点的内存负载是完全均衡的。但是这种方式有很多缺点。首先，通信时需要申请一块临时内存用来通信，通信完毕释放，这回导致存在内存碎片化的问题。其次，以Tensor为粒度进行通信，会导致网络带宽无法充分利用。通常来说传输的消息长度越长带宽利用率越高。
 
-<figure style={{textAlign: "center"}}>
-<img src="https://s2.loli.net/2022/03/17/WfsrN71HGTlcCv5.png"/>
-<figcaption>后向</figcaption>
-</figure>
+利用ColossalAI v0.1.8引入了Chunk机制，我们可以提升ZeRO的性能。我们将运算顺序上连续的一组参数存入一个Chunk中（Chunk即一段连续的内存空间），每个Chunk的大小相同。Chunk方式组织内存可以保证PCI-e和GPU-GPU之间网络带宽的高效利用，减小了通信次数，同时避免潜在的内存碎片。
 
-<figure style={{textAlign: "center"}}>
-<img src="https://s2.loli.net/2022/03/17/6WMmQ2tFxEJ47cv.png"/>
-<figcaption>优化器 step</figcaption>
-</figure>
+在v0.1.8之前，ZeRO在进行参数聚合时通信成本较高，如果一个参数在连续的几次计算中被使用多次，即会发生多次通信，效率较低。这种情况在使用Checkpoint时非常常见，参数在计算backward时会重计算一遍forward。这种情况下，ZeRO的效率便不高。
 
-如果你想了解更多关于 *Gemini* 的细节, 点击[这里](../advanced_tutorials/meet_gemini.md).
+以GPT为例，其Checkpoint会应用在每一个GPT Block上，每一个GPT Block包含一个Self-Attention层和MLP层。在计算Backward时，会依次计算Self-Attention层、MLP层的forward，然后依次计算MLP层、Self-Attention层的backward。如使用Chunk机制，我们将Self-Attention层和MLP层放在同一个Chunk中，在每个GPT Block的backward的中便无需再通信。
+
+除此之外，由于小Tensor的通信、内存移动没法完全利用NVLINK、PCIE带宽，而且每次通信、内存移动都有kernel launch的开销。使用了Chunk之后可以把多次小Tensor的通信、内存移动变为一次大Tensor的通信、内存移动，既提高了带宽利用，也减小了kernel launch的开销。
+
+我们提供了轻量级的Chunk搜索机制，帮助用户自动找到内存碎片最小的Chunk尺寸。
 
 ## 使用
 
-我们提供两个级别的 API 来使用 ZeRO。
+我们提供了两种方式让不同版本的ColossalAI都可以使用基于Chunk内存管理的零冗余优化器。
 
-1. **低级别 API**: 直接使用 `ShardedModel` 和 `ShardedOptimizer`，并从头开始写你自己的训练循环。
-2. **高级别 API**: 使用 `Engine` 并在配置文件中配置ZeRO。你可以使用 `Trainer` 或编写你自己的训练循环。
+### ChunkManager + GeminiManager
 
-我们提供了一些 *分片策略* 来管理你的模型分片过程:
+对于ColossalAI v0.1.9和v0.1.10，我们可以运用`ChunkManager` + `GeminiManager`的方式来使用基于Chunk内存管理的ZeRO。
+
+首先确保你的模型是在`ColoInitContext`上下文中初始化的：
+```python
+with ColoInitContext(device='cpu', default_dist_spec=default_dist_spec, default_pg=default_pg):
+  model = gpt2_medium(checkpoint=True)
+```
+注意，`device`的类型必须是`torch.device`，例如：`torch.device('cpu')`, `torch.device('cuda:0')`。
 
 ```python
-from colossalai.zero.shard_utils import BucketTensorShardStrategy, TensorShardStrategy
+chunk_size = ChunkManager.search_chunk_size(model, 64 * 1024**2, 32)
+gemini_manager = GeminiManager(placememt_policy, chunk_manager)
+chunk_manager = ChunkManager(chunk_size,
+                             pg,
+                             enable_distributed_storage=True,
+                             init_device=GeminiManager.get_default_device(placememt_policy))
+model = ZeroDDP(model, gemini_manager)
 ```
+`PLACEMENT_POLICY`描述了Gemini的放置策略，目前我们支持`'cuda'`, `'cpu'`和`'auto'`三种策略，关于Gemini的更多细节，点击[这里](../advanced_tutorials/meet_gemini.md)。如果使用“cpu”策略，参数、梯度和优化器状态将被卸载到 CPU，这意味着将使用最小 CUDA 内存；如果使用“cuda”策略，则不会卸载它们，这意味着将使用最大 CUDA 内存；如果使用“auto”策略，它们会根据 CPU 和 CUDA 内存使用情况动态移动。 这将帮助我们均匀而良好地利用异构内存空间。
 
-`TensorShardStrategy` 是一个朴素的实现，将每个张量均匀地分片到所有 rank 上。 
-`BucketTensorShardStrategy` 对属于某个运算符的张量进行处理，例如 nn.Linear, 然后将它们均匀地分片到所有 rank。 
-当运算符包含 `bias` 时，它特别有用，因为如果我们只收集 `bias` 张量，就不能很好地利用网络带宽 (`bias` 通常很小)。
+如果你不想使用Chunk，直接将传入`ChunkManager`的第一个参数`chunk_size`设为`None`即可。
 
-> ⚠️ 必须用 `colossalai.zero.init_ctx.ZeroInitContext` 初始化模型。
-
-这里是一个简单样例:
+`enable_distributed_storage`表示是否分布式存储模型，即是否使用ZeRO。
 
 ```python
-shard_strategy = TensorShardStrategy()
-with ZeroInitContext(target_device=torch.cuda.current_device(),
-                    shard_strategy=shard_strategy,
-                    shard_param=True):
-    model = torch.nn.Linear(2, 2)
+optimizer = GeminiAdamOptimizer(model, lr=1e-3, initial_scale=2**5)
 ```
-
-关于 `ZeroInitContext` 的确切用法，你可以参考 [API 文档](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.init_ctx.html#colossalai.zero.init_ctx.init_context.ZeroInitContext) 。
-
-> 如果你使用高级别 API, 你必须通过[配置文件](#configure-zero-with-high-level-api)来配置`shard_strategy`。
-
-接下来，我们将首先给你一个配置模板，帮助你在使用高级别API时配置ZeRO。然后，我们将给你一个使用低级别的API的例子。
-
-> 我们现在提供 `from colossalai.nn.optimizer.HybridAdam`, 它比 `torch.optim.Adam` 更快。更多细节，请参见 [API 文档](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.nn.optimizer.hybrid_adam.html#colossalai.nn.optimizer.hybrid_adam.HybridAdam) 。
-
-## 用高级别API配置ZeRO
-
-你可以使用 `Engine` 并在配置文件中配置ZeRO。
-
-这里有一个配置模板:
+这样就完成了优化器的初始化。
 
 ```python
-from colossalai.zero.shard_utils import TensorShardStrategy
-
-zero = dict(
-    model_config=dict(
-        shard_strategy=TensorShardStrategy(),
-        reduce_scatter_bucket_size_mb=25,
-        fp32_reduce_scatter=False,
-        tensor_placement_policy="cuda",
-        gradient_predivide_factor=1.0,
-        reuse_fp16_shard=False
-    ),
-    optimizer_config=dict(
-        gpu_margin_mem_ratio=0.8,
-        initial_scale=2**5,
-        min_scale=1,
-        growth_factor=2,
-        backoff_factor=0.5,
-        growth_interval=1000,
-        hysteresis=2,
-        max_scale=2**32
-    )
-)
+optimizer.zero_grad()
+outputs = model(input_ids, attn_mask)
+loss = criterion(outputs, input_ids)
+optimizer.backward(loss)
+optimizer.step()
 ```
+训练代码。
 
-`model_config` 和 `optimizer_config` 分别是 `ShardedModelV2` 和 `ShardedOptimizerV2` 的关键参数。关于这些参数的更多细节，请参阅 [ShardedModelV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_model.html#module-colossalai.zero.sharded_model.sharded_model_v2) 和 [ShardedOptimizerV2 API Referent](https://colossalai.readthedocs.io/en/latest/colossalai/colossalai.zero.sharded_optim.html#colossalai.zero.sharded_optim.ShardedOptimizerV2) 。
+### GeminiDDP
 
-> ⚠️ 如果你使用梯度累加的话，请确保 `reuse_fp16_shard` 参数被设置为 `False`。
+如果你的ColossalAI版本大于v0.1.10，我们将运用`GeminiDDP`的方式来使用基于Chunk内存管理的ZeRO。这是我们新包装的torch.Module ，它使用 ZeRO-DP 和 Gemini，其中ZeRO 用于并行，Gemini 用于内存管理。
 
-> ⚠️ 如果你将 `tensor_placement_policy` 设为 `"auto"`, 确保你在训练时没有别的进程使用CUDA。
-
-你可以用这种方式初始化你的模型:
+同样需要确保你的模型是在 `ColoInitContext` 的上下文中初始化的。
 
 ```python
-import torch
-import colossalai
-from colossalai.zero.init_ctx import ZeroInitContext
-
-with ZeroInitContext(target_device=torch.cuda.current_device(),
-                    shard_strategy=gpc.config.zero.model_config.shard_strategy,
-                    shard_param=True):
-    model = torch.nn.Linear(2, 2)
+with ColoInitContext(device='cpu', default_dist_spec=default_dist_spec, default_pg=default_pg):
+  model = gpt2_medium(checkpoint=True)
 ```
-然后你可以像往常一样使用 `Engine` 。
 
-使用高级 API 训练 GPT 的代码可在 [GPT example](https://github.com/hpcaitech/ColossalAI-Examples/tree/main/language/gpt) 获得。
+定义模型参数如下:
 
-## 用低级别的API训练GPT
+```python
+chunk_manager = init_chunk_manager(model=module,
+                                   init_device=device,
+                                   hidden_dim=hidden_dim,
+                                   search_range_mb=search_range_mb,
+                                   min_chunk_size_mb=min_chunk_size_mb)
+gemini_manager = GeminiManager(placement_policy, chunk_manager)
+model = ZeroDDP(model, gemini_manager)
+```
+
+`hidden dim`是DNN的隐藏维度。用户可以提供这个参数来加快搜索速度。如果用户在训练前不知道这个参数也可以。 我们将使用默认值 1024。`min_chunk_size_mb`是以兆字节为单位的最小块大小。如果参数的总大小仍然小于最小块大小，则所有参数将被压缩为一个小块。
+
+优化器初始化代码和训练代码与前一种方式一致。
+
+### 训练GPT
 
 在此例程中, 我们使用 `Hugging Face Transformers`，并以 `GPT2 Medium` 为例。你必须在允许该例程前安装 `transformers`。 
 
-这个例子是为了向你展示如何使用 `ZeRO`。为了简单起见，我们在这里只使用随机生成的数据。
+为了简单起见，我们在这里只使用随机生成的数据。
 
-首先, 我们需要导入必要的依赖库:
-
-```python
-from functools import partial
-from time import time
-
-import psutil
-import torch
-import torch.nn as nn
-from packaging import version
-from torch.nn.parallel import DistributedDataParallel as DDP
-
-import colossalai
-from colossalai.logging import disable_existing_loggers, get_dist_logger
-from colossalai.nn.optimizer import HybridAdam
-from colossalai.nn.optimizer.gemini_optimizer import GeminiAdamOptimizer
-from colossalai.nn.optimizer.zero_optimizer import ZeroOptimizer
-from colossalai.nn.parallel import ZeroDDP
-from colossalai.tensor import ColoParameter, ComputePattern, ComputeSpec, ProcessGroup, ReplicaSpec, ShardSpec
-from colossalai.utils import get_current_device
-from colossalai.utils.model.colo_init_context import ColoInitContext
-from transformers import GPT2Config, GPT2LMHeadModel
-```
-
-接下来我们只需要引入Huggingface transformers 的 GPT2LMHeadModel来定义我们的模型，不需要用户进行模型的定义与修改，从而让用户可以更方便使用`ZeRO`。
+首先我们只需要引入`Huggingface transformers` 的 `GPT2LMHeadModel`来定义我们的模型，不需要用户进行模型的定义与修改，方便用户使用。
 
 ```python
 class GPTLMModel(nn.Module):
@@ -274,7 +226,7 @@ def gemini_zero_dpp(model: torch.nn.Module, pg: ProcessGroup, placememt_policy: 
         chunk_manager = ChunkManager(chunk_size,
                                      pg,
                                      enable_distributed_storage=True,
-                                     init_device=GeminiManager.get_default_device(placememt_policy))
+                                 			init_device=GeminiManager.get_default_device(placememt_policy))
         model = ZeroDDP(model, gemini_manager)
     else:
         raise NotImplemented(f"CAI version {cai_version} is not supported")
@@ -302,6 +254,7 @@ def main():
     VOCAB_SIZE = 50257
     NUM_STEPS = 10
     colossalai.launch_from_torch(config={})
+
     # build criterion
     criterion = GPTLMLoss()
 
@@ -318,6 +271,7 @@ def main():
     model = gemini_zero_dpp(model, pg, args.placement)
     # build optimizer
     optimizer = GeminiAdamOptimizer(model, lr=1e-3, initial_scale=2**5)
+    numel = sum([p.numel() for p in model.parameters()])
     get_tflops_func = partial(get_tflops, numel, BATCH_SIZE, SEQ_LEN)
     torch.cuda.synchronize()
     model.train()
@@ -325,12 +279,12 @@ def main():
         # we just use randomly generated data here
         input_ids, attn_mask = get_data(BATCH_SIZE, SEQ_LEN, VOCAB_SIZE)
         optimizer.zero_grad()
-        start = time()
         outputs = model(input_ids, attn_mask)
         loss = criterion(outputs, input_ids)
+        optimizer.backward(loss)
+        optimizer.step()
 
     torch.cuda.synchronize()
 ```
 
 完整的例子代码可以在 [Train GPT with Colossal-AI](https://github.com/hpcaitech/ColossalAI/tree/main/examples/language/gpt). 获得。
-
