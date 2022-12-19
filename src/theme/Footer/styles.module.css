@@ -4,6 +4,7 @@
   flex-direction: column;
   padding: 0;
   background: var(--ifm-color-background-2);
+  margin-top: 5rem;
 }
 
 .InnerContainer {
