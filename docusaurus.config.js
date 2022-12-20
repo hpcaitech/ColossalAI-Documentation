@@ -45,7 +45,7 @@ const customFields = {
   githubUrl: `${githubOrgUrl}/ColossalAI`,
   docsUrl: `http://colossalai.readthedocs.io`,
   twitterUrl: 'https://twitter.com/HPCAITech',
-  mediumUrl: 'https://medium.com/@hpcaitech',
+  blogUrl: 'https://www.hpc-ai.tech/blog',
   exampleUrl: 'https://github.com/hpcaitech/ColossalAI-Examples',
   discussUrl: 'https://github.com/hpcaitech/ColossalAI/discussions',
   version: '0.0.1',
@@ -145,7 +145,7 @@ const config = {
         {
           label: 'Blog',
           position: 'left',
-          to: customFields.mediumUrl,
+          to: customFields.blogUrl,
         },
         {
           type: 'docsVersionDropdown',
@@ -193,7 +193,7 @@ const config = {
             },
             {
               label: 'Medium',
-              href: customFields.mediumUrl,
+              href: customFields.blogUrl,
             },
             {
               label: 'Twitter',
