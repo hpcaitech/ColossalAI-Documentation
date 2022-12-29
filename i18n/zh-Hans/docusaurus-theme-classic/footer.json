@@ -28,8 +28,8 @@
     "description": "The label of footer link with label=GitHub linking to https://github.com/hpcaitech/ColossalAI"
   },
   "link.item.label.Medium": {
-    "message": "Medium",
-    "description": "The label of footer link with label=Medium linking to https://medium.com/@hpcaitech"
+    "message": "Blog",
+    "description": "The label of footer link with label=Blog linking to https://www.hpc-ai.tech/blog"
   },
   "link.item.label.Twitter": {
     "message": "Twitter",
