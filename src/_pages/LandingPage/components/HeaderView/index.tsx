@@ -27,11 +27,11 @@ const HeaderView: React.FC<Props> = ({ getStartedRef }) => {
       className={styles.Container}>
       <div className={styles.InnerContainer}>
         <h1 className={styles.HeaderTitle}>
-          {translate({ message: 'Unmatched speed and scale for deep learning training and inference', id: 'landing.title' })}
+          {translate({ id: 'landing.title' })}
         </h1>
         <Spacer height={20} />
         <p className={styles.DescriptionText}>
-          {translate({ message: 'Learn about the software-based distributed techniques of Colossal-AI to maximize the runtime performance of your large neural networks.\n', id: 'landing.description' })}
+          {translate({ id: 'landing.description' })}
         </p>
         <Spacer height={50} />
         <div className={styles.ButtonContainer}>
@@ -39,7 +39,7 @@ const HeaderView: React.FC<Props> = ({ getStartedRef }) => {
             className={styles.GetStartedButton}
             to={getStartedUrl}
           >
-            {translate({ message: 'GET STARTED', id: 'landing.getStarted' })}
+            {translate({ id: 'landing.getStarted' })}
           </PrimaryButton>
           <GithubButton
             className={styles.GithubButton}

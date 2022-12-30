@@ -254,13 +254,97 @@
   "landing.getStarted": {
     "message": "快速开始"
   },
+  "landing.slackButton": {
+    "message": "社区"
+  },
   "landing.title": {
-    "message": "使分布式训练"
+    "message": "具有无与伦比的速度与规模的深度学习训练、推理系统"
+  },
+  "landing.description": {
+    "message": "了解基于软件的分布式技术 Colossal-AI，以充分优化您的大型神经网络的运行性能。"
   },
   "landing.description.part1": {
     "message": "从"
   },
   "landing.description.part2": {
     "message": "开始"
+  },
+  "overview.getStarted.title": {
+    "message": "快速开始"
+  },
+  "overview.getStarted.description": {
+    "message": "开启您的第一个 Colossal-AI 项目。"
+  },
+  "overview.getStarted.link1": {
+    "message": "下载安装"
+  },
+  "overview.getStarted.link2": {
+    "message": "快速演示"
+  },
+  "overview.concepts.title": {
+    "message": "概念"
+  },
+  "overview.concepts.description": {
+    "message": "了解 Colossal-AI 如何工作。"
+  },
+  "overview.concepts.link1": {
+    "message": "概述"
+  },
+  "overview.concepts.link2": {
+    "message": "分布式训练"
+  },
+  "overview.concepts.link3": {
+    "message": "并行范式"
+  },
+  "overview.case.title": {
+    "message": "用例"
+  },
+  "overview.case.description": {
+    "message": "使用 Colossal-AI 实现以下目标："
+  },
+  "overview.case.link1": {
+    "message": "混合并行式训练 GPT"
+  },
+  "overview.case.link2": {
+    "message": "认识 Gemini：Colossal-AI 的异构内存管理器"
+  },
+  "overview.cli.title": {
+    "message": "客户端命令行 (CLI)"
+  },
+  "overview.cli.description": {
+    "message": "Colossal-AI 命令行界面是用于管理您的 Colossal-AI 项目的一体化工具。"
+  },
+  "overview.cli.link1": {
+    "message": "介绍"
+  },
+  "overview.cli.link2": {
+    "message": "启动分布式作业"
+  },
+  "overview.cli.link3": {
+    "message": "张量并行微基准测试"
+  },
+  "overview.config.title": {
+    "message": "配置"
+  },
+  "overview.config.description": {
+    "message": "根据您的需要定义您的 Colossal-AI 项目配置。"
+  },
+  "overview.config.link1": {
+    "message": "介绍"
+  },
+  "overview.config.link2": {
+    "message": "功能明细"
+  },
+  "overview.config.link3": {
+    "message": "全局超参数"
+  },
+  "overview.submit.title": {
+    "message": "使用 Colossal-AI 开发？"
+  },
+  "overview.submit.description": {
+    "message": "如果您喜欢我们的开源 Colossal-AI 软件并使用它开发深度学习项目，请告诉我们。"
+  },
+  "overview.submit.link1": {
+    "message": "提交您的 Colossal-AI 项目"
   }
 }

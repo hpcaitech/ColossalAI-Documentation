@@ -1,89 +1,89 @@
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import clsx from 'clsx';
 import styles from "./HeaderView/styles.module.css";
-import {translate} from "@docusaurus/Translate";
+import { translate } from "@docusaurus/Translate";
 import PrimaryButton from "../../../components/buttons/PrimaryButton";
 import PlainButton from "../../../components/buttons/PlainButton";
 
 const FeatureList1 = [
   {
-    title: 'Get started',
-    description: (
-        <>
-            <p>Start your first Colossal-AI project.</p>
-            <ul>
-                <li><a href="/docs/get_started/installation">Download and installation</a></li>
-                <li><a href="/docs/get_started/run_demo">Quick demo</a></li>
-            </ul>
-        </>
-    ),
-  },
-    {
-        title: 'Concepts',
-        description: (
-            <>
-                <p>Understand how Colossal-AI works.</p>
-                <ul>
-                    <li><a href="/docs/concepts/colossalai_overview">Overview</a></li>
-                    <li><a href="/docs/concepts/distributed_training">Distributed Training</a></li>
-                    <li><a href="/docs/concepts/paradigms_of_parallelism">Paradigms of Parallelism</a></li>
-                </ul>
-            </>
-        ),
-    },
-  {
-    title: 'Sample use cases',
+    title: translate({ id: 'overview.getStarted.title' }),
     description: (
       <>
-          <p>Achieve the following with Colossal-AI:</p>
-          <ul>
-              <li><a href="/docs/advanced_tutorials/train_gpt_using_hybrid_parallelism">Train GPT Using Hybrid Parallelism</a></li>
-              <li><a href="/docs/advanced_tutorials/meet_gemini">Meet Gemini:The Heterogeneous Memory Manager of Colossal-AI</a></li>
-          </ul>
+        <p>{translate({ id: 'overview.getStarted.description' })}</p>
+        <ul>
+          <li><a href="/docs/get_started/installation">{translate({ id: 'overview.getStarted.link1' })}</a></li>
+          <li><a href="/docs/get_started/run_demo">{translate({ id: 'overview.getStarted.link2' })}</a></li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    title: translate({ id: 'overview.concepts.title' }),
+    description: (
+      <>
+        <p>{translate({ id: 'overview.concepts.description' })}</p>
+        <ul>
+          <li><a href="/docs/concepts/colossalai_overview">{translate({ id: 'overview.concepts.link1' })}</a></li>
+          <li><a href="/docs/concepts/distributed_training">{translate({ id: 'overview.concepts.link2' })}</a></li>
+          <li><a href="/docs/concepts/paradigms_of_parallelism">{translate({ id: 'overview.concepts.link3' })}</a></li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    title: translate({ id: 'overview.case.title' }),
+    description: (
+      <>
+        <p>{translate({ id: 'overview.case.description' })}</p>
+        <ul>
+          <li><a href="/docs/advanced_tutorials/train_gpt_using_hybrid_parallelism">{translate({ id: 'overview.case.link1' })}</a></li>
+          <li><a href="/docs/advanced_tutorials/meet_gemini">{translate({ id: 'overview.case.link2' })}</a></li>
+        </ul>
       </>
     ),
   },
 ];
 
 const FeatureList2 = [
-    {
-        title: 'Command Line Client (CLI)',
-        description: (
-            <>
-                <p>The Colossal-AI Command Line Interface is a unified tool to manage your Colossal-AI projects.</p>
-                <ul>
-                    <li><a href="/docs/basics/command_line_tool#introduction">Introduction</a></li>
-                    <li><a href="/docs/basics/command_line_tool#launcher">Launch distributed jobs</a></li>
-                    <li><a href="/docs/basics/command_line_tool#tensor-parallel-micro-benchmarking">Tensor Parallel Micro-Benchmarking</a></li>
-                </ul>
-            </>
-        ),
-    },
-    {
-        title: 'Configuration',
-        description: (
-            <>
-                <p>Define your Colossal-AI project configuration as per your needs.</p>
-                <ul>
-                    <li><a href="/docs/basics/define_your_config#configuration-definition">Introduction</a></li>
-                    <li><a href="/docs/basics/define_your_config#feature-specification">Feature specification</a></li>
-                    <li><a href="/docs/basics/define_your_config#global-hyper-parameters">Global hyper-parameters</a></li>
-                </ul>
-            </>
-        ),
-    },
-    {
-        title: 'Do you use Colossal-AI?',
-        description: (
-            <>
-                <p>If you are a happy user of our open source Colossal-AI software and implemented a deep learning project with it, please let us know.</p>
-                <p><a href="https://www.hpc-ai.tech/customers/submit">Submit your Colossal-AI project</a></p>
-            </>
-        ),
-    },
+  {
+    title: translate({ id: 'overview.cli.title' }),
+    description: (
+      <>
+        <p>{translate({ id: 'overview.cli.description' })}</p>
+        <ul>
+          <li><a href="/docs/basics/command_line_tool#introduction">{translate({ id: 'overview.cli.link1' })}</a></li>
+          <li><a href="/docs/basics/command_line_tool#launcher">{translate({ id: 'overview.cli.link2' })}</a></li>
+          <li><a href="/docs/basics/command_line_tool#tensor-parallel-micro-benchmarking">{translate({ id: 'overview.cli.link3' })}</a></li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    title: translate({ id: 'overview.config.title' }),
+    description: (
+      <>
+        <p>{translate({ id: 'overview.config.description' })}</p>
+        <ul>
+          <li><a href="/docs/basics/define_your_config#configuration-definition">{translate({ id: 'overview.config.link1' })}</a></li>
+          <li><a href="/docs/basics/define_your_config#feature-specification">{translate({ id: 'overview.config.link2' })}</a></li>
+          <li><a href="/docs/basics/define_your_config#global-hyper-parameters">{translate({ id: 'overview.config.link3' })}</a></li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    title: translate({ id: 'overview.submit.title' }),
+    description: (
+      <>
+        <p>{translate({ id: 'overview.submit.description' })}</p>
+        <p><a href="https://www.hpc-ai.tech/customers/submit">{translate({ id: 'overview.submit.link1' })}</a></p>
+      </>
+    ),
+  },
 ];
 
-function Feature({title, description}) {
+function Feature({ title, description }) {
   return (
     <div className={clsx('col col--4')}>
       <div className="box padding-horiz--md">
@@ -103,11 +103,11 @@ export default function Overview() {
             <Feature key={idx} {...props} />
           ))}
         </div>
-          <div className="row">
-              {FeatureList2.map((props, idx) => (
-                  <Feature key={idx} {...props} />
-              ))}
-          </div>
+        <div className="row">
+          {FeatureList2.map((props, idx) => (
+            <Feature key={idx} {...props} />
+          ))}
+        </div>
       </div>
     </section>
   );

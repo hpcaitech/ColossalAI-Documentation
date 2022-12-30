@@ -254,13 +254,97 @@
   "landing.getStarted": {
     "message": "GET STARTED"
   },
+  "landing.slackButton": {
+    "message": "COMMUNITY"
+  },
   "landing.title": {
     "message": "Unmatched speed and scale for deep learning training and inference"
+  },
+  "landing.description": {
+    "message": "Learn about the software-based distributed techniques of Colossal-AI to maximize the runtime performance of your large neural networks."
   },
   "landing.description.part1": {
     "message": "with"
   },
   "landing.description.part2": {
     "message": ""
+  },
+  "overview.getStarted.title": {
+    "message": "Get started"
+  },
+  "overview.getStarted.description": {
+    "message": "Start your first Colossal-AI project."
+  },
+  "overview.getStarted.link1": {
+    "message": "Download and installation"
+  },
+  "overview.getStarted.link2": {
+    "message": "Quick demo"
+  },
+  "overview.concepts.title": {
+    "message": "Concepts"
+  },
+  "overview.concepts.description": {
+    "message": "Understand how Colossal-AI works."
+  },
+  "overview.concepts.link1": {
+    "message": "Overview"
+  },
+  "overview.concepts.link2": {
+    "message": "Distributed Training"
+  },
+  "overview.concepts.link3": {
+    "message": "Paradigms of Parallelism"
+  },
+  "overview.case.title": {
+    "message": "Sample use cases"
+  },
+  "overview.case.description": {
+    "message": "Achieve the following with Colossal-AI:"
+  },
+  "overview.case.link1": {
+    "message": "Train GPT Using Hybrid Parallelism"
+  },
+  "overview.case.link2": {
+    "message": "Meet Gemini:The Heterogeneous Memory Manager of Colossal-AI"
+  },
+  "overview.cli.title": {
+    "message": "Command Line Client (CLI)"
+  },
+  "overview.cli.description": {
+    "message": "The Colossal-AI Command Line Interface is a unified tool to manage your Colossal-AI projects."
+  },
+  "overview.cli.link1": {
+    "message": "Introduction"
+  },
+  "overview.cli.link2": {
+    "message": "Launch distributed jobs"
+  },
+  "overview.cli.link3": {
+    "message": "Tensor Parallel Micro-Benchmarking"
+  },
+  "overview.config.title": {
+    "message": "Configuration"
+  },
+  "overview.config.description": {
+    "message": "Define your Colossal-AI project configuration as per your needs."
+  },
+  "overview.config.link1": {
+    "message": "Introduction"
+  },
+  "overview.config.link2": {
+    "message": "Feature specification"
+  },
+  "overview.config.link3": {
+    "message": "Global hyper-parameter"
+  },
+  "overview.submit.title": {
+    "message": "Do you use Colossal-AI?"
+  },
+  "overview.submit.description": {
+    "message": "If you are a happy user of our open source Colossal-AI software and implemented a deep learning project with it, please let us know."
+  },
+  "overview.submit.link1": {
+    "message": "Submit your Colossal-AI project"
   }
 }
