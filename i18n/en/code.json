@@ -281,6 +281,9 @@
   "overview.getStarted.link2": {
     "message": "Quick demo"
   },
+  "overview.getStarted.link3": {
+    "message": "Usage examples"
+  },
   "overview.concepts.title": {
     "message": "Concepts"
   },
