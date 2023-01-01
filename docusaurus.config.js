@@ -46,6 +46,8 @@ const customFields = {
   docsUrl: `http://colossalai.readthedocs.io`,
   twitterUrl: 'https://twitter.com/HPCAITech',
   blogUrl: 'https://www.hpc-ai.tech/blog',
+  slackUrl: 'https://www.hpc-ai.tech/cs/c/?cta_guid=f4588394-62df-46bd-bb4e-bdcd51717bce&signature=AHFS_avlpHBM5d2n5X0KdrhxrWHE5G2mRg&pageId=55737175240&placement_guid=a81eb2c3-36ca-4e59-8cfa-9f799eea08f0&click=74960996-537a-4a6f-b30d-f60a35d7ad1d&hsutk=fd1b4e41070f630352cd748eb80954df&canon=https%3A%2F%2Fwww.hpc-ai.tech%2F&portal_id=26563514&redirect_url=AD7p6W_yBHWsgFHedKmnQhZV05Xxyp1eiHAYlBql5eAl6h3F3N2872pfuuMTe1N1hfxZLi23BiejFNJllKGFy9ImjDMQcPJwhb479Ds0avQff5PwDqyYbFrXCllcxii3v7G-ZkYetJqroiS_oHZ2TdrCGUz63bOrqioFQEAcck-btpRsv4bxPAk_oGp_ES_nyMdxlSTMQKAfsH8IP_Z16DtR12zS0AbPjYOs8IFbCcHxt1bSUVRynML1scc4w5tVtlXtvpwYDxJiRLzN-HfOfvEfq2QDy2I1QhVU0APEoLNYUR0SCVnALq1AjBYgkqAgCy2_njynWBRG&__hstc=111410971.fd1b4e41070f630352cd748eb80954df.1670342468060.1672489749608.1672569155502.82&__hssc=111410971.1.1672569155502&__hsfp=151000674&contentType=standard-page',
+  mediumUrl: 'https://medium.com/@hpcaitech',
   exampleUrl: 'https://github.com/hpcaitech/ColossalAI-Examples',
   discussUrl: 'https://github.com/hpcaitech/ColossalAI/discussions',
   version: '0.0.1',
