@@ -14,6 +14,7 @@ const FeatureList1 = [
         <ul>
           <li><a href="/docs/get_started/installation">{translate({ id: 'overview.getStarted.link1' })}</a></li>
           <li><a href="/docs/get_started/run_demo">{translate({ id: 'overview.getStarted.link2' })}</a></li>
+          <li><a href="https://github.com/hpcaitech/ColossalAI-Examples">{translate({ id: 'overview.getStarted.link3' })}</a></li>
         </ul>
       </>
     ),
