@@ -45,51 +45,9 @@
 
 ## 使用
 
-我们提供了两种方式让不同版本的ColossalAI都可以使用基于Chunk内存管理的零冗余优化器。
-
-### ChunkManager + GeminiManager
-
-对于ColossalAI v0.1.9和v0.1.10，我们可以运用`ChunkManager` + `GeminiManager`的方式来使用基于Chunk内存管理的ZeRO。
-
-首先确保你的模型是在`ColoInitContext`上下文中初始化的：
-```python
-with ColoInitContext(device='cpu', default_dist_spec=default_dist_spec, default_pg=default_pg):
-  model = gpt2_medium(checkpoint=True)
-```
-注意，`device`的类型必须是`torch.device`，例如：`torch.device('cpu')`, `torch.device('cuda:0')`。
-
-```python
-chunk_size = ChunkManager.search_chunk_size(model, 64 * 1024**2, 32)
-gemini_manager = GeminiManager(placememt_policy, chunk_manager)
-chunk_manager = ChunkManager(chunk_size,
-                             pg,
-                             enable_distributed_storage=True,
-                             init_device=GeminiManager.get_default_device(placememt_policy))
-model = ZeroDDP(model, gemini_manager)
-```
-`PLACEMENT_POLICY`描述了Gemini的放置策略，目前我们支持`'cuda'`, `'cpu'`和`'auto'`三种策略，关于Gemini的更多细节，点击[这里](../advanced_tutorials/meet_gemini.md)。如果使用“cpu”策略，参数、梯度和优化器状态将被卸载到 CPU，这意味着将使用最小 CUDA 内存；如果使用“cuda”策略，则不会卸载它们，这意味着将使用最大 CUDA 内存；如果使用“auto”策略，它们会根据 CPU 和 CUDA 内存使用情况动态移动。 这将帮助我们均匀而良好地利用异构内存空间。
-
-如果你不想使用Chunk，直接将传入`ChunkManager`的第一个参数`chunk_size`设为`None`即可。
-
-`enable_distributed_storage`表示是否分布式存储模型，即是否使用ZeRO。
-
-```python
-optimizer = GeminiAdamOptimizer(model, lr=1e-3, initial_scale=2**5)
-```
-这样就完成了优化器的初始化。
-
-```python
-optimizer.zero_grad()
-outputs = model(input_ids, attn_mask)
-loss = criterion(outputs, input_ids)
-optimizer.backward(loss)
-optimizer.step()
-```
-训练代码。
-
 ### GeminiDDP
 
-如果你的ColossalAI版本大于v0.1.10，我们将运用`GeminiDDP`的方式来使用基于Chunk内存管理的ZeRO。这是我们新包装的torch.Module ，它使用 ZeRO-DP 和 Gemini，其中ZeRO 用于并行，Gemini 用于内存管理。
+我们将运用`GeminiDDP`的方式来使用基于Chunk内存管理的ZeRO。这是我们新包装的torch.Module ，它使用 ZeRO-DP 和 Gemini，其中ZeRO 用于并行，Gemini 用于内存管理。
 
 同样需要确保你的模型是在 `ColoInitContext` 的上下文中初始化的。
 
@@ -112,7 +70,20 @@ model = ZeroDDP(model, gemini_manager)
 
 `hidden dim`是DNN的隐藏维度。用户可以提供这个参数来加快搜索速度。如果用户在训练前不知道这个参数也可以。 我们将使用默认值 1024。`min_chunk_size_mb`是以兆字节为单位的最小块大小。如果参数的总大小仍然小于最小块大小，则所有参数将被压缩为一个小块。
 
-优化器初始化代码和训练代码与前一种方式一致。
+初始化优化器。
+```python
+optimizer = GeminiAdamOptimizer(model, lr=1e-3, initial_scale=2**5)
+```
+
+训练
+```python
+optimizer.zero_grad()
+outputs = model(input_ids, attn_mask)
+loss = criterion(outputs, input_ids)
+optimizer.backward(loss)
+optimizer.step()
+```
+> ⚠️ 注意：请不要使用`loss.backward()`，规范写法是`optimizer.backward(loss)`。
 
 ### 训练GPT
 
@@ -286,5 +257,5 @@ def main():
 
     torch.cuda.synchronize()
 ```
-
+> ⚠️ 注意：如果你使用Gemini模块的话，请不要使用我们之前提到过的[梯度累加](../features/gradient_accumulation.md)。
 完整的例子代码可以在 [Train GPT with Colossal-AI](https://github.com/hpcaitech/ColossalAI/tree/main/examples/language/gpt). 获得。

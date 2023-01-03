@@ -47,52 +47,9 @@ We also provide a lightweight chunk search mechanism to help users automatically
 
 ## Usage
 
-We provide two ways to allow different versions of ColossalAI to use the ZeRO with chunk-based memory management.
-
-### ChunkManager + GeminiManager
-
-For ColossalAI v0.1.9 and v0.1.10, we can use `ChunkManager` + `GeminiManager` to use ZeRO with chunk-based memory management.
-
-Make sure your model is initialized in `ColoInitContext`：
-```python
-with ColoInitContext(device='cpu', default_dist_spec=default_dist_spec, default_pg=default_pg):
-  model = gpt2_medium(checkpoint=True)
-```
-Note that the type of `device` must be `torch.device`, for example：`torch.device('cpu')`, `torch.device('cuda:0')`。
-
-```python
-chunk_size = ChunkManager.search_chunk_size(model, 64 * 1024**2, 32)
-gemini_manager = GeminiManager(placememt_policy, chunk_manager)
-chunk_manager = ChunkManager(chunk_size,
-                             pg,
-                             enable_distributed_storage=True,
-                             init_device=GeminiManager.get_default_device(placememt_policy))
-model = ZeroDDP(model, gemini_manager)
-```
-`PLACEMENT_POLICY` describes the placement policy Gemini used. Currently we support `'cuda'`, `'cpu'` and `'auto'` three strategies. For more details aboud Gemini, click [here](../advanced_tutorials/meet_gemini.md). If it's 'cpu', parameters, gradients and optimizer states will be offloaded to CPU, which means min CUDA memory will be used.If it's 'cuda', they won't be offloaded, which means max CUDA memory will be used.If it's 'auto', they are moving dynamically based on CPU and CUDA memory usage. It will utilize heterogeneous memory space evenly and well.
-
-If you don't want to use Chunk, just set the first parameter `chunk_size` passed to `ChunkManager` to `None`.
-
-`enable_distributed_storage` indicates whether to store the model in a distributed manner, that is, whether to use ZeRO.
-
-
-```python
-optimizer = GeminiAdamOptimizer(model, lr=1e-3, initial_scale=2**5)
-```
-This completes the initialization of the optimizer. 
-
-```python
-optimizer.zero_grad()
-outputs = model(input_ids, attn_mask)
-loss = criterion(outputs, input_ids)
-optimizer.backward(loss)
-optimizer.step()
-```
-Training codes.
-
 ### GeminiDDP
 
-If your ColossalAI version is greater than v0.1.10, we will use `GeminiDDP` to use ZeRO with chunk-based memory management. This is our new torch.Module wrapper which uses ZeRO-DP and Gemini. ZeRO is for parallelism and Gemini is for memory management.
+We will use `GeminiDDP` to use ZeRO with chunk-based memory management. This is our new torch.Module wrapper which uses ZeRO-DP and Gemini. ZeRO is for parallelism and Gemini is for memory management.
 
 Also Make sure that your model is initialized under the context of ColoInitContext.
 
@@ -114,7 +71,20 @@ gemini_manager = GeminiManager(placement_policy, chunk_manager)
 
 `hidden_dim` is the hidden dimension of DNN. Users can provide this argument to speed up searching. If users do not know this argument before training, it is ok. We will use a default value 1024. `min_chunk_size_mb` is the the minimum chunk size in MegaByte. If the aggregate size of parameters is still samller than the minimum chunk size, all parameters will be compacted into one small chunk.
 
-The optimizer initialization code and training code are consistent with the previous method.
+Initialization of the optimizer.
+```python
+optimizer = GeminiAdamOptimizer(model, lr=1e-3, initial_scale=2**5)
+```
+
+Training
+```python
+optimizer.zero_grad()
+outputs = model(input_ids, attn_mask)
+loss = criterion(outputs, input_ids)
+optimizer.backward(loss)
+optimizer.step()
+```
+> ⚠️ Note: Please do not use `loss.backward()`, the standard way of writing is `optimizer.backward(loss)`.
 
 ### Train GPT
 
@@ -288,5 +258,5 @@ def main():
 
     torch.cuda.synchronize()
 ```
-
+> ⚠️ Note: If you want to use the Gemini module, please do not use the [Gradient Accumulation](../features/gradient_accumulation.md) we mentioned before。
 The complete example can be found on [Train GPT with Colossal-AI](https://github.com/hpcaitech/ColossalAI/tree/main/examples/language/gpt).
