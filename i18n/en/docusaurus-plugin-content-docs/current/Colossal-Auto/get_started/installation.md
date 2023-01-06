@@ -1,6 +1,6 @@
 # Setup
 
-## announcement
+## Announcement
 
 Our auto-parallel feature is a alpha version. It is still under development. We will keep updating it and make it more stable. If you encounter any problem, please feel free to raise an issue.
 
