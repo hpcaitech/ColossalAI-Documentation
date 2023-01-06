@@ -1,4 +1,4 @@
-# introduction
+# Introduction
 
 In recent years, the deployment of large-scale machine learning models has become increasingly important. However, distributed training systems often require **manual parallelization plans**, which can be complex and require expert knowledge in system engineering and configuration. This can be a challenge for most AI developers without the necessary skills. The need for manual parallelization can make deploying large-scale machine learning models difficult and expensive.
 
@@ -6,7 +6,7 @@ In recent years, the deployment of large-scale machine learning models has becom
 
 
 
-## overview
+## Overview
 
 <figure style={{textAlign: "center"}}>
 <img src="https://raw.githubusercontent.com/hpcaitech/public_assets/main/colossalai/img/auto_parallel/auto_parallel.png"/>
