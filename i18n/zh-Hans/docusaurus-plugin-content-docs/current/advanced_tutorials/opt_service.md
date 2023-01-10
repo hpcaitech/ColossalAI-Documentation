@@ -1,51 +1,50 @@
-# Build an online OPT service using Colossal-AI in 5 minutes
+# Colossal-AI使用指南：5分钟搭建在线OPT服务
 
-## Introduction
+## 介绍
 
-This tutorial shows how to build your own service with OPT with the help of [Colossal-AI](https://github.com/hpcaitech/ColossalAI). You can also try an online demo at [https://service.colossalai.org/opt](https://service.colossalai.org/opt).
+本指导手册将说明如何利用[Colossal-AI](https://github.com/hpcaitech/ColossalAI)搭建您自己的OPT服务。您还可以在此尝试在线示例[https://service.colossalai.org/opt](https://service.colossalai.org/opt)。
 
-## Colossal-AI Inference Overview
-Colossal-AI provides an inference subsystem [Energon-AI](https://github.com/hpcaitech/EnergonAI), a serving system built upon Colossal-AI, which has the following characteristics: 
+## Colossal-AI 推理概述 
+Colossal-AI 提供了一个推理子系统 [Energon-AI](https://github.com/hpcaitech/EnergonAI)， 这是一个基于Colossal-AI的服务系统，拥有以下特性：
 
-**Parallelism for Large-scale Models:** With the help of tensor parallel operations, pipeline parallel strategies from Colossal-AI, Colossal-AI inference enables efficient parallel inference for large-scale models.
-- **Pre-built large models:** There are pre-built implementations for popular models, such as OPT. It supports a caching technique for the generation task and checkpoints loading.
-- **Engine encapsulation：** There has an abstraction layer called an engine. It encapsulates the single instance multiple devices (SIMD) execution with the remote procedure call, making it act as the single instance single device (SISD) execution.
-- **An online service system:** Based on FastAPI, users can launch a web service of a distributed inference quickly. The online service makes special optimizations for the generation task. It adopts both left padding and bucket batching techniques to improve efficiency.
+- **大模型并行：** 在Colossal-AI的张量并行和流水线并行策略的帮助下，Colossal-AI的推理可实现大模型的高效并行推理。
+- **预构建大模型：** Colossal-AI提供热门模型的预构建部署，例如OPT。其支持用于生成任务和加载检查点的缓存技术。
+- **引擎封装：** Colossal-AI中有一个抽象层被称作引擎。其将单实例多设备(SIMD) 执行与远程过程调用封装在一起。
+- **在线服务系统：** 基于FastAPI，用户可以快速启动分布式推理的网络服务。 在线服务对生成任务进行了特殊优化。它采用left padding和bucket batching两种技术来提高效率。
 
-## Basic Usage:
+## 基本用法
 
-1. Download OPT model
+1. 下载OPT模型
 
-To launch the distributed inference service quickly, you can download the OPT-125M from [here](https://huggingface.co/patrickvonplaten/opt_metaseq_125m/blob/main/model/restored.pt). You can get details for loading other sizes of models [here](https://github.com/hpcaitech/EnergonAI/tree/main/examples/opt/script).
+想要快速发布分布式推理服务，您从[此处](https://huggingface.co/patrickvonplaten/opt_metaseq_125m/blob/main/model/restored.pt)下载OPT-125M。有关加载其他体量模型的详细方法，您可访问[此处](https://github.com/hpcaitech/EnergonAI/tree/main/examples/opt/script)。
 
-2. Prepare a prebuilt service image 
+2. 准备提前构建的服务镜像
 
-Pull a docker image from dockerhub installed with Colossal-AI inference.
+从dockerhub拉取一个已经安装Colossal-AI推理的docker镜像。
 
 ```bash
 docker pull hpcaitech/energon-ai:latest
 ```
 
-3. Launch an HTTP service
+3. 发布HTTP服务
 
-To launch a service, we need to provide python scripts to describe the model type and related configurations, and settings for the HTTP service.
-We have provided a set of [examples](https://github.com/hpcaitech/EnergonAI/tree/main/examples]). We will use the [OPT example](https://github.com/hpcaitech/EnergonAI/tree/main/examples/opt) in this tutorial.  
-The entrance of the service is a bash script server.sh.
-The config of the service is at opt_config.py, which defines the model type, the checkpoint file path, the parallel strategy, and http settings. You can adapt it for your own case.
-For example, set the model class as opt_125M and set the correct checkpoint path as follows.
+若想发布服务，我们需要准备python脚本来描述模型的类型和相关的部署，以及HTTP服务的设置。 我们为您提供了一组[示例](https://github.com/hpcaitech/EnergonAI/tree/main/examples])。 我们将在本指导手册中使用[OPT 示例](https://github.com/hpcaitech/EnergonAI/tree/main/examples/opt)。 
+服务的入口是一个bash脚本 server.sh。
+本服务的配置文件参考 opt_config.py，该文件定义了模型的类型、 检查点文件路径、并行策略和http设置。您能按照您的需求来修改这些设置。 
+例如，将模型的大小设置为opt_125M，将正确的检查点路径按照如下设置：
  
 ```bash
 model_class = opt_125M
 checkpoint = 'your_file_path'
 ```
 
-Set the tensor parallelism degree the same as your gpu number.
+将张量并行度设置为您的gpu数量。
 
 ```bash
 tp_init_size = #gpu
 ```
 
-Now, we can launch a service using docker. You can map the path of the checkpoint and directory containing configs to local disk path `/model_checkpoint` and `/config`.
+现在，我们就能利用docker发布一个服务。您能在`/model_checkpoint` 和 `/config`路径下找到检查点文件和配置文件。
 
 
 ```bash
@@ -56,24 +55,23 @@ export CONFIG_DIR="config_file_path"
 docker run --gpus all  --rm -it -p 8020:8020 -v ${CHECKPOINT_DIR}:/model_checkpoint -v ${CONFIG_DIR}:/config --ipc=host energonai:lastest
 ```
 
-Then open `https://[IP-ADDRESS]:8020/docs#` in your browser to try out!
+接下来，您就可以在您的浏览器中打开 `https://[IP-ADDRESS]:8020/docs#` 进行测试。
 
+## 高级特性用法
 
-## Advance Features Usage:
+1. 批处理优化
 
-1. Batching Optimization
-
-To use our advanced batching technique to collect multiple queries in batches to serve, you can set the executor_max_batch_size as the max batch size. Note, that only the decoder task with the same top_k, top_p and temperature can be batched together.
+若想使用我们的高级批处理技术来批量收集多个查询，您可以将executor_max_batch_size设置为最大批处理大小。 请注意，只有具有相同 top_k、top_p 和温度的解码任务才能一起批处理。
 
 ```
 executor_max_batch_size = 16
 ```
 
-All queries are submitted to a FIFO queue. All consecutive queries whose number of decoding steps is less than or equal to that of the head of the queue can be batched together. Left padding is applied to ensure correctness. executor_max_batch_size should not be too large. This ensures batching won't increase latency. For opt-30b, `executor_max_batch_size=16` may be a good choice, while for opt-175b, `executor_max_batch_size=4` may be better.
+所有的查询将进入FIFO队列。解码步数小于或等于队列头部解码步数的所有连续查询可以一起批处理。  应用左填充以确保正确性。 executor_max_batch_size 不应该过大，从而确保批处理不会增加延迟。 以opt-30b为例， `executor_max_batch_size=16` 合适，但对于opt-175b而言， `executor_max_batch_size=4` 更合适。
 
-2. Cache Optimization.
+2. 缓存优化
 
-You can cache several recently served query results for each independent serving process. Set the cache_size and cache_list_size in config.py. The cache size is the number of queries cached. The cache_list_size is the number of results stored for each query. And a random cached result will be returned. When the cache is full, LRU is applied to evict cached queries. cache_size=0means no cache is applied.
+对于每一个独立的服务过程，您能将最近的多个查询结果缓存在一起。在config.py中设置 cache_size 和 cache_list_size。缓存的大小应为缓存的查询数目。cache_list_size 应为每次查询存储的结果数。一个随机缓存的结果将会被返回。当缓存已满，LRU策略被用于清理缓存过的查询。cache_size=0意味着不缓存。
 
 ```
 cache_size = 50
