@@ -20,7 +20,7 @@ model = autoparallelize(model, meta_input_samples)
 ```
 
 
-## Graph Tracing
+## 图追踪
 Colossal-Auto 是**首个基于 PyTorch 框架使用静态图分析的自动并行系统**。PyTorch 作为一个动态图框架，获取其静态的执行计划是机器学习系统领域被长期研究的问题。Colossal-Auto 使用基于 torch.FX Tracer 的 ColoTracer 来完成对于最优并行策略的搜索。在 tracing 过程中推导并记录了每个 tensor 的元信息，例如 tensor shape，dims，dtype 等。因此 Colossal-AI 具有更好的模型泛化能力，而不是依靠模型名或手动修改来适配并行策略。
 
 
