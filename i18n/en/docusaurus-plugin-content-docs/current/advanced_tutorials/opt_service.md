@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This tutorial shows how to build your own service with OPT with the help of [Colossal-AI](https://github.com/hpcaitech/ColossalAI). You can also try an online demo at [https://service.colossalai.org/opt](https://service.colossalai.org/opt).
+This tutorial shows how to build your own service with OPT with the help of [Colossal-AI](https://github.com/hpcaitech/ColossalAI). 
 
 ## Colossal-AI Inference Overview
 Colossal-AI provides an inference subsystem [Energon-AI](https://github.com/hpcaitech/EnergonAI), a serving system built upon Colossal-AI, which has the following characteristics: 
