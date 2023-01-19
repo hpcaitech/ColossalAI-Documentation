@@ -2,7 +2,7 @@
 
 ## 介绍
 
-本指导手册将说明如何利用[Colossal-AI](https://github.com/hpcaitech/ColossalAI)搭建您自己的OPT服务。您还可以在此尝试在线示例[https://service.colossalai.org/opt](https://service.colossalai.org/opt)。
+本指导手册将说明如何利用[Colossal-AI](https://github.com/hpcaitech/ColossalAI)搭建您自己的OPT服务。
 
 ## Colossal-AI 推理概述 
 Colossal-AI 提供了一个推理子系统 [Energon-AI](https://github.com/hpcaitech/EnergonAI)， 这是一个基于Colossal-AI的服务系统，拥有以下特性：
