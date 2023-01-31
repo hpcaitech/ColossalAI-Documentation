@@ -120,7 +120,7 @@ const config = {
       title: ' ',
       hideOnScroll: true,
       logo: {
-        alt: 'Website Logo',
+        alt: 'Colossal-AI',
         src: 'img/logo.svg',
       },
       items: [
