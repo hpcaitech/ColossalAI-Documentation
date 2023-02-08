@@ -82,7 +82,9 @@
     align-items: center;
   }
 
-  .GetStartedButton {
+  .GetStartedButton,
+  .GithubButton,
+  .SlackButton {
     margin-right: 0;
     margin-bottom: 20px;
   }

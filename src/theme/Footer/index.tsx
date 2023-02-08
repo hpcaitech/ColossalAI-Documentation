@@ -35,12 +35,10 @@ const Footer: React.FC = () => {
               <img
                 className={styles.BrandImage}
                 alt="AgileTs Logo"
-                height={35}
-                width={35}
+                height={30}
                 src="/img/logo.svg"
                 title={siteConfig.tagline}
               />
-              <div className={styles.BrandText}>Colossal-AI</div>
             </div>
             <div className={styles.Tagline}>{translate({ message: siteConfig.customFields.tagline, id: 'footer.tagline' })}</div>
             <GithubButton
