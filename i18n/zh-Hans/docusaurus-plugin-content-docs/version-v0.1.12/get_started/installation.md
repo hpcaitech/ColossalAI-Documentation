@@ -1,8 +1,18 @@
 # 安装
 
-## 从官方安装
+## 从PyPI上安装
 
-您可以访问我们[下载](/download)页面来安装Colossal-AI，在这个页面上发布的版本都预编译了CUDA扩展。
+你可以PyPI上使用以下命令直接安装Colossal-AI。
+
+```shell
+pip install colossalai
+```
+
+如果你想同时安装PyTorch扩展的话，可以添加`CUDA_EXT=1`。如果不添加的话，PyTorch扩展会在运行时自动安装。
+
+```shell
+CUDA_EXT=1 pip install colossalai
+```
 
 ## 从源安装
 

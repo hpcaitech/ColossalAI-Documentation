@@ -1,8 +1,18 @@
 # Setup
 
-## Download From Official Releases
+## Download From PyPI
 
-You can visit the [Download](/download) page to download Colossal-AI with pre-built CUDA extensions.
+You can install Colossal-AI with
+
+```shell
+pip install colossalai
+```
+
+If you want to build PyTorch extensions during installation, you can use the command below. Otherwise, the PyTorch extensions will be built during runtime.
+
+```shell
+CUDA_EXT=1 pip install colossalai
+```
 
 
 ## Download From Source
@@ -23,5 +33,5 @@ pip install .
 If you don't want to install and enable CUDA kernel fusion (compulsory installation when using fused optimizer):
 
 ```shell
-NO_CUDA_EXT=1 pip install .
+CUDA_EXT=1 pip install .
 ```
