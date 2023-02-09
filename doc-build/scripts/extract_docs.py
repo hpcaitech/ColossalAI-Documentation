@@ -11,11 +11,24 @@ DOCS_CACAH_DIR = CACHE_DIR.joinpath('docs')
 DOCUSAURUS_ROOT = PROJECT_ROOT.joinpath('docusaurus')
 
 
-def extract_docs(version, src_path, dst_path):
+def extract_docs(ref: str, version: str, src_path: Path, dst_path: Path):
     os.chdir(REPO_ROOT)
-    os.system(f'git checkout {version}')
-    shutil.rmtree(dst_path)
-    shutil.copytree(src_path, dst_path)
+    os.system(f'git checkout {ref}')
+
+    # markdown files
+    source_markdown_paths = src_path.joinpath('source')
+    if dst_path.exists():
+        shutil.rmtree(dst_path)
+    shutil.copytree(source_markdown_paths, dst_path)
+
+    # migrate the sidebar and version files
+    sidebar_src_path = src_path.joinpath('sidebars.js')
+    sidebar_dst_path = dst_path.joinpath('sidebars.js')
+    shutil.copyfile(sidebar_src_path, sidebar_dst_path)
+
+    version_src_path = src_path.joinpath('versions.json')
+    version_dst_path = dst_path.joinpath('versions.json')
+    shutil.copyfile(version_src_path, version_dst_path)
 
 def clone_repo():
     os.chdir(CACHE_DIR)
@@ -93,15 +106,17 @@ def main():
     clone_repo()
 
     # get the current 
-    src = REPO_ROOT.joinpath('docs/source')
-    extract_docs(version='main', src_path=src, dst_path=DOCS_CACAH_DIR.joinpath('current'))
+    src = REPO_ROOT.joinpath('docs')
+    extract_docs(ref='main', version='current', src_path=src, dst_path=DOCS_CACAH_DIR.joinpath('current'))
 
     # check for versions to load
     versions = read_versions()
 
     for version in versions:
+        if version == 'current':
+            continue
         dst = DOCS_CACAH_DIR.joinpath(version)
-        extract_docs(version=f'version-{version}', src_path=src, dst_path=dst)
+        extract_docs(ref=version, version=f'version-{version}', src_path=src, dst_path=dst)
     
     # move docs to docusaurus
     move_to_docusaurus()
