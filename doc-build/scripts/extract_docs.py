@@ -40,10 +40,12 @@ def read_versions():
 
 def move_to_docusaurus():
     for versioned_doc in DOCS_CACAH_DIR.glob('*'):
-        version = versioned_doc.stem
+        version = versioned_doc.name
 
         # handle multi-language documentations
         for lang_doc in versioned_doc.glob('*'):
+            lang = lang_doc.name
+
             # skip if it is a file
             if lang_doc.is_file():
                 continue
@@ -55,10 +57,18 @@ def move_to_docusaurus():
             LANG_DOCS_ROTO.mkdir(exist_ok=True, parents=True)
 
             # move docs
-            dst_path = LANG_DOCS_ROTO.joinpath(version)
+            if version == 'current':
+                dst_path = LANG_DOCS_ROTO.joinpath(version)
+            else:
+                dst_path = LANG_DOCS_ROTO.joinpath(f'version-{version}')
             dst_path.mkdir(exist_ok=True, parents=True)
             shutil.rmtree(dst_path)
             shutil.copytree(lang_doc, dst_path)
+
+            # move to docusaurus/docs
+            if version == 'current' and lang_doc == 'en':
+                dst_path = DOCUSAURUS_ROOT.joinpath('docs')
+                shutil.copytree(lang_doc, dst_path)
 
         # handle version and sidebars
         # move sidebar
@@ -76,22 +86,22 @@ def move_to_docusaurus():
             shutil.copyfile(src_path, dst_path)
 
 def main():
-    # create cache directory
-    CACHE_DIR.mkdir(exist_ok=True)
+    # # create cache directory
+    # CACHE_DIR.mkdir(exist_ok=True)
 
-    # clone the repository
-    clone_repo()
+    # # clone the repository
+    # clone_repo()
 
-    # get the current 
-    src = REPO_ROOT.joinpath('docs/source')
-    extract_docs(version='main', src_path=src, dst_path=DOCS_CACAH_DIR.joinpath('current'))
+    # # get the current 
+    # src = REPO_ROOT.joinpath('docs/source')
+    # extract_docs(version='main', src_path=src, dst_path=DOCS_CACAH_DIR.joinpath('current'))
 
-    # check for versions to load
-    versions = read_versions()
+    # # check for versions to load
+    # versions = read_versions()
 
-    for version in versions:
-        dst = DOCS_CACAH_DIR.joinpath(version)
-        extract_docs(version=f'version-{version}', src_path=src, dst_path=dst)
+    # for version in versions:
+    #     dst = DOCS_CACAH_DIR.joinpath(version)
+    #     extract_docs(version=f'version-{version}', src_path=src, dst_path=dst)
     move_to_docusaurus()
 
 if __name__ == '__main__':
