@@ -4,6 +4,7 @@ on:
     types: [closed]
     branches:
       - '*'
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -11,6 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: github.base_ref == 'main' && github.event.pull_request.base.repo.full_name == 'hpcaitech/ColossalAI-Documentation' && github.event.pull_request.merged == true
+    permissions:
+      contents: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
     steps:
 
       # Checkout Project
@@ -29,32 +34,14 @@ jobs:
 
       # Build
       - name: 🔨 Build
-        run: yarn run build
-
-      # Deploy
-      - name: 🚀 Deploy
-        uses: garygrossgarten/github-action-scp@release
+        run: yarn build
+      
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
         with:
-          local: build
-          remote: ${{ secrets.REMOTE_NEW_BUILD_DIR }}
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          password: ${{ secrets.PASSWD }}
-          dotfiles: true
-          rmRemote: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
 
-      - name: 🔥 Overwrite
-        uses: appleboy/ssh-action@master
-        env:
-          NEW_BUILD: ${{ secrets.REMOTE_NEW_BUILD_DIR }}
-          OLD_BUILD: ${{ secrets.REMOTE_OLD_BUILD_DIR }}
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          password: ${{ secrets.PASSWD }}
-          envs: NEW_BUILD, OLD_BUILD
-          script: |
-            rm -rf $OLD_BUILD
-            cp -r $NEW_BUILD $OLD_BUILD
-
+      
 
