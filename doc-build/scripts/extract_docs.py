@@ -86,22 +86,24 @@ def move_to_docusaurus():
             shutil.copyfile(src_path, dst_path)
 
 def main():
-    # # create cache directory
-    # CACHE_DIR.mkdir(exist_ok=True)
+    # create cache directory
+    CACHE_DIR.mkdir(exist_ok=True)
 
-    # # clone the repository
-    # clone_repo()
+    # clone the repository
+    clone_repo()
 
-    # # get the current 
-    # src = REPO_ROOT.joinpath('docs/source')
-    # extract_docs(version='main', src_path=src, dst_path=DOCS_CACAH_DIR.joinpath('current'))
+    # get the current 
+    src = REPO_ROOT.joinpath('docs/source')
+    extract_docs(version='main', src_path=src, dst_path=DOCS_CACAH_DIR.joinpath('current'))
 
-    # # check for versions to load
-    # versions = read_versions()
+    # check for versions to load
+    versions = read_versions()
 
-    # for version in versions:
-    #     dst = DOCS_CACAH_DIR.joinpath(version)
-    #     extract_docs(version=f'version-{version}', src_path=src, dst_path=dst)
+    for version in versions:
+        dst = DOCS_CACAH_DIR.joinpath(version)
+        extract_docs(version=f'version-{version}', src_path=src, dst_path=dst)
+    
+    # move docs to docusaurus
     move_to_docusaurus()
 
 if __name__ == '__main__':
