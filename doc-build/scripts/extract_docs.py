@@ -75,8 +75,6 @@ def move_to_docusaurus():
             dst_path = DOCUSAURUS_ROOT.joinpath('versions.json')
             shutil.copyfile(src_path, dst_path)
 
-        
-
 def main():
     # create cache directory
     CACHE_DIR.mkdir(exist_ok=True)
