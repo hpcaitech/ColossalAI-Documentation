@@ -8,6 +8,7 @@
     "build": "docusaurus build",
     "build:serve": "yarn run build && yarn run serve",
     "build:sidebar": "python build_sidebar.py",
+    "postbuild": "react-snap",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "serve": "docusaurus serve",
