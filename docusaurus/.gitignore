@@ -23,7 +23,6 @@ sync.js
 # Generated files
 .docusaurus
 .cache-loader
-src/*.js
 src/*.js.map
 
 # Misc
