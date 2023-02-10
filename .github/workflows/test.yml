@@ -20,6 +20,7 @@ jobs:
         with:
           node-version: '16'
           cache: 'yarn'
+          cache-dependency-path: docusaurus/package-lock.json
       
       # Setup Python 3.8
       - uses: actions/setup-python@v2
