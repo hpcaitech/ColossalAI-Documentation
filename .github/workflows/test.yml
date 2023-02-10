@@ -20,12 +20,16 @@ jobs:
         with:
           node-version: '16'
           cache: 'yarn'
-
-      # Download Dependencies
-      - name: ⏳ Download
-        run: yarn install
+      
+      # Setup Python 3.8
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.14'
 
       # Build
       - name: 🔨 Build
-        run: yarn run build
+        run: |
+          pip install -v ./doc-build
+          bash ./scripts/build.sh
+          mv ./docusaurus/build ./
 

@@ -11,7 +11,7 @@ jobs:
     name: Build and deploy website
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: github.base_ref == 'main' && github.event.pull_request.base.repo.full_name == 'hpcaitech/ColossalAI-Documentation' && github.event.pull_request.merged == true
+    if: ( github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true ) && github.repository == 'hpcaitech/ColossalAI-Documentation'
     permissions:
       contents: write
     concurrency:
@@ -27,21 +27,25 @@ jobs:
         with:
           node-version: '16'
           cache: 'yarn'
-
-      # Download Dependencies
-      - name: ⏳ Download
-        run: yarn install
+      
+      # Setup Python 3.8
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.14'
 
       # Build
       - name: 🔨 Build
-        run: yarn build
-      
+        run: |
+          pip install -v ./doc-build
+          bash ./scripts/build.sh
+          mv ./docusaurus/build ./
+
+      # Deploy
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/main' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./out
+          publish_dir: ./build
 
       
 
