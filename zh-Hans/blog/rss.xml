@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+    <channel>
+        <title>Colossal-AI Blog</title>
+        <link>https://colossalai.org/zh-Hans/blog</link>
+        <description>Colossal-AI Blog</description>
+        <lastBuildDate>Thu, 30 May 2019 00:00:00 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[Welcome]]></title>
+            <link>https://colossalai.org/zh-Hans/blog/welcome</link>
+            <guid>welcome</guid>
+            <pubDate>Thu, 30 May 2019 00:00:00 GMT</pubDate>
+            <description><![CDATA[Hello there]]></description>
+            <content:encoded><![CDATA[<p>Hello there</p>]]></content:encoded>
+        </item>
+    </channel>
+</rss>
