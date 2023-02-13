@@ -33,7 +33,15 @@ const config = {
     defaultLocale: 'en',
     locales: ['en', 'zh-Hans'],
   },
-
+  scripts: [
+    {
+      src: 'https://js-eu1.hs-scripts.com/26563514.js',
+      id: 'hs-script-loader',
+      type: 'text/javascript',
+      async: true,
+      defer: true,
+    },
+  ],
   plugins: [
     function (context, options) {
       return {

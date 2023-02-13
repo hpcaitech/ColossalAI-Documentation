@@ -1,13 +1,13 @@
-import React from "react";
-import { features } from "../../data";
-import { translate } from "@docusaurus/Translate";
+import React from 'react';
+import { features } from '../../data';
+import { translate } from '@docusaurus/Translate';
 
 export default function HomepageFeatures() {
   return (
     <div className="tw-relative tw-bg-white tw-py-8 sm:tw-py-12 lg:tw-py-16">
       <div className="tw-mx-auto tw-max-w-md tw-px-6 tw-text-center sm:tw-max-w-3xl lg:tw-max-w-7xl lg:tw-px-8">
         <p className="tw-mt-2 tw-text-3xl tw-font-bold tw-tracking-tight tw-text-gray-900 sm:tw-ext-4xl">
-          {translate({ id: "landing.features.title" })}
+          {translate({ id: 'landing.features.title' })}
         </p>
         <div className="tw-mt-12">
           <div className="tw-grid tw-grid-cols-1 tw-gap-16 sm:tw-grid-cols-2 lg:tw-grid-cols-3">
@@ -30,14 +30,13 @@ export default function HomepageFeatures() {
                       {feature.description}
                     </p>
                     {feature.links && (
-                      <ul class="tw-list-disc tw-text-left">
+                      <ul className="tw-list-disc tw-text-left">
                         {feature.links.map((item, i) => {
                           return (
-                            <li className="tw-text-left">
+                            <li className="tw-text-left" key={i}>
                               <a
                                 href={item.link}
-                                className="tw-text-gray-500 hover:tw-no-underline"
-                              >
+                                className="tw-text-gray-500 hover:tw-no-underline">
                                 {item.label}
                               </a>
                             </li>
