@@ -1,13 +1,4 @@
 {
-  "theme.download.header": {
-    "message": "Start Locally"
-  },
-  "theme.download.about": {
-    "message": "You can choose your PyTorch and CUDA versions accordingly in the table below. As some CUDA versions are not supported by the Official PyTorch releases, You may need to install Colossal-AI from source if not available. As for the nightly version, you need to have Python 3.8 and the latest PyTorch and CUDA versions."
-  },
-  "theme.download.warn": {
-    "message": "Colossal-AI is only Linux supported currently."
-  },
   "theme.docs.sidebar.expandButtonTitle": {
     "message": "Expand sidebar",
     "description": "The ARIA label and title attribute for expand button of doc sidebar"
@@ -251,103 +242,112 @@
   "footer.tagline": {
     "message": "An integrated large-scale model training system with efficient parallelization techniques."
   },
-  "landing.getStarted": {
-    "message": "GET STARTED"
+  "landing.header.title": {
+    "message": "Unmatched Speed and Scale"
   },
-  "landing.slackButton": {
-    "message": "COMMUNITY"
+  "landing.header.description": {
+    "message": "Learn about the distributed techniques of Colossal-AI to maximize the runtime performance of your large neural networks."
   },
-  "landing.title": {
-    "message": "Unmatched speed and scale for deep learning training and inference"
-  },
-  "landing.description": {
-    "message": "Learn about the software-based distributed techniques of Colossal-AI to maximize the runtime performance of your large neural networks."
-  },
-  "landing.description.part1": {
-    "message": "with"
-  },
-  "landing.description.part2": {
-    "message": ""
-  },
-  "overview.getStarted.title": {
+  "landing.header.buttons.get_started": {
     "message": "Get started"
   },
-  "overview.getStarted.description": {
+  "landing.header.buttons.github": {
+    "message": "GitHub"
+  },
+  "landing.header.buttons.slack": {
+    "message": "Community"
+  },
+  "landing.header.question": {
+    "message": "Need professional help?"
+  },
+  "landing.header.talk_to_expert": {
+    "message": "Talk to our experts"
+  },
+
+  "landing.features.title": {
+    "message": "All about Colossal-AI"
+  },
+  "landing.features.get_started.title": {
+    "message": "Get started"
+  },
+  "landing.features.get_started.description": {
     "message": "Start your first Colossal-AI project."
   },
-  "overview.getStarted.link1": {
+  "landing.features.get_started.links.download": {
     "message": "Download and installation"
   },
-  "overview.getStarted.link2": {
+  "landing.features.get_started.links.demo": {
     "message": "Quick demo"
   },
-  "overview.getStarted.link3": {
+  "landing.features.get_started.links.examples": {
     "message": "Usage examples"
   },
-  "overview.concepts.title": {
+  "landing.features.concepts.title": {
     "message": "Concepts"
   },
-  "overview.concepts.description": {
+  "landing.features.concepts.description": {
     "message": "Understand how Colossal-AI works."
   },
-  "overview.concepts.link1": {
+  "landing.features.concepts.links.overview": {
     "message": "Overview"
   },
-  "overview.concepts.link2": {
+  "landing.features.concepts.links.distributed": {
     "message": "Distributed Training"
   },
-  "overview.concepts.link3": {
+  "landing.features.concepts.links.paradigms": {
     "message": "Paradigms of Parallelism"
   },
-  "overview.case.title": {
+  "landing.features.examples.title": {
     "message": "Sample use cases"
   },
-  "overview.case.description": {
+  "landing.features.examples.description": {
     "message": "Achieve the following with Colossal-AI:"
   },
-  "overview.case.link1": {
+  "landing.features.examples.links.gpt": {
     "message": "Train GPT Using Hybrid Parallelism"
   },
-  "overview.case.link2": {
+  "landing.features.examples.links.gemini": {
     "message": "Meet Gemini:The Heterogeneous Memory Manager of Colossal-AI"
   },
-  "overview.cli.title": {
-    "message": "Command Line Client (CLI)"
+  "landing.features.cli.title": {
+    "message": "Command Line Interface (CLI)"
   },
-  "overview.cli.description": {
+  "landing.features.cli.description": {
     "message": "The Colossal-AI Command Line Interface is a unified tool to manage your Colossal-AI projects."
   },
-  "overview.cli.link1": {
+  "landing.features.cli.links.introduction": {
     "message": "Introduction"
   },
-  "overview.cli.link2": {
-    "message": "Launch distributed jobs"
+  "landing.features.cli.links.launch": {
+    "message":  "Launch distributed jobs"
   },
-  "overview.cli.link3": {
-    "message": "Tensor Parallel Micro-Benchmarking"
+  "landing.features.cli.links.benchmark": {
+    "message":  "Tensor Parallel Micro-Benchmarking"
   },
-  "overview.config.title": {
+
+  "landing.features.config.title": {
     "message": "Configuration"
   },
-  "overview.config.description": {
+  "landing.features.config.description": {
     "message": "Define your Colossal-AI project configuration as per your needs."
   },
-  "overview.config.link1": {
+  "landing.features.config.links.introduction": {
     "message": "Introduction"
   },
-  "overview.config.link2": {
-    "message": "Feature specification"
+  "landing.features.config.links.spec": {
+    "message":  "Feature specification"
   },
-  "overview.config.link3": {
-    "message": "Global hyper-parameter"
+  "landing.features.config.links.param": {
+    "message":  "Global hyper-parameter"
   },
-  "overview.submit.title": {
+
+  "landing.features.submit.title": {
     "message": "Do you use Colossal-AI?"
   },
-  "overview.submit.description": {
+  "landing.features.submit.description": {
     "message": "If you are a happy user of our open source Colossal-AI software and implemented a deep learning project with it, please let us know."
   },
-  "overview.submit.link1": {
+  "landing.features.submit.links.submission": {
     "message": "Submit your Colossal-AI project"
   }
 }

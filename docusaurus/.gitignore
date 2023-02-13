@@ -41,6 +41,6 @@ yarn-error.log*
 # files only added during build
 i18n/zh-Hans/docusaurus-plugin-content-docs
 i18n/en/docusaurus-plugin-content-docs
-sidebars.js
+sidebars.json
 versions.json
-versioned_sidebars/*.js
+versioned_sidebars/*.json
