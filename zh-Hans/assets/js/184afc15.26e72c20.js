@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkagile_docs=self.webpackChunkagile_docs||[]).push([[2056],{7610:function(a){a.exports=JSON.parse('{"allTagsPath":"/zh-Hans/blog/tags","slug":"/zh-Hans/blog/tags/agile","name":"agile","count":1,"permalink":"/zh-Hans/blog/tags/agile"}')}}]);
