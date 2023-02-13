@@ -5,6 +5,7 @@ on:
     branches:
       - "*"
   workflow_dispatch:
+  repository_dispatch:
 
 jobs:
   publish:
