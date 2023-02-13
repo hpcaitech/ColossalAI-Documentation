@@ -10,6 +10,12 @@ export default function Home() {
   const { siteConfig } = useDocusaurusContext();
   return (
     <Layout description="A Unified Deep Learning System for Big Model Era">
+      <script
+        type="text/javascript"
+        id="hs-script-loader"
+        async
+        defer
+        src="//js-eu1.hs-scripts.com/26563514.js"></script>
       {/* <HomepageHeader /> */}
       <HomeHeader />
 

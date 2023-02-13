@@ -283,7 +283,6 @@
     "message": "使用例子"
   },
 
-
   "landing.features.concepts.title": {
     "message": "概念"
   },
@@ -312,44 +311,44 @@
   "landing.features.examples.links.gemini": {
     "message": "认识 Gemini：Colossal-AI 的异构内存管理器"
   },
-  
-  "overview.cli.title": {
-    "message": "客户端命令行 (CLI)"
+
+  "landing.features.cli.title": {
+    "message": "命令行工具"
   },
-  "overview.cli.description": {
-    "message": "Colossal-AI 命令行界面是用于管理您的 Colossal-AI 项目的一体化工具。"
+  "landing.features.cli.description": {
+    "message": "Colossal-AI命令行工具可以管理您的 Colossal-AI 项目。"
   },
-  "overview.cli.link1": {
+  "landing.features.cli.links.introduction": {
     "message": "介绍"
   },
-  "overview.cli.link2": {
-    "message": "启动分布式作业"
+  "landing.features.cli.links.launch": {
+    "message": "启动分布式任务"
   },
-  "overview.cli.link3": {
+  "landing.features.cli.links.benchmark": {
     "message": "张量并行微基准测试"
   },
-  "overview.config.title": {
+  "landing.features.config.title": {
     "message": "配置"
   },
-  "overview.config.description": {
+  "landing.features.config.description": {
     "message": "根据您的需要定义您的 Colossal-AI 项目配置。"
   },
-  "overview.config.link1": {
+  "landing.features.config.links.introduction": {
     "message": "介绍"
   },
-  "overview.config.link2": {
-    "message": "功能明细"
+  "landing.features.config.links.spec": {
+    "message": "功能明确"
   },
-  "overview.config.link3": {
+  "landing.features.config.links.param": {
     "message": "全局超参数"
   },
-  "overview.submit.title": {
-    "message": "使用 Colossal-AI 开发？"
+  "landing.features.submit.title": {
+    "message": "使用Colossal-AI开发？"
   },
-  "overview.submit.description": {
+  "landing.features.submit.description": {
     "message": "如果您喜欢我们的开源 Colossal-AI 软件并使用它开发深度学习项目，请告诉我们。"
   },
-  "overview.submit.link1": {
-    "message": "提交您的 Colossal-AI 项目"
+  "landing.features.submit.links.submission": {
+    "message": "提交您的Colossal-AI项目"
   }
 }
