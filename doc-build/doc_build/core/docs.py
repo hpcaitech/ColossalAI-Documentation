@@ -104,7 +104,6 @@ class DocManager:
 
                 # move sidebar category translation
                 src_path = dst_path.joinpath('sidebar_category_translation.json')
-                print(src_path)
                 dst_path = docusaurus_path.joinpath(f'i18n/{lang}/docusaurus-plugin-content-docs/{version}.json')
                 shutil.move(src_path, dst_path)
 
