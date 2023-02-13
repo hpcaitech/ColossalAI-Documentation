@@ -1,11 +1,7 @@
 {
   "title": {
-    "message": " ",
+    "message": "Colossal-AI",
     "description": "The title in the navbar"
-  },
-  "item.label.Download": {
-    "message": "下载",
-    "description": "Navbar item with label Download"
   },
   "item.label.Tutorials": {
     "message": "教程",
@@ -15,7 +11,7 @@
     "message": "例子",
     "description": "Navbar item with label Examples"
   },
-  "item.label.Docs": {
+  "item.label.API Doc": {
     "message": "API文档",
     "description": "Navbar item with label Docs"
   },

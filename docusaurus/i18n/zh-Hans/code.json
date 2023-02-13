@@ -1,13 +1,4 @@
 {
-  "theme.download.header": {
-    "message": "在本地开始"
-  },
-  "theme.download.about": {
-    "message": "你可以在下面选择你的PyTorch以及CUDA版本，并下载对应的Colossal-AI。由于PyTorch并没有为每个CUDA版本发布对应的版本，所以您如果没有找到可用的下载，可能需要从源码安装Colossal-AI。如果想要安装预览版本，您需要Python 3.8以及最新版本的PyTorch和CUDA."
-  },
-  "theme.download.warn": {
-    "message": "Colossal-AI 目前仅支持 Linux。"
-  },
   "theme.docs.sidebar.expandButtonTitle": {
     "message": "展开侧边栏",
     "description": "The ARIA label and title attribute for expand button of doc sidebar"
@@ -251,63 +242,77 @@
   "footer.tagline": {
     "message": "具有高效并行化技术的集成大规模模型训练系统"
   },
-  "landing.getStarted": {
+  "landing.header.title": {
+    "message": "无与伦比的速度与规模"
+  },
+  "landing.header.description": {
+    "message": "了解Colossal-AI内置的分布式技术以充分优化您的大型神经网络的运行性能。"
+  },
+  "landing.header.buttons.get_started": {
     "message": "快速开始"
   },
-  "landing.slackButton": {
+  "landing.header.buttons.github": {
+    "message": "GitHub"
+  },
+  "landing.header.buttons.slack": {
     "message": "社区"
   },
-  "landing.title": {
-    "message": "具有无与伦比的速度与规模的深度学习训练、推理系统"
+  "landing.header.question": {
+    "message": "需要专业的帮助吗？"
   },
-  "landing.description": {
-    "message": "了解基于软件的分布式技术 Colossal-AI，以充分优化您的大型神经网络的运行性能。"
+  "landing.header.talk_to_expert": {
+    "message": "联系我们的分布式专家"
   },
-  "landing.description.part1": {
-    "message": "从"
+
+  "landing.features.title": {
+    "message": "了解Colsosal-AI"
   },
-  "landing.description.part2": {
-    "message": "开始"
-  },
-  "overview.getStarted.title": {
+  "landing.features.get_started.title": {
     "message": "快速开始"
   },
-  "overview.getStarted.description": {
+  "landing.features.get_started.description": {
     "message": "开启您的第一个 Colossal-AI 项目。"
   },
-  "overview.getStarted.link1": {
+  "landing.features.get_started.links.download": {
     "message": "下载安装"
   },
-  "overview.getStarted.link2": {
+  "landing.features.get_started.links.demo": {
     "message": "快速演示"
   },
-  "overview.concepts.title": {
+  "landing.features.get_started.links.examples": {
+    "message": "使用例子"
+  },
+
+
+  "landing.features.concepts.title": {
     "message": "概念"
   },
-  "overview.concepts.description": {
+  "landing.features.concepts.description": {
     "message": "了解 Colossal-AI 如何工作。"
   },
-  "overview.concepts.link1": {
+  "landing.features.concepts.links.overview": {
     "message": "概述"
   },
-  "overview.concepts.link2": {
+  "landing.features.concepts.links.distributed": {
     "message": "分布式训练"
   },
-  "overview.concepts.link3": {
+  "landing.features.concepts.links.paradigms": {
     "message": "并行范式"
   },
-  "overview.case.title": {
+
+  "landing.features.examples.title": {
     "message": "用例"
   },
-  "overview.case.description": {
+  "landing.features.examples.description": {
     "message": "使用 Colossal-AI 实现以下目标："
   },
-  "overview.case.link1": {
+  "landing.features.examples.links.gpt": {
     "message": "混合并行式训练 GPT"
   },
-  "overview.case.link2": {
+  "landing.features.examples.links.gemini": {
     "message": "认识 Gemini：Colossal-AI 的异构内存管理器"
   },
+  
   "overview.cli.title": {
     "message": "客户端命令行 (CLI)"
   },

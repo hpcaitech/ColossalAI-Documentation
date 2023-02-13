@@ -1,13 +1,4 @@
 {
-  "theme.download.header": {
-    "message": "Start Locally"
-  },
-  "theme.download.about": {
-    "message": "You can choose your PyTorch and CUDA versions accordingly in the table below. As some CUDA versions are not supported by the Official PyTorch releases, You may need to install Colossal-AI from source if not available. As for the nightly version, you need to have Python 3.8 and the latest PyTorch and CUDA versions."
-  },
-  "theme.download.warn": {
-    "message": "Colossal-AI is only Linux supported currently."
-  },
   "theme.docs.sidebar.expandButtonTitle": {
     "message": "Expand sidebar",
     "description": "The ARIA label and title attribute for expand button of doc sidebar"
@@ -236,118 +227,283 @@
     "message": "Fetching new results...",
     "description": "The paragraph for fetching new search results"
   },
-  "theme.Playground.result": {
-    "message": "Result",
-    "description": "The result label of the live codeblocks"
-  },
-  "theme.Playground.liveEditor": {
-    "message": "Live Editor",
-    "description": "The live editor label of the live codeblocks"
-  },
   "theme.tags.tagsPageTitle": {
     "message": "Tags",
     "description": "The title of the tag list page"
   },
-  "footer.tagline": {
-    "message": "An integrated large-scale model training system with efficient parallelization techniques."
+  "landing.header.title": {
+    "message": "Unmatched Speed and Scale"
   },
-  "landing.getStarted": {
-    "message": "GET STARTED"
+  "landing.header.description": {
+    "message": "Learn about the distributed techniques of Colossal-AI to maximize the runtime performance of your large neural networks."
   },
-  "landing.slackButton": {
-    "message": "COMMUNITY"
-  },
-  "landing.title": {
-    "message": "Unmatched speed and scale for deep learning training and inference"
-  },
-  "landing.description": {
-    "message": "Learn about the software-based distributed techniques of Colossal-AI to maximize the runtime performance of your large neural networks."
-  },
-  "landing.description.part1": {
-    "message": "with"
-  },
-  "landing.description.part2": {
-    "message": ""
-  },
-  "overview.getStarted.title": {
+  "landing.header.buttons.get_started": {
     "message": "Get started"
   },
-  "overview.getStarted.description": {
+  "landing.header.buttons.github": {
+    "message": "GitHub"
+  },
+  "landing.header.buttons.slack": {
+    "message": "Community"
+  },
+  "landing.header.question": {
+    "message": "Need professional help?"
+  },
+  "landing.header.talk_to_expert": {
+    "message": "Talk to our experts"
+  },
+  "landing.features.title": {
+    "message": "All about Colossal-AI"
+  },
+  "landing.features.get_started.title": {
+    "message": "Get started"
+  },
+  "landing.features.get_started.description": {
     "message": "Start your first Colossal-AI project."
   },
-  "overview.getStarted.link1": {
+  "landing.features.get_started.links.download": {
     "message": "Download and installation"
   },
-  "overview.getStarted.link2": {
+  "landing.features.get_started.links.demo": {
     "message": "Quick demo"
   },
-  "overview.getStarted.link3": {
+  "landing.features.get_started.links.examples": {
     "message": "Usage examples"
   },
-  "overview.concepts.title": {
+  "landing.features.concepts.title": {
     "message": "Concepts"
   },
-  "overview.concepts.description": {
+  "landing.features.concepts.description": {
     "message": "Understand how Colossal-AI works."
   },
-  "overview.concepts.link1": {
+  "landing.features.concepts.links.overview": {
     "message": "Overview"
   },
-  "overview.concepts.link2": {
+  "landing.features.concepts.links.distributed": {
     "message": "Distributed Training"
   },
-  "overview.concepts.link3": {
+  "landing.features.concepts.links.paradigms": {
     "message": "Paradigms of Parallelism"
   },
-  "overview.case.title": {
+  "landing.features.examples.title": {
     "message": "Sample use cases"
   },
-  "overview.case.description": {
+  "landing.features.examples.description": {
     "message": "Achieve the following with Colossal-AI:"
   },
-  "overview.case.link1": {
+  "landing.features.examples.links.gpt": {
     "message": "Train GPT Using Hybrid Parallelism"
   },
-  "overview.case.link2": {
+  "landing.features.examples.links.gemini": {
     "message": "Meet Gemini:The Heterogeneous Memory Manager of Colossal-AI"
   },
-  "overview.cli.title": {
-    "message": "Command Line Client (CLI)"
+  "landing.features.cli.title": {
+    "message": "Command Line Interface (CLI)"
   },
-  "overview.cli.description": {
+  "landing.features.cli.description": {
     "message": "The Colossal-AI Command Line Interface is a unified tool to manage your Colossal-AI projects."
   },
-  "overview.cli.link1": {
+  "landing.features.cli.links.introduction": {
     "message": "Introduction"
   },
-  "overview.cli.link2": {
+  "landing.features.cli.links.launch": {
     "message": "Launch distributed jobs"
   },
-  "overview.cli.link3": {
+  "landing.features.cli.links.benchmark": {
     "message": "Tensor Parallel Micro-Benchmarking"
   },
-  "overview.config.title": {
+  "landing.features.config.title": {
     "message": "Configuration"
   },
-  "overview.config.description": {
+  "landing.features.config.description": {
     "message": "Define your Colossal-AI project configuration as per your needs."
   },
-  "overview.config.link1": {
+  "landing.features.config.links.introduction": {
     "message": "Introduction"
   },
-  "overview.config.link2": {
+  "landing.features.config.links.spec": {
     "message": "Feature specification"
   },
-  "overview.config.link3": {
+  "landing.features.config.links.param": {
     "message": "Global hyper-parameter"
   },
-  "overview.submit.title": {
+  "landing.features.submit.title": {
     "message": "Do you use Colossal-AI?"
   },
-  "overview.submit.description": {
+  "landing.features.submit.description": {
     "message": "If you are a happy user of our open source Colossal-AI software and implemented a deep learning project with it, please let us know."
   },
-  "overview.submit.link1": {
+  "landing.features.submit.links.submission": {
     "message": "Submit your Colossal-AI project"
+  },
+  "theme.admonition.note": {
+    "message": "note",
+    "description": "The default label used for the Note admonition (:::note)"
+  },
+  "theme.admonition.tip": {
+    "message": "tip",
+    "description": "The default label used for the Tip admonition (:::tip)"
+  },
+  "theme.admonition.danger": {
+    "message": "danger",
+    "description": "The default label used for the Danger admonition (:::danger)"
+  },
+  "theme.admonition.info": {
+    "message": "info",
+    "description": "The default label used for the Info admonition (:::info)"
+  },
+  "theme.admonition.caution": {
+    "message": "caution",
+    "description": "The default label used for the Caution admonition (:::caution)"
+  },
+  "theme.colorToggle.ariaLabel": {
+    "message": "Switch between dark and light mode (currently {mode})",
+    "description": "The ARIA label for the navbar color mode toggle"
+  },
+  "theme.colorToggle.ariaLabel.mode.dark": {
+    "message": "dark mode",
+    "description": "The name for the dark color mode"
+  },
+  "theme.colorToggle.ariaLabel.mode.light": {
+    "message": "light mode",
+    "description": "The name for the light color mode"
+  },
+  "theme.docs.DocCard.categoryDescription": {
+    "message": "{count} items",
+    "description": "The default description for a category card in the generated index about how many items this category includes"
+  },
+  "theme.docs.breadcrumbs.navAriaLabel": {
+    "message": "Breadcrumbs",
+    "description": "The ARIA label for the breadcrumbs"
+  },
+  "theme.docs.versionBadge.label": {
+    "message": "Version: {versionLabel}"
+  },
+  "theme.CodeBlock.wordWrapToggle": {
+    "message": "Toggle word wrap",
+    "description": "The title attribute for toggle word wrapping button of code block lines"
+  },
+  "theme.NavBar.navAriaLabel": {
+    "message": "Main",
+    "description": "The ARIA label for the main navigation"
+  },
+  "theme.navbar.mobileLanguageDropdown.label": {
+    "message": "Languages",
+    "description": "The label for the mobile language switcher dropdown"
+  },
+  "theme.blog.post.readMoreLabel": {
+    "message": "Read more about {title}",
+    "description": "The ARIA label for the link to full blog posts from excerpts"
+  },
+  "theme.docs.breadcrumbs.home": {
+    "message": "Home page",
+    "description": "The ARIA label for the home page in the breadcrumbs"
+  },
+  "theme.docs.sidebar.navAriaLabel": {
+    "message": "Docs sidebar",
+    "description": "The ARIA label for the sidebar navigation"
+  },
+  "theme.docs.sidebar.closeSidebarButtonAriaLabel": {
+    "message": "Close navigation bar",
+    "description": "The ARIA label for close button of mobile sidebar"
+  },
+  "theme.docs.sidebar.toggleSidebarButtonAriaLabel": {
+    "message": "Toggle navigation bar",
+    "description": "The ARIA label for hamburger menu button of mobile navigation"
+  },
+  "theme.SearchBar.seeAll": {
+    "message": "See all {count} results"
+  },
+  "theme.SearchModal.searchBox.resetButtonTitle": {
+    "message": "Clear the query",
+    "description": "The label and ARIA label for search box reset button"
+  },
+  "theme.SearchModal.searchBox.cancelButtonText": {
+    "message": "Cancel",
+    "description": "The label and ARIA label for search box cancel button"
+  },
+  "theme.SearchModal.startScreen.recentSearchesTitle": {
+    "message": "Recent",
+    "description": "The title for recent searches"
+  },
+  "theme.SearchModal.startScreen.noRecentSearchesText": {
+    "message": "No recent searches",
+    "description": "The text when no recent searches"
+  },
+  "theme.SearchModal.startScreen.saveRecentSearchButtonTitle": {
+    "message": "Save this search",
+    "description": "The label for save recent search button"
+  },
+  "theme.SearchModal.startScreen.removeRecentSearchButtonTitle": {
+    "message": "Remove this search from history",
+    "description": "The label for remove recent search button"
+  },
+  "theme.SearchModal.startScreen.favoriteSearchesTitle": {
+    "message": "Favorite",
+    "description": "The title for favorite searches"
+  },
+  "theme.SearchModal.startScreen.removeFavoriteSearchButtonTitle": {
+    "message": "Remove this search from favorites",
+    "description": "The label for remove favorite search button"
+  },
+  "theme.SearchModal.errorScreen.titleText": {
+    "message": "Unable to fetch results",
+    "description": "The title for error screen of search modal"
+  },
+  "theme.SearchModal.errorScreen.helpText": {
+    "message": "You might want to check your network connection.",
+    "description": "The help text for error screen of search modal"
+  },
+  "theme.SearchModal.footer.selectText": {
+    "message": "to select",
+    "description": "The explanatory text of the action for the enter key"
+  },
+  "theme.SearchModal.footer.selectKeyAriaLabel": {
+    "message": "Enter key",
+    "description": "The ARIA label for the Enter key button that makes the selection"
+  },
+  "theme.SearchModal.footer.navigateText": {
+    "message": "to navigate",
+    "description": "The explanatory text of the action for the Arrow up and Arrow down key"
+  },
+  "theme.SearchModal.footer.navigateUpKeyAriaLabel": {
+    "message": "Arrow up",
+    "description": "The ARIA label for the Arrow up key button that makes the navigation"
+  },
+  "theme.SearchModal.footer.navigateDownKeyAriaLabel": {
+    "message": "Arrow down",
+    "description": "The ARIA label for the Arrow down key button that makes the navigation"
+  },
+  "theme.SearchModal.footer.closeText": {
+    "message": "to close",
+    "description": "The explanatory text of the action for Escape key"
+  },
+  "theme.SearchModal.footer.closeKeyAriaLabel": {
+    "message": "Escape key",
+    "description": "The ARIA label for the Escape key button that close the modal"
+  },
+  "theme.SearchModal.footer.searchByText": {
+    "message": "Search by",
+    "description": "The text explain that the search is making by Algolia"
+  },
+  "theme.SearchModal.noResultsScreen.noResultsText": {
+    "message": "No results for",
+    "description": "The text explains that there are no results for the following search"
+  },
+  "theme.SearchModal.noResultsScreen.suggestedQueryText": {
+    "message": "Try searching for",
+    "description": "The text for the suggested query when no results are found for the following search"
+  },
+  "theme.SearchModal.noResultsScreen.reportMissingResultsText": {
+    "message": "Believe this query should return results?",
+    "description": "The text for the question where the user thinks there are missing results"
+  },
+  "theme.SearchModal.noResultsScreen.reportMissingResultsLinkText": {
+    "message": "Let us know.",
+    "description": "The text for the link to report missing results"
+  },
+  "theme.SearchModal.placeholder": {
+    "message": "Search docs",
+    "description": "The placeholder of the input of the DocSearch pop-up modal"
   }
 }
