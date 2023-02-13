@@ -60,8 +60,8 @@ class DocManager:
             shutil.copytree(source_markdown_paths, dst_path)
 
             # migrate the sidebar and version files
-            sidebar_src_path = src_path.joinpath('sidebars.js')
-            sidebar_dst_path = dst_path.joinpath('sidebars.js')
+            sidebar_src_path = src_path.joinpath('sidebars.json')
+            sidebar_dst_path = dst_path.joinpath('sidebars.json')
             shutil.copyfile(sidebar_src_path, sidebar_dst_path)
 
             version_src_path = src_path.joinpath('versions.json')
@@ -102,18 +102,19 @@ class DocManager:
                 shutil.rmtree(dst_path)
                 shutil.copytree(lang_doc, dst_path)
 
-                # move to docusaurus/docs
-                if version == 'current' and lang_doc == 'en':
-                    dst_path = docusaurus_path.joinpath('docs')
-                    shutil.copytree(lang_doc, dst_path)
+                # move sidebar category translation
+                src_path = dst_path.joinpath('sidebar_category_translation.json')
+                print(src_path)
+                dst_path = docusaurus_path.joinpath(f'i18n/{lang}/docusaurus-plugin-content-docs/{version}.json')
+                shutil.move(src_path, dst_path)
 
             # handle version and sidebars
             # move sidebar
             if version == 'current':
-                dst_path = docusaurus_path.joinpath('sidebars.js')
+                dst_path = docusaurus_path.joinpath('sidebars.json')
             else:
-                dst_path = docusaurus_path.joinpath(f'versioned_sidebars/version-{version}-sidebars.js')
-            src_path = versioned_doc.joinpath('sidebars.js')
+                dst_path = docusaurus_path.joinpath(f'versioned_sidebars/{version}-sidebars.json')
+            src_path = versioned_doc.joinpath('sidebars.json')
             shutil.copyfile(src_path, dst_path)
 
             # move versions.js
@@ -121,11 +122,4 @@ class DocManager:
                 src_path = versioned_doc.joinpath('versions.json')
                 dst_path = docusaurus_path.joinpath('versions.json')
                 shutil.copyfile(src_path, dst_path)
-
-
-
-
-
-    
-
 
