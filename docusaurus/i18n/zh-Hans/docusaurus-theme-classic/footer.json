@@ -15,13 +15,9 @@
     "message": "教程",
     "description": "The label of footer link with label=Tutorials linking to docs/get_started/installation"
   },
-  "link.item.label.Docs": {
-    "message": "API文档",
-    "description": "The label of footer link with label=Docs linking to http://colossalai.readthedocs.io"
-  },
   "link.item.label.Examples": {
     "message": "例子",
-    "description": "The label of footer link with label=Examples linking to https://github.com/hpcaitech/ColossalAI-Examples"
+    "description": "The label of footer link with label=Examples linking to https://github.com/hpcaitech/ColossalAI/tree/main/examples"
   },
   "link.item.label.Forum": {
     "message": "论坛",
@@ -31,24 +27,28 @@
     "message": "GitHub",
     "description": "The label of footer link with label=GitHub linking to https://github.com/hpcaitech/ColossalAI"
   },
-  "link.item.label.Blog": {
-    "message": "博客",
-    "description": "The label of footer link with label=Blog linking to https://www.hpc-ai.tech/blog"
-  },
   "link.item.label.Twitter": {
     "message": "Twitter",
     "description": "The label of footer link with label=Twitter linking to https://twitter.com/HPCAITech"
   },
   "link.item.label.Company": {
     "message": "公司",
-    "description": "The label of footer link with label=Company linking to https://twitter.com/HPCAITech"
+    "description": "The label of footer link with label=Company linking to https://www.hpc-ai.tech/"
   },
   "link.item.label.Services": {
     "message": "服务",
-    "description": "The label of footer link with label=Services linking to https://twitter.com/HPCAITech"
+    "description": "The label of footer link with label=Services linking to https://www.hpc-ai.tech/services"
   },
   "link.item.label.Customers": {
     "message": "客户",
-    "description": "The label of footer link with label=Customers linking to https://twitter.com/HPCAITech"
+    "description": "The label of footer link with label=Customers linking to https://www.hpc-ai.tech/customers"
+  },
+  "link.item.label.API Docs": {
+    "message": "API文档",
+    "description": "The label of footer link with label=API Docs linking to https://colossalai.readthedocs.io"
+  },
+  "link.item.label.Blog": {
+    "message": "博客",
+    "description": "The label of footer link with label=Blog linking to https://www.hpc-ai.tech/blog"
   }
 }

@@ -11,7 +11,7 @@
     "message": "例子",
     "description": "Navbar item with label Examples"
   },
-  "item.label.Docs": {
+  "item.label.API Doc": {
     "message": "API文档",
     "description": "Navbar item with label Docs"
   },

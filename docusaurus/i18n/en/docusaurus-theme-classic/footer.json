@@ -15,13 +15,9 @@
     "message": "Tutorials",
     "description": "The label of footer link with label=Tutorials linking to docs/get_started/installation"
   },
-  "link.item.label.Docs": {
-    "message": "API Docs",
-    "description": "The label of footer link with label=Docs linking to http://colossalai.readthedocs.io"
-  },
   "link.item.label.Examples": {
     "message": "Examples",
-    "description": "The label of footer link with label=Examples linking to https://github.com/hpcaitech/ColossalAI-Examples"
+    "description": "The label of footer link with label=Examples linking to https://github.com/hpcaitech/ColossalAI/tree/main/examples"
   },
   "link.item.label.Forum": {
     "message": "Forum",
@@ -31,24 +27,28 @@
     "message": "GitHub",
     "description": "The label of footer link with label=GitHub linking to https://github.com/hpcaitech/ColossalAI"
   },
-  "link.item.label.Medium": {
-    "message": "Blog",
-    "description": "The label of footer link with label=Blog linking to https://www.hpc-ai.tech/blog"
-  },
   "link.item.label.Twitter": {
     "message": "Twitter",
     "description": "The label of footer link with label=Twitter linking to https://twitter.com/HPCAITech"
   },
   "link.item.label.Company": {
     "message": "Company",
-    "description": "The label of footer link with label=Company linking to https://twitter.com/HPCAITech"
+    "description": "The label of footer link with label=Company linking to https://www.hpc-ai.tech/"
   },
   "link.item.label.Services": {
     "message": "Services",
-    "description": "The label of footer link with label=Services linking to https://twitter.com/HPCAITech"
+    "description": "The label of footer link with label=Services linking to https://www.hpc-ai.tech/services"
   },
   "link.item.label.Customers": {
     "message": "Customers",
-    "description": "The label of footer link with label=Customers linking to https://twitter.com/HPCAITech"
+    "description": "The label of footer link with label=Customers linking to https://www.hpc-ai.tech/customers"
+  },
+  "link.item.label.API Docs": {
+    "message": "API Docs",
+    "description": "The label of footer link with label=API Docs linking to https://colossalai.readthedocs.io"
+  },
+  "link.item.label.Blog": {
+    "message": "Blog",
+    "description": "The label of footer link with label=Blog linking to https://www.hpc-ai.tech/blog"
   }
 }
