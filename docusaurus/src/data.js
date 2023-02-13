@@ -18,7 +18,7 @@ export const features = [
       },
       {
         label: translate({ id: 'landing.features.get_started.links.demo' }),
-        link: 'get_started/run_demo',
+        link: 'docs/get_started/run_demo',
       },
       {
         label: translate({ id: 'landing.features.get_started.links.examples' }),
@@ -56,7 +56,7 @@ export const features = [
       },
       {
         label: translate({ id: 'landing.features.examples.links.gemini' }),
-        link: 'https://www.colossalai.org/docs/advanced_tutorials/meet_gemini',
+        link: 'docs/advanced_tutorials/meet_gemini',
       },
     ],
     icon: BsFillLightningChargeFill,
