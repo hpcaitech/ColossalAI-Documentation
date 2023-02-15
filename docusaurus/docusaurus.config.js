@@ -9,7 +9,7 @@ const katex = require('rehype-katex');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Colossal-AI',
-  tagline: 'Colossal-AI: A Unified Deep Learning System for Big Model Era',
+  tagline: 'Colossal-AI: Make big AI models cheaper, easier, and scalable',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
@@ -179,7 +179,8 @@ const config = {
               },
               {
                 label: 'Examples',
-                to: 'https://github.com/hpcaitech/ColossalAI/tree/main/examples',
+                to:
+                  'https://github.com/hpcaitech/ColossalAI/tree/main/examples',
               },
               {
                 label: 'Forum',
