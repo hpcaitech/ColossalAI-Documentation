@@ -38,6 +38,7 @@ jobs:
       - name: 🔨 Build
         run: |
           pip install -v ./doc-build
+          pip install -v ./doc-build/third_party/hf-doc-builder
           bash ./scripts/build.sh
           mv ./docusaurus/build ./
 

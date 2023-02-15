@@ -179,8 +179,7 @@ const config = {
               },
               {
                 label: 'Examples',
-                to:
-                  'https://github.com/hpcaitech/ColossalAI/tree/main/examples',
+                to: 'https://github.com/hpcaitech/ColossalAI/tree/main/examples',
               },
               {
                 label: 'Forum',
