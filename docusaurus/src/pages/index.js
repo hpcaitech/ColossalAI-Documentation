@@ -9,7 +9,7 @@ import './index.module.css';
 export default function Home() {
   const { siteConfig } = useDocusaurusContext();
   return (
-    <Layout description="A Unified Deep Learning System for Big Model Era">
+    <Layout description="Making big AI models cheaper, easier, and scalable">
       <script
         type="text/javascript"
         id="hs-script-loader"
