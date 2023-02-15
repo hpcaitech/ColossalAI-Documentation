@@ -9,7 +9,7 @@ const katex = require('rehype-katex');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Colossal-AI',
-  tagline: 'Colossal-AI: Make big AI models cheaper, easier, and scalable',
+  tagline: 'Colossal-AI: Making big AI models cheaper, easier, and scalable',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
