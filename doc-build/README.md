@@ -1,20 +1,47 @@
-# Doc Build
+# Doc Build with Docer
 
-This directory contains the source for the documentation build for projects which integrate with Docusaurus.
+Docer is a utility library to build documentation for projects which integrate with Docusaurus. It does the following things for you:
+
+1. Extract the documentation from github repositories
+2. Migrate the docs to docusaurus project
+3. Extract the docstring into MDX documentation with the help of the [hf-doc-builder](./third_party/hf-doc-builder/)
+4. Build the docusaurus project
 
 ## Usage
 
+### Install Modified HF Doc Builder
+
+```bash
+pip install -v ./third_party/hf-doc-builder
+```
+
+### Install Docer
+
 ```bash
 pip install -v .
+```
 
+### Extract the documentation from github repositories
 
-# extract the documentation from github repositories
-doc-build extract -o hpcaitech -p ColossalAI
+```bash
+docer extract -o hpcaitech -p ColossalAI
+```
 
-# migrate the docs to docusaurus project
-doc-build docusaurus -d ../docusaurus
+### Generate the MDX documentation
 
-# start the docusaurus project
+```bash
+docer autodoc -o hpcaitech -p ColossalAI
+```
+
+### Build the documentation into the docusaurus project
+
+```bash
+docer docusaurus -d ../docusaurus
+```
+
+### Start the docusaurus project
+
+```bash
 cd ../docsaurus
 yarn install
 yarn start

@@ -15,7 +15,7 @@ def get_version():
         return f.read().strip()
 
 setup(
-    name='doc_build',
+    name='docer',
     version=get_version(),
     packages=find_packages(exclude=(
         'build',
@@ -37,7 +37,7 @@ setup(
     python_requires='>=3.6',
     entry_points='''
         [console_scripts]
-        doc-build=doc_build.cli:cli
+        docer=docer.cli:cli
     ''',
     classifiers=[
         'Programming Language :: Python :: 3',

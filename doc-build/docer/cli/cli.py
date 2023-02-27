@@ -1,6 +1,6 @@
 import click
 from .aliased_group import AliasedGroup
-from .commands import extract, docusaurus
+from .commands import extract, docusaurus, autodoc
 
 __all__ = ['cli']
 
@@ -14,6 +14,7 @@ def cli():
 
 cli.add_command(extract)
 cli.add_command(docusaurus)
+cli.add_command(autodoc)
 
 if __name__ == '__main__':
     cli()
