@@ -24,7 +24,6 @@ from .convert_md_to_mdx import clean_doctest_syntax
 from .convert_rst_to_mdx import is_empty_line
 from .utils import get_doc_config
 
-
 # Re pattern that matches inline math in MDX: \\(formula\\)
 _re_math_delimiter = re.compile(r"\\\\\((.*?)\\\\\)")
 # Re pattern that matches the copyright paragraph in an MDX file
@@ -166,18 +165,22 @@ def code_cell(code, output=None):
         outputs = []
     else:
         outputs = [
-            nbformat.notebooknode.NotebookNode(
-                {
-                    "data": {"text/plain": output},
-                    "execution_count": None,
-                    "metadata": {},
-                    "output_type": "execute_result",
-                }
-            )
+            nbformat.notebooknode.NotebookNode({
+                "data": {
+                    "text/plain": output
+                },
+                "execution_count": None,
+                "metadata": {},
+                "output_type": "execute_result",
+            })
         ]
-    return nbformat.notebooknode.NotebookNode(
-        {"cell_type": "code", "execution_count": None, "source": code, "metadata": {}, "outputs": outputs}
-    )
+    return nbformat.notebooknode.NotebookNode({
+        "cell_type": "code",
+        "execution_count": None,
+        "source": code,
+        "metadata": {},
+        "outputs": outputs
+    })
 
 
 def youtube_cell(youtube_id):
@@ -190,12 +193,18 @@ def youtube_cell(youtube_id):
     html_code = f'<iframe width="560" height="315" src="https://www.youtube.com/embed/{youtube_id}?rel=0&amp;controls=0&amp;showinfo=0" frameborder="0" allowfullscreen></iframe>'
     cell_dict = {
         "cell_type": "code",
-        "metadata": {"cellView": "form", "hide_input": True},
+        "metadata": {
+            "cellView": "form",
+            "hide_input": True
+        },
         "source": ["#@title\n", "from IPython.display import HTML\n", "\n", f"HTML('{html_code}')"],
         "execution_count": None,
     }
     output_dict = {
-        "data": {"text/html": [html_code], "text/plain": ["<IPython.core.display.HTML object>"]},
+        "data": {
+            "text/html": [html_code],
+            "text/plain": ["<IPython.core.display.HTML object>"]
+        },
         "execution_count": None,
         "metadata": {},
         "output_type": "execute_result",
@@ -290,7 +299,11 @@ def create_notebook(cells):
     return nbformat.notebooknode.NotebookNode({"cells": cells, "metadata": {}, "nbformat": 4, "nbformat_minor": 4})
 
 
-def generate_notebooks_from_file(file_name, output_dir, package=None, mapping=None, page_info=None):
+def generate_notebooks_from_file(file_name,
+                                 output_dir,
+                                 package=None,
+                                 mapping=None,
+                                 page_info=None):
     """
     Generate the notebooks for a given doc file.
 
@@ -305,7 +318,7 @@ def generate_notebooks_from_file(file_name, output_dir, package=None, mapping=No
         page_info (`Dict[str, str]`, *optional*):
             Some information about the page (needs to be passed to resolve doc links).
     """
-    output_dirs = [output_dir, os.path.join(output_dir, "pytorch"), os.path.join(output_dir, "tensorflow")]
+    output_dirs = [output_dir]
     output_name = Path(file_name).with_suffix(".ipynb").name
     with open(file_name, "r", encoding="utf-8") as f:
         content = f.read()

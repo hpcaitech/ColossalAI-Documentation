@@ -1,9 +1,11 @@
-import click
 import os
-
-from docer.core.docs import DocManager
-from docer.core.autodoc import AutoDoc
 import subprocess
+
+import click
+from docer.core.autodoc import AutoDoc
+from docer.core.docs import DocManager
+from docer.core.doctest import DocTest
+
 
 @click.command(help="Extract the docs from the versions given in the main branch")
 @click.option('-c', '--cache', help='Directory for caching', default='.cache')
@@ -30,7 +32,7 @@ def extract(cache, owner, project):
 @click.option('-p', '--project', help='Project name')
 def autodoc(cache, owner, project):
     auto_doc = AutoDoc()
-    
+
     doc_dir = os.path.join(cache, 'docs')
 
     # list all versions in this directory
@@ -68,7 +70,10 @@ def docusaurus(cache, directory):
     doc_manager.move_to_docusaurus(directory)
 
 
-
-
-
-
+@click.command(help="Test the selected markdown file")
+@click.option('-c', '--cache', help='Directory for caching', default='.cache')
+@click.option('-p', '--path', help='Directory for the markdown file')
+def test(cache, path):
+    doc_tester = DocTest(cache)
+    nb_file_path = doc_tester.convert_markdown_to_jupyter(path)
+    doc_tester.test_notebook(nb_file_path)

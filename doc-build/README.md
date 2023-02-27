@@ -46,3 +46,36 @@ cd ../docsaurus
 yarn install
 yarn start
 ```
+
+### Test the Markdown Documentation
+
+```bash
+docer test -p <path/to/markdown>
+```
+
+If you want to test the Python code in your markdown file, you need to provide a command to trigger the test. Do add the following line to the top of your file and replace `$command` with the actual command. Do note that the markdown will be converted into a Python file. Assuming you have a `demo.md` file, the test file generated will be `demo.py`. Therefore, you should use `demo.py` in your command, e.g. `python demo.py`.
+
+```markdown
+<!-- doc-test-command: $command  -->
+```
+
+Meanwhile, only code labelled as a Python code block will be considered for testing.
+
+```
+    ```python
+    print("hello world")
+    ```
+```
+
+Lastly, if you want to skip some code, you just need to add the following annotations to tell `docer` to discard the wrapped code for testing.
+
+```
+    <!--- doc-test-ignore-start -->
+    ```python
+    print("hello world")
+    ```
+    <!--- doc-test-ignore-end -->
+
+```
+
+
