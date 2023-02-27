@@ -51,7 +51,7 @@ def autodoc(cache, owner, project):
         )
 
         # generate the github url based on page info
-        pip_link = "git+https://github.com/{repo_ownder}/{repo_name}.git@{version_tag}".format(**page_info)
+        pip_link = "git+https://github.com/{repo_owner}/{repo_name}.git@{version_tag}".format(**page_info)
 
         # install this url via pip
         # such that the autodoc is with respect the specified version
