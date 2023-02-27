@@ -24,7 +24,6 @@ from .convert_md_to_mdx import clean_doctest_syntax
 from .convert_rst_to_mdx import is_empty_line
 from .utils import get_doc_config
 
-
 # Re pattern that matches inline math in MDX: \\(formula\\)
 _re_math_delimiter = re.compile(r"\\\\\((.*?)\\\\\)")
 # Re pattern that matches the copyright paragraph in an MDX file
@@ -304,8 +303,7 @@ def generate_notebooks_from_file(file_name,
                                  output_dir,
                                  package=None,
                                  mapping=None,
-                                 page_info=None,
-                                 generate_script: bool = False):
+                                 page_info=None):
     """
     Generate the notebooks for a given doc file.
 
