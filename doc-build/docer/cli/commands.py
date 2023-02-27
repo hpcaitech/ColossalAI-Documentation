@@ -38,7 +38,6 @@ def autodoc(cache, owner, project):
         version_dir = os.path.join(doc_dir, directory)
 
         # prepare page info
-        print(directory)
         if directory == 'current':
             tag_ver = 'main'
         else:
