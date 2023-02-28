@@ -1,11 +1,6 @@
 # ColossalAI-Documentation
 
-This website uses [Docusaurus 2](https://v2.docusaurus.io/).
-Pages & components are written in TypeScript, the styles in vanilla CSS with
-variables using
-[CSS Modules](https://github.com/css-modules/css-modules).
-(We would have preferred using [styled-components](https://styled-components.com/) but docusaurus has no ssr support for
-it yet)
+This website uses [Docusaurus 2](https://v2.docusaurus.io/) together with [Tailwind CSS](https://tailwindui.com/) to serve the project website for Colossal-AI.
 
 ## Prerequisite
 
@@ -15,9 +10,8 @@ If you are on our development server, you can do `module load node-js` to use `N
 
 ## Installation
 
-```console
+```bash
 yarn install
-pip install jsbeautifier
 ```
 
 ## Local Development
@@ -46,11 +40,13 @@ In this mode, the current version will be browsered. You can test your current d
 ```console
 yarn build
 ```
+
 This command generates static content into the `build` directory and can be served using any static contents hosting service.
 
 ```console
 yarn build:serve
 ```
+
 This command generates static content into the `build` directory and start a web serve on localhost.
 
 ## Versioning
@@ -71,11 +67,12 @@ This command generates static content into the `build` directory and start a web
 
 The above is the docs folder structure. We don't need to modify `docs` and `versioned_docs`, since they are auto generated.
 
-If you want to fix a bug for the latest version, **please update four files in above path at the same time** (`i18n/en/current/xx, i18n/en/current/version-latest, i18n/zh-Hans/current/xx, i18n/zh-Hans/current/version-latest`), thanks. 
+If you want to fix a bug for the latest version, **please update four files in above path at the same time** (`i18n/en/current/xx, i18n/en/current/version-latest, i18n/zh-Hans/current/xx, i18n/zh-Hans/current/version-latest`), thanks.
 
 If you want to add a new doc for next version, **please update two files in above path at the same time** (`i18n/en/current/xx, i18n/zh-Hans/current/xx`), thanks. `i18n/zh-Hans/current/xx` is optional, you can focus on en doc, others can help to finish the zh-Hans files.
 
 Here is a short instruction of releasing a new version:
+
 1. Write the latest docs in `i18n/en/docusaurus-plugin-content-docs/current` and `i18n/zh-Hans/docusaurus-plugin-content-docs/current`.
 2. Maybe update `sidebars.js` if you add/delete files or you want to adjust the order.
 3. Run `node release.js <version>`, e.g. `node release.js v1.0.0`.
@@ -85,6 +82,7 @@ Here is a short instruction of releasing a new version:
 > **Do start the version with a 'v' for consistency**.
 
 Best Versioning Practice:
+
 1. Only run the command when the documentation is fully ready to avoid future changes
 2. When you modify `i18n/<locale>/docusaurus-plugin-content-docs/version-<version>`, do remember to modify `i18n/<locale>/docusaurus-plugin-content-docs/current` as well so that it won't be missing in the next release.
 
@@ -101,20 +99,3 @@ If you want to know more about versioning configuration, please go to [Docusauru
 After releasing, the translation files are auto-generated. What you have to do is translate and update them.
 
 If you want to know more about i18n, please go to [Docusaurus documentation](https://docusaurus.io/docs/i18n/introduction) and [Docusaurus CLI](https://docusaurus.io/docs/cli#docusaurus-write-translations-sitedir) for more details.
-
-## Contributing
-
-Your contribution is always welcomed to make the documentation better.
-In order to add your documentations into the website, you need to follow the steps below:
-
-1. Prepare your documentation in Markdown format.
-2. Name your markdown file clearly and the title must in header 1 format.
-3. Put your markdown file into a sub-folder (e.g. `features`) under the `tutorials` directory.
-4. Add your markdown file in the `sidebar.js` so that it will appear on the left panel.
-   You can also choose to run the following command to build the sidebar file.
-
-    ```python
-    python build_sidebar.py
-    ```
-5. Create a pull request to the `main` branch. The GitHub Action will automatically deploy the documentation once the
-   pull request is approved.
