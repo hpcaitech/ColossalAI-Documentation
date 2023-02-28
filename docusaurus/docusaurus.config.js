@@ -121,11 +121,6 @@ const config = {
             to: 'https://github.com/hpcaitech/ColossalAI/tree/main/examples',
           },
           {
-            label: 'API Doc',
-            position: 'left',
-            to: 'https://colossalai.readthedocs.io',
-          },
-          {
             label: 'Blogs',
             position: 'left',
             to: 'https://www.hpc-ai.tech/blog',
@@ -172,10 +167,6 @@ const config = {
               {
                 label: 'Tutorials',
                 to: 'docs/get_started/installation',
-              },
-              {
-                label: 'API Docs',
-                to: 'https://colossalai.readthedocs.io',
               },
               {
                 label: 'Examples',

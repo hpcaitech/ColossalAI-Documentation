@@ -35,7 +35,7 @@ class DocTest:
         for line in body_lines:
             if 'doc-test-command' in line:
                 # intercept the test comand
-                command = line.split('doc-test-command:')[1].rstrip('-->')
+                command = line.split('doc-test-command:')[1].rstrip('-->').strip()
                 command = command.split()
             elif 'ignore-test-start' in line:
                 ignore_current_line = True
