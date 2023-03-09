@@ -9,8 +9,8 @@ DOCUSAURUS_DIR="${SCRIPT_DIR}/../docusaurus"
 # build docs
 cd "${DOC_BUILD_DIR}"
 docer extract -o hpcaitech -p ColossalAI
-docer docusaurus -d ../docusaurus
 docer autodoc -o hpcaitech -p ColossalAI
+docer docusaurus -d ../docusaurus
 
 # build html
 cd "${DOCUSAURUS_DIR}"
