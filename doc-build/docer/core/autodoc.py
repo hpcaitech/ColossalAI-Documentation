@@ -34,7 +34,14 @@ class AutoDoc:
 
             # iterate over the lines
             for i, line in enumerate(lines):
-                if re.match(self.PATTERN, line):
+                if i == 0 and contains_autodoc_field:
+                    # we only add the default import after the title
+                    new_lines.append(line)
+                    new_lines.append("\n\n")
+                    new_lines.append(self.DEFAULT_IMPORT)
+                    new_lines.append("\n\n")
+                elif re.match(self.PATTERN, line):
+                    # convert to autodoc field
                     # get the module name
                     obj_name = re.match(self.PATTERN, line).group(1)
 
