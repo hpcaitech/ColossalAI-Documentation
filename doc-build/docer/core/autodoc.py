@@ -28,10 +28,6 @@ class AutoDoc:
         if contains_autodoc_field:
             new_lines = []
             
-            # append the defualt import
-            new_lines.append(self.DEFAULT_IMPORT)
-            new_lines.append("\n\n")
-
             # iterate over the lines
             for i, line in enumerate(lines):
                 if i == 0 and contains_autodoc_field:
