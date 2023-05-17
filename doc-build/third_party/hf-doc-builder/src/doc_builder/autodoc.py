@@ -558,7 +558,7 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
             )
             if check is not None:
                 errors.append(check)
-            documentation += f'\n<div">' + method_doc + "</div>"
+            documentation += f'\n<div>' + method_doc + "</div>"
             if return_anchors:
                 # The anchor name of the method might be different from its
                 method = find_object_in_package(f"{anchors[0]}.{method}", package=package)
