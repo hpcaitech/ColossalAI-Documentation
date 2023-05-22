@@ -18,6 +18,7 @@
 
 import importlib
 import inspect
+import types
 import json
 import re
 
@@ -277,7 +278,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
     svelte_str += "</div>\n"
     
     svelte_str += '<div>\n'
-    svelte_str += '<Divider name=\"Doc\" />'
+    svelte_str += '<Divider name=\"Description\" />'
     svelte_str += f"\n{object_doc}\n"
     svelte_str += '</div>\n'
     return svelte_str
@@ -439,7 +440,14 @@ def document_object(object_name, package, page_info, full_name=True, anchor_name
     else:
         name = obj.__name__
 
-    prefix = "class " if isinstance(obj, type) else ""
+    if isinstance(obj, type):
+        prefix = "class "
+    elif isinstance(obj, types.MethodType):
+        prefix = "method "
+    elif isinstance(obj, types.FunctionType):
+        prefix = "function "
+    else:
+        prefix = ""
     object_doc = ""
     signature_name = prefix + name
     signature = format_signature(obj)
@@ -558,7 +566,7 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
             )
             if check is not None:
                 errors.append(check)
-            documentation += f'\n<div>' + method_doc + "</div>"
+            documentation += f'\n<DocStringContainer>' + method_doc + "</DocStringContainer>"
             if return_anchors:
                 # The anchor name of the method might be different from its
                 method = find_object_in_package(f"{anchors[0]}.{method}", package=package)

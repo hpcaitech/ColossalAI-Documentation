@@ -1,17 +1,17 @@
 .docstring-container {
   margin-top: 2rem;
   margin-bottom: 2rem;
-  padding: 1rem;
-  border-color: #818cf8;
+  padding: 1.5rem;
+  border-color: #9db2bf;
   border-style: solid;
-  border-width: 2px;
+  border-width: 1px;
   border-radius: 0.5rem;
 }
 
 .signature {
   color: #6b7280;
-  font-weight: bold;
   margin-bottom: 0.5rem;
+  font-size: medium;
 }
 
 .title-container {
@@ -36,24 +36,19 @@
 .divider {
   display: flex;
   align-items: center;
-  text-align: center;
-  font-size: large;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.divider-text {
+  margin-right: 10px;
+  font-size: medium;
+  font-weight: bold;
   color: #4f46e5;
-  margin-bottom: 1rem;
-  margin-top: 1rem;
 }
 
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid #4f46e5;
-}
-
-.divider:not(:empty)::before {
-  margin-right: 0.25em;
-}
-
-.divider:not(:empty)::after {
-  margin-left: 0.25em;
+.divider-line {
+  flex-grow: 1;
+  height: 1px;
+  background-color: black;
 }

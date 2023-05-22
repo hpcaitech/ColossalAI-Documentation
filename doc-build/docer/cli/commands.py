@@ -11,40 +11,39 @@ from docer.core.doctest import DocTest
 @click.option('-c', '--cache', help='Directory for caching', default='.cache')
 @click.option('-o', '--owner', help='Owner of the repo')
 @click.option('-p', '--project', help='Project name')
-def extract(cache, owner, project):
+@click.option('-r', '--ref', help="Git ref to extract the docs from", default=None)
+def extract(cache, owner, project, ref):
     doc_manager = DocManager(cache, owner, project)
     doc_manager.setup()
 
     # check for versions to load
     versions = doc_manager.get_versions_to_load('main')
 
-    doc_manager.extract_docs(ref='main', version='current')
+    if ref is None:
+        # if no ref is given, we will extract all versions
+        doc_manager.extract_docs(ref='main', version='current')
 
-    for version in versions:
-        if version == 'current':
-            continue
-        doc_manager.extract_docs(ref=version, version=f'version-{version}')
+        for version in versions:
+            if version == 'current':
+                continue
+            doc_manager.extract_docs(ref=version, version=f'version-{version}')
+    else:
+        # if a ref is given, we will extract the docs from this ref
+        doc_manager.extract_docs(ref=ref, version='current')
 
 
 @click.command(help="Apply auto-doc generation for Markdown")
 @click.option('-c', '--cache', help='Directory for caching', default='.cache')
 @click.option('-o', '--owner', help='Owner of the repo')
 @click.option('-p', '--project', help='Project name')
-def autodoc(cache, owner, project):
+@click.option('-r', '--ref', help="Git ref for the documentation", default=None)
+@click.option('-n', '--name', help="name of the folder containing the docs", default=None)
+def autodoc(cache, owner, project, ref, name):
     auto_doc = AutoDoc()
 
     doc_dir = os.path.join(cache, 'docs')
 
-    # list all versions in this directory
-    for directory in os.listdir(doc_dir):
-        version_dir = os.path.join(doc_dir, directory)
-
-        # prepare page info
-        if directory == 'current':
-            tag_ver = 'main'
-        else:
-            tag_ver = directory.split('-')[1]
-
+    def _convert(tag_ver, version_dir):
         page_info = dict(
             repo_name=project,
             repo_owner=owner,
@@ -60,6 +59,21 @@ def autodoc(cache, owner, project):
 
         # convert all docs in place
         auto_doc.convert_to_mdx_in_place(version_dir, page_info)
+
+    if ref is None:
+        # list all versions in this directory
+        for directory in os.listdir(doc_dir):
+            version_dir = os.path.join(doc_dir, directory)
+
+            # prepare page info
+            if directory == 'current':
+                ref = 'main'
+            else:
+                ref = directory.split('-')[1]
+            _convert(ref, version_dir)
+    else:
+        version_dir = os.path.join(doc_dir, name)
+        _convert(ref, version_dir)
 
 
 @click.command(help="Move the docs from cache diretory to docusaurus directory")
