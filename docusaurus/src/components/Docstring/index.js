@@ -18,7 +18,12 @@ export function Signature(props) {
 }
 
 export function Divider(props) {
-  return <h3 className="divider">{props.name}</h3>;
+  // return <h4 className="divider">{props.name}</h4>;
+  return (
+    <div class="divider">
+      <span class="divider-text">{props.name}</span>
+    </div>
+  );
 }
 
 export function Parameters(props) {
@@ -61,7 +66,7 @@ export function Title(props) {
   return (
     <div className="title-container">
       <div className="title-module">
-        <h3>{props.type}</h3>&nbsp; <h2>{props.name}</h2>
+        <h5>{props.type}</h5>&nbsp; <h3>{props.name}</h3>
       </div>
       <div className="title-source">
         {'<'}
