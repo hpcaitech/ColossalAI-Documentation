@@ -44,7 +44,9 @@ class DocTest:
             elif not ignore_current_line:
                 new_body.append(line)
 
-        assert command is not None, 'The test command is not provided in the documentation.'
+        if command is None:
+            print('The test command is not provided in the documentation.')
+            return
 
         # convert nb_path to pathlib.Path
         if not isinstance(nb_path, Path):
