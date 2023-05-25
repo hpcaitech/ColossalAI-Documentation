@@ -19,7 +19,7 @@ class DocManager:
             self.cache_directory.mkdir(exist_ok=True, parents=True)
 
         if self.git_client.repo_directory.exists():
-            self.git_client.rebase_origin_main()
+            self.git_client.merge_origin_main()
         else:
             self.git_client.clone()
 
