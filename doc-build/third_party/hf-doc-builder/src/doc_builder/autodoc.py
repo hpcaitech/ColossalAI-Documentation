@@ -211,7 +211,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
         obj_type = ""
         obj_name = name
 
-    title_str = f"<Title class=\"{obj_type}\" name=\"{obj_name}\" source=\"{url}\"/>\n"
+    title_str = f"<Title type=\"{obj_type}\" name=\"{obj_name}\" source=\"{url}\"/>\n"
     svelte_str += title_str
 
     sig_list = []
@@ -376,7 +376,7 @@ def is_getset_descriptor(obj):
     return "getset_descriptor" in obj_repr
 
 
-def get_source_link(obj, page_info, version_tag_suffix="/"):
+def get_source_link(obj, page_info, version_tag_suffix="src/"):
     """
     Returns the link to the source code of an object on GitHub.
     """
