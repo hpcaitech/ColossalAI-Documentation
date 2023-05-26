@@ -376,7 +376,7 @@ def is_getset_descriptor(obj):
     return "getset_descriptor" in obj_repr
 
 
-def get_source_link(obj, page_info, version_tag_suffix="src/"):
+def get_source_link(obj, page_info, version_tag_suffix="/"):
     """
     Returns the link to the source code of an object on GitHub.
     """
