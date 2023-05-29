@@ -197,7 +197,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
     object_doc = remove_example_tags(object_doc)
     object_doc = hashlink_example_codeblock(object_doc, anchor)
 
-    svelte_str = "<div style={{width: \"650px\", overflow: \"auto\"}}>\n"
+    svelte_str = "<div>\n"
 
     if source_link:
         url = source_link
