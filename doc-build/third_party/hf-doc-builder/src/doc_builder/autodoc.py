@@ -376,7 +376,7 @@ def is_getset_descriptor(obj):
     return "getset_descriptor" in obj_repr
 
 
-def get_source_link(obj, page_info, version_tag_suffix="/"):
+def get_source_link(obj, page_info, version_tag_suffix=""):
     """
     Returns the link to the source code of an object on GitHub.
     """
@@ -406,7 +406,7 @@ def get_source_path(object_name, package):
     return obj_path
 
 
-def document_object(object_name, package, page_info, full_name=True, anchor_name=None, version_tag_suffix="src/"):
+def document_object(object_name, package, page_info, full_name=True, anchor_name=None, version_tag_suffix=""):
     """
     Writes the document of a function, class or method.
 
@@ -501,7 +501,7 @@ def find_documented_methods(clas):
     return list(documented_methods.keys())
 
 
-def autodoc(object_name, package, methods=None, return_anchors=False, page_info=None, version_tag_suffix="src/"):
+def autodoc(object_name, package, methods=None, return_anchors=False, page_info=None, version_tag_suffix=""):
     """
     Generates the documentation of an object, with a potential filtering on the methods for a class.
 
