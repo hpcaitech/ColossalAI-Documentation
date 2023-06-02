@@ -202,7 +202,7 @@ def build_command_parser(subparsers=None):
     parser.add_argument(
         "--version_tag_suffix",
         type=str,
-        default="src/",
+        default="",
         help="Suffix to add after the version tag (e.g. 1.3.0 or main) in the documentation links. For example, the default `src/` suffix will result in a base link as `https://github.com/huggingface/{package_name}/blob/{version_tag}/src/`.",
     )
     parser.add_argument(

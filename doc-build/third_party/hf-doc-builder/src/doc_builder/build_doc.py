@@ -73,7 +73,7 @@ def resolve_open_in_colab(content, page_info):
     return content.replace("[[open-in-colab]]", svelte_component)
 
 
-def resolve_autodoc(content, package, return_anchors=False, page_info=None, version_tag_suffix="src/"):
+def resolve_autodoc(content, package, return_anchors=False, page_info=None, version_tag_suffix=""):
     """
     Replaces [[autodoc]] special syntax by the corresponding generated documentation in some content.
 
@@ -386,7 +386,7 @@ def build_doc(
     notebook_dir=None,
     is_python_module=False,
     watch_mode=False,
-    version_tag_suffix="src/",
+    version_tag_suffix="",
     repo_owner="huggingface",
     repo_name=None,
 ):
