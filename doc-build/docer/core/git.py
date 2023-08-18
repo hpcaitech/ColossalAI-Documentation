@@ -12,12 +12,6 @@ class GitClient:
         self.git_url = f'https://github.com/{owner}/{project}.git'
         self.repo_directory = self.root_directory.joinpath(project)
         
-    def merge_origin_main(self):
-        with self._change_dir(self.repo_directory):
-            subprocess.check_call(['git', 'checkout', 'main'])
-            subprocess.check_call(['git', 'fetch', 'origin'])
-            subprocess.check_call(['git', 'merge', 'origin/main'])
-
     def clone(self):
         with self._change_dir(self.root_directory):
             subprocess.check_call(['git', 'clone', self.git_url])
