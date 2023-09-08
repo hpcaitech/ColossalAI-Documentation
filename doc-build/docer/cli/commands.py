@@ -5,6 +5,7 @@ import click
 from docer.core.autodoc import AutoDoc
 from docer.core.docs import DocManager
 from docer.core.doctest import DocTest
+from docer.core.git import GitClient
 
 
 @click.command(help="Extract the docs from the versions given in the main branch")
@@ -40,6 +41,7 @@ def extract(cache, owner, project, ref):
 @click.option('-n', '--name', help="name of the folder containing the docs", default=None)
 def autodoc(cache, owner, project, ref, name):
     auto_doc = AutoDoc()
+    git_client = GitClient(root_directory=cache, owner=owner, project=project)
 
     doc_dir = os.path.join(cache, 'docs')
 
@@ -50,12 +52,13 @@ def autodoc(cache, owner, project, ref, name):
             version_tag=tag_ver,
         )
 
-        # generate the github url based on page info
-        pip_link = "git+https://github.com/{repo_owner}/{repo_name}.git@{version_tag}".format(**page_info)
+        # git checkout to the specified ref
+        git_client.checkout(ref)
 
         # install this url via pip
         # such that the autodoc is with respect the specified version
-        subprocess.check_call(['pip', 'install', '--force-reinstall', pip_link])
+        with git_client._change_dir(git_client.repo_directory):
+            subprocess.check_call(['pip', 'install', '--force-reinstall', "."])
 
         # convert all docs in place
         auto_doc.convert_to_mdx_in_place(version_dir, page_info)
