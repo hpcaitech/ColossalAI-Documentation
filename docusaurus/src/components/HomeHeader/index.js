@@ -56,7 +56,7 @@ export default function HomeHeader() {
                 </div>
               </a>
               <a
-                href="https://join.slack.com/t/colossalaiworkspace/shared_invite/zt-z7b26eeb-CBp7jouvu~r0~lcFzX832w"
+                href="https://github.com/hpcaitech/public_assets/tree/main/colossalai/contact/slack"
                 className="tw-rounded-md tw-bg-indigo-600 tw-px-3.5 tw-py-1.5 tw-my-2 tw-text-base tw-font-semibold tw-leading-7 tw-text-white tw-shadow-sm hover:tw-bg-indigo-500 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600 hover:tw-no-underline hover:tw-text-white">
                 <div className="tw-flex tw-items-center">
                   <FaSlack />
