@@ -20,6 +20,7 @@ import importlib
 import inspect
 import json
 import re
+import traceback
 import types
 
 from .convert_md_to_mdx import convert_md_docstring_to_mdx
@@ -48,7 +49,9 @@ def find_object_in_package(object_name, package):
                 importlib.import_module(f"{package.__name__}.{split}")
                 submodule = getattr(module, split, None)
             except ImportError as e:
-                print(f"In find_object_in_package: {e}")
+                print(
+                    f"In find_object_in_package: {traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)}"
+                )
                 pass
         module = submodule
         if module is None:
