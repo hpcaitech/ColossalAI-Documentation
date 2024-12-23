@@ -18,9 +18,9 @@
 
 import importlib
 import inspect
-import types
 import json
 import re
+import types
 
 from .convert_md_to_mdx import convert_md_docstring_to_mdx
 from .convert_rst_to_mdx import convert_rst_docstring_to_mdx, find_indent, is_empty_line
@@ -47,7 +47,8 @@ def find_object_in_package(object_name, package):
             try:
                 importlib.import_module(f"{package.__name__}.{split}")
                 submodule = getattr(module, split, None)
-            except ImportError:
+            except ImportError as e:
+                print(f"In find_object_in_package: {e}")
                 pass
         module = submodule
         if module is None:
@@ -203,7 +204,7 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
         url = source_link
     else:
         url = ""
-    
+
     if len(name.split()) > 1:
         obj_type = name.split()[0]
         obj_name = name.split()[1]
@@ -211,24 +212,24 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
         obj_type = ""
         obj_name = name
 
-    title_str = f"<Title type=\"{obj_type}\" name=\"{obj_name}\" source=\"{url}\"/>\n"
+    title_str = f'<Title type="{obj_type}" name="{obj_name}" source="{url}"/>\n'
     svelte_str += title_str
 
     sig_list = []
 
     for item in signature:
-        name = item['name']
-        value = item['val']
-        
+        name = item["name"]
+        value = item["val"]
+
         if value:
-            sig_list.append(f'{name}{value}')
+            sig_list.append(f"{name}{value}")
         else:
             sig_list.append(name)
-    
-    sig_str = ', '.join(sig_list)
+
+    sig_str = ", ".join(sig_list)
     # param_sig_str = param_sig_str.replace('`', '\`')
     sig_str = f"<Signature>{{`{sig_str}`}}</Signature>\n"
-    svelte_str += r'{}'.format(sig_str)
+    svelte_str += r"{}".format(sig_str)
 
     # if is_getset_desc:
     #     svelte_str += "<isgetsetdescriptor>"
@@ -238,11 +239,11 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
         groups = _re_parameter_group.split(parameters)
         group_default = groups.pop(0)
         group_default = repr(group_default)
-        group_default = group_default.replace('`', '\`')
+        group_default = group_default.replace("`", "\`")
         parameters_str += f"<Parameters>{{{group_default}}}</Parameters>\n"
-        
+
         # ignore for React + MDX
-        # 
+        #
         # n_groups = len(groups) // 2
         # for idx in range(n_groups):
         #     id = idx + 1
@@ -257,30 +258,30 @@ def get_signature_component(name, anchor, signature, object_doc, source_link=Non
         returntype = ""
     if return_description is None:
         return_description = ""
-    
+
     if returntype or return_description:
-        svelte_str += f"<Returns name=\"{returntype}\" desc=\"{return_description}\"/>\n"
+        svelte_str += f'<Returns name="{returntype}" desc="{return_description}"/>\n'
 
     if yieldtype is None:
         yieldtype = ""
     if yield_description is None:
         yield_description = ""
     if yieldtype or yield_description:
-        svelte_str += f"<Yields name=\"{yieldtype}\" desc=\"{yield_description}\"/>\n"
+        svelte_str += f'<Yields name="{yieldtype}" desc="{yield_description}"/>\n'
 
     if raise_description is None:
         raise_description = ""
     if raisederrors is None:
         raisederrors = ""
     if raisederrors or raise_description:
-        svelte_str += f"<Raises name=\"{raisederrors}\" desc=\"{raise_description}\"/>\n"
+        svelte_str += f'<Raises name="{raisederrors}" desc="{raise_description}"/>\n'
 
     svelte_str += "</div>\n"
-    
-    svelte_str += '<div>\n'
-    svelte_str += '<Divider name=\"Description\" />'
+
+    svelte_str += "<div>\n"
+    svelte_str += '<Divider name="Description" />'
     svelte_str += f"\n{object_doc}\n"
-    svelte_str += '</div>\n'
+    svelte_str += "</div>\n"
     return svelte_str
 
 
@@ -330,10 +331,10 @@ def hashlink_example_codeblock(object_doc, object_anchor):
         id_str = "" if example_id == 1 else f"-{example_id}"
         example_anchor = f"{object_anchor}.example{id_str}"
         content = match.group(1)
-        
+
         content = repr(content)
-        content = content.replace('`', '\`')
-        return f'<ExampleCode code={{{content}}} />\n'
+        content = content.replace("`", "\`")
+        return f"<ExampleCode code={{{content}}} />\n"
 
     object_doc = _re_example_codeblock.sub(add_example_svelte_blocks, object_doc)
     return object_doc
@@ -468,9 +469,7 @@ def document_object(object_name, package, page_info, full_name=True, anchor_name
         # tokenizers obj do NOT have `__module__` attribute & can NOT be used with inspect.getsourcelines
         source_link = None
     is_getset_desc = is_getset_descriptor(obj)
-    component = get_signature_component(
-        signature_name, anchor_name, signature, object_doc, source_link, is_getset_desc
-    )
+    component = get_signature_component(signature_name, anchor_name, signature, object_doc, source_link, is_getset_desc)
     documentation = "\n" + component + "\n"
     return documentation, check
 
@@ -566,7 +565,7 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
             )
             if check is not None:
                 errors.append(check)
-            documentation += f'\n<DocStringContainer>' + method_doc + "</DocStringContainer>"
+            documentation += f"\n<DocStringContainer>" + method_doc + "</DocStringContainer>"
             if return_anchors:
                 # The anchor name of the method might be different from its
                 method = find_object_in_package(f"{anchors[0]}.{method}", package=package)
@@ -575,7 +574,7 @@ def autodoc(object_name, package, methods=None, return_anchors=False, page_info=
                     anchors.append(anchor_name)
                 else:
                     anchors.append((anchor_name, method_name))
-    documentation = f'<DocStringContainer>\n' + documentation + "</DocStringContainer>\n"
+    documentation = f"<DocStringContainer>\n" + documentation + "</DocStringContainer>\n"
 
     return (documentation, anchors, errors) if return_anchors else documentation
 
