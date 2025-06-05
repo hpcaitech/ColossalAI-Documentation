@@ -39,7 +39,7 @@ export default function HomeHeader() {
             </p>
             <div className="tw-mt-10 tw-flex tw-flex-col md:tw-flex-row tw-items-center tw-justify-center tw-gap-x-6">
               <a
-                href="docs/get_started/installation"
+                href="https://hpc-ai.com/"
                 className="tw-rounded-md tw-bg-indigo-600 tw-px-3.5 tw-py-1.5 tw-my-2 tw-text-base tw-font-semibold tw-leading-7 tw-text-white tw-shadow-sm hover:tw-bg-indigo-500 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-indigo-600 hover:tw-no-underline hover:tw-text-white">
                 <div className="tw-flex tw-items-center">
                   <FaPlayCircle />
