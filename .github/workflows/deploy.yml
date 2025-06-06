@@ -10,7 +10,7 @@ on:
 jobs:
   publish:
     name: Build and deploy website
-    runs-on: [self-hosted, ubuntu-latest]
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     if: ( github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true ) && github.repository == 'hpcaitech/ColossalAI-Documentation'
     permissions:
@@ -26,7 +26,6 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "16"
-          cache: "yarn"
           cache-dependency-path: docusaurus/package-lock.json
 
       # Setup Python 3.8
